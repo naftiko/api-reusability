@@ -1,0 +1,475 @@
+item:
+  - contentType: application/json
+    id: miyfel
+    name: Empty
+    schema: |-
+      {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "title": "Empty Schema",
+        "type": "object"
+      }
+  - contentType: application/json
+    description: Standard error response model
+    id: sddpxt
+    name: Error
+    schema: |-
+      {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "title": "Error Schema",
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+  - contentType: application/json
+    description: Listing of repositories pulled for an organization.
+    id: wj1ovm
+    name: Policies
+    schema: |-
+      {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "id": "https://policies-api.apievangelist.com/schemas/policies.json",
+        "title": "Policies",
+        "type": "array",
+        "description": "Listing of repositories pulled for an organization.",
+        "items": {
+          "$ref": "#/definitions/Contract"
+        },
+        "definitions": {
+          "Contract": {
+            "type": "object",
+            "description": "A single repository.",
+            "properties": {
+              "aid": {
+                "type": "string",
+                "description": "The unique API identifier of the policy."
+              },
+              "name": {
+                "type": "string",
+                "description": "The name of the policy."
+              },
+              "description": {
+                "type": "string",
+                "description": "The description of the policy."
+              }
+            }
+          }
+        }
+      }
+  - contentType: application/json
+    description: 'Response model with metadata, data, and links'
+    id: abc123
+    name: Response
+    schema: |-
+      {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "id": "https://policies-api.apievangelist.com/schemas/Response.json",
+        "title": "Response",
+        "type": "object",
+        "description": "An JSON API object with metadata, data, and links.",
+        "properties": {
+          "meta": {
+            "$ref": "#/definitions/Meta"
+          },
+          "data": {
+            "$ref": "#/definitions/policies"
+          }
+        },
+        "required": [
+          "meta",
+          "data"
+        ],
+        "definitions": {
+          "Meta": {
+            "type": "object",
+            "properties": {
+              "search": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "limit": {
+                "type": "integer"
+              },
+              "page": {
+                "type": "integer"
+              },
+              "totalPages": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "totalPages",
+              "page",
+              "limit"
+            ]
+          },
+          "policies": {
+            "type": "array",
+            "description": "Listing of repositories pulled for an organization.",
+            "items": {
+              "$ref": "#/definitions/Contract"
+            }
+          },
+          "Contract": {
+            "type": "object",
+            "description": "A single repository.",
+            "properties": {
+              "aid": {
+                "type": "string",
+                "description": "The unique API identifier of the policy."
+              },
+              "name": {
+                "type": "string",
+                "description": "The name of the policy."
+              },
+              "description": {
+                "type": "string",
+                "description": "The description of the policy."
+              }
+            }
+          }
+        }
+      }
+  - contentType: application/json
+    description: User profile information
+    id: def456
+    name: User
+    schema: |-
+      {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "title": "User",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique user identifier"
+          },
+          "username": {
+            "type": "string",
+            "description": "User's login name"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "User's email address"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Account creation timestamp"
+          },
+          "active": {
+            "type": "boolean",
+            "description": "Whether the account is active"
+          }
+        },
+        "required": [
+          "id",
+          "username",
+          "email"
+        ]
+      }
+  - contentType: application/json
+    description: API resource with methods
+    id: ghi789
+    name: ApiResource
+    schema: |-
+      {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "title": "API Resource",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "pathPart": {
+            "type": "string"
+          },
+          "parentId": {
+            "type": "string"
+          },
+          "resourceMethods": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "httpMethod": {
+                  "type": "string"
+                },
+                "authorizationType": {
+                  "type": "string"
+                },
+                "apiKeyRequired": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "id",
+          "path"
+        ]
+      }
+  - contentType: application/json
+    description: Paginated list response
+    id: jkl012
+    name: PaginatedList
+    schema: |-
+      {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "title": "Paginated List",
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "totalItems": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "totalPages": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "totalItems",
+          "totalPages"
+        ]
+      }
+  - contentType: application/json
+    description: Product catalog item
+    id: mno345
+    name: Product
+    schema: |-
+      {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "title": "Product",
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "pattern": "^PROD-[0-9]{6}$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "price": {
+            "type": "number",
+            "minimum": 0,
+            "multipleOf": 0.01
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "USD",
+              "EUR",
+              "GBP",
+              "JPY"
+            ]
+          },
+          "inStock": {
+            "type": "boolean"
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "productId",
+          "name",
+          "price",
+          "currency"
+        ]
+      }
+  - contentType: application/json
+    description: Order processing request
+    id: pqr678
+    name: OrderRequest
+    schema: |-
+      {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "title": "Order Request",
+        "type": "object",
+        "properties": {
+          "customerId": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "productId": {
+                  "type": "string"
+                },
+                "quantity": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "price": {
+                  "type": "number",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "productId",
+                "quantity",
+                "price"
+              ]
+            }
+          },
+          "shippingAddress": {
+            "type": "object",
+            "properties": {
+              "street": {
+                "type": "string"
+              },
+              "city": {
+                "type": "string"
+              },
+              "state": {
+                "type": "string"
+              },
+              "zipCode": {
+                "type": "string",
+                "pattern": "^[0-9]{5}(-[0-9]{4})?$"
+              },
+              "country": {
+                "type": "string",
+                "minLength": 2,
+                "maxLength": 2
+              }
+            },
+            "required": [
+              "street",
+              "city",
+              "zipCode",
+              "country"
+            ]
+          },
+          "paymentMethod": {
+            "type": "string",
+            "enum": [
+              "credit_card",
+              "debit_card",
+              "paypal",
+              "bank_transfer"
+            ]
+          }
+        },
+        "required": [
+          "customerId",
+          "items",
+          "shippingAddress",
+          "paymentMethod"
+        ]
+      }
+  - contentType: application/json
+    description: GitHub repository content file
+    id: stu901
+    name: GitHubFileContent
+    schema: |-
+      {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "title": "GitHub File Content",
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "file"
+            ]
+          },
+          "encoding": {
+            "type": "string",
+            "enum": [
+              "base64",
+              "none"
+            ]
+          },
+          "size": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "sha": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "git_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "html_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "download_url": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri"
+          }
+        },
+        "required": [
+          "type",
+          "encoding",
+          "size",
+          "name",
+          "path",
+          "content",
+          "sha",
+          "url"
+        ]
+      }
+position: eyJsYXN0RXZhbHVhdGVkS2V5Ijp7ImlkIjoic3R1OTAxIn19

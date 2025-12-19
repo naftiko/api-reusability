@@ -1,0 +1,324 @@
+openapi: 3.1.0
+info:
+  title: Notion OAuth API
+  description: |
+    OAuth 2.0 authorization flow for Notion public integrations.
+    
+    **OAuth Flow:**
+    1. Redirect users to Notion authorization endpoint
+    2. User approves integration and selects pages to share
+    3. Notion redirects back with authorization code
+    4. Exchange code for access token
+    5. Use access token to make API requests
+    
+    **Token Characteristics:**
+    - Access tokens do not expire
+    - Tokens are workspace-specific
+    - Users typically only authorize once per integration
+    
+    **Requirements:**
+    - Public integration registered in Notion
+    - Client ID and Client Secret from integration settings
+    - Redirect URI configured in integration settings
+  version: 2025-09-03
+  contact:
+    name: Notion Support
+    url: https://developers.notion.com
+
+servers:
+  - url: https://api.notion.com/v1
+    description: Notion API v1
+
+tags:
+  - name: OAuth Authorization
+    description: OAuth 2.0 authorization flow endpoints
+
+paths:
+  /oauth/authorize:
+    get:
+      summary: Authorize integration
+      description: |
+        Redirects users to Notion's authorization page where they can approve the integration 
+        and select which workspace pages to share.
+        
+        **Flow:**
+        - User clicks authorization link in your app
+        - User is redirected to Notion authorization page
+        - User selects workspace and pages to share
+        - Notion redirects to your redirect_uri with authorization code
+        
+        **Important:**
+        The authorization code expires after 10 minutes.
+      operationId: authorizeIntegration
+      tags:
+        - OAuth Authorization
+      servers:
+        - url: https://api.notion.com/v1
+      parameters:
+        - name: client_id
+          in: query
+          required: true
+          description: The OAuth client ID from your integration settings
+          schema:
+            type: string
+          example: a7e8c567-12ab-34cd-56ef-78gh90ij1234
+        
+        - name: redirect_uri
+          in: query
+          required: true
+          description: |
+            The redirect URI registered in your integration settings. Must be URL-encoded.
+            Cannot contain URL fragments, relative paths, wildcards, or be a public IP address.
+          schema:
+            type: string
+            format: uri
+          example: https://example.com/auth/notion/callback
+        
+        - name: response_type
+          in: query
+          required: true
+          description: OAuth response type (must be "code")
+          schema:
+            type: string
+            enum:
+              - code
+          example: code
+        
+        - name: owner
+          in: query
+          required: false
+          description: |
+            Type of owner for the integration. Use "user" for user-owned integrations.
+          schema:
+            type: string
+            enum:
+              - user
+          example: user
+        
+        - name: state
+          in: query
+          required: false
+          description: |
+            An opaque value used to maintain state between request and callback.
+            Recommended for CSRF protection.
+          schema:
+            type: string
+          example: random_state_string_abc123
+
+      responses:
+        '302':
+          description: Redirect to authorization callback with code parameter
+          headers:
+            Location:
+              schema:
+                type: string
+                format: uri
+              description: Redirect URI with authorization code and state
+              example: https://example.com/auth/notion/callback?code=abc123def456&state=random_state_string_abc123
+
+  /oauth/token:
+    post:
+      summary: Exchange code for access token
+      description: |
+        Exchange the authorization code for an access token. This endpoint uses HTTP Basic 
+        Authentication with your client_id as the username and client_secret as the password.
+        
+        **Important:**
+        - The authorization code expires after 10 minutes
+        - Access tokens do not expire
+        - Store the access token securely for future API requests
+        - The response includes workspace_id, bot_id, and owner information
+        
+        **Authentication:**
+        Use HTTP Basic Authentication with base64-encoded client_id:client_secret
+      operationId: exchangeToken
+      tags:
+        - OAuth Authorization
+      servers:
+        - url: https://api.notion.com/v1
+      security:
+        - basic_auth: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                grant_type:
+                  type: string
+                  enum:
+                    - authorization_code
+                  description: OAuth grant type (must be "authorization_code")
+                code:
+                  type: string
+                  description: The authorization code received from the authorization callback
+                redirect_uri:
+                  type: string
+                  format: uri
+                  description: The same redirect URI used in the authorization request
+              required:
+                - grant_type
+                - code
+                - redirect_uri
+            example:
+              grant_type: authorization_code
+              code: abc123def456xyz789
+              redirect_uri: https://example.com/auth/notion/callback
+
+      responses:
+        '200':
+          description: Access token created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+              example:
+                access_token: secret_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6
+                token_type: bearer
+                bot_id: b1c2d3e4-5f6g-7h8i-9j0k-1l2m3n4o5p6q
+                workspace_name: My Workspace
+                workspace_icon: https://example.com/icon.png
+                workspace_id: w7x8y9z0-1a2b-3c4d-5e6f-7g8h9i0j1k2l
+                owner:
+                  type: workspace
+                  workspace: true
+                duplicated_template_id: null
+        
+        '400':
+          description: Bad Request - Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                invalid_grant:
+                  summary: Invalid or expired authorization code
+                  value:
+                    error: invalid_grant
+                    error_description: Authorization code is invalid or expired
+                
+                invalid_redirect_uri:
+                  summary: Redirect URI mismatch
+                  value:
+                    error: invalid_request
+                    error_description: redirect_uri does not match
+        
+        '401':
+          description: Unauthorized - Invalid client credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: invalid_client
+                error_description: Client authentication failed
+
+components:
+  securitySchemes:
+    basic_auth:
+      type: http
+      scheme: basic
+      description: |
+        HTTP Basic Authentication using client_id as username and client_secret as password.
+        
+        The credential should be base64-encoded as: `base64(client_id:client_secret)`
+        
+        Example header: `Authorization: Basic <base64-encoded-credentials>`
+
+  schemas:
+    TokenResponse:
+      type: object
+      description: OAuth token response containing access token and workspace information
+      properties:
+        access_token:
+          type: string
+          description: |
+            The OAuth access token to use for API requests. This token does not expire.
+            Starts with "secret_" prefix.
+          example: secret_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6
+        token_type:
+          type: string
+          enum:
+            - bearer
+          description: The type of token (always "bearer")
+          example: bearer
+        bot_id:
+          type: string
+          format: uuid
+          description: |
+            The unique identifier for the bot user created by this integration.
+            Use this as primary key when storing integration data.
+          example: b1c2d3e4-5f6g-7h8i-9j0k-1l2m3n4o5p6q
+        workspace_name:
+          type: string
+          description: The name of the workspace where the integration was authorized
+          example: My Workspace
+        workspace_icon:
+          type: string
+          format: uri
+          nullable: true
+          description: URL to the workspace icon image
+          example: https://example.com/workspace-icon.png
+        workspace_id:
+          type: string
+          format: uuid
+          description: |
+            The ID of the workspace where the integration was authorized.
+            Note: Not unique across tokens - users may authorize the same integration 
+            multiple times in the same workspace.
+          example: w7x8y9z0-1a2b-3c4d-5e6f-7g8h9i0j1k2l
+        owner:
+          type: object
+          description: |
+            Information about who can view and share the integration.
+            Currently all integrations can be viewed and shared by all workspace members.
+          properties:
+            type:
+              type: string
+              enum:
+                - workspace
+              description: The owner type
+            workspace:
+              type: boolean
+              description: Whether the integration is owned by the workspace
+              example: true
+          required:
+            - workspace
+        duplicated_template_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: |
+            If the authorization flow was initiated from a template duplication, 
+            this is the ID of the duplicated template page.
+          example: null
+      required:
+        - access_token
+        - token_type
+        - bot_id
+        - workspace_name
+        - workspace_id
+        - owner
+    
+    Error:
+      type: object
+      description: OAuth error response
+      properties:
+        error:
+          type: string
+          description: Error code
+          enum:
+            - invalid_request
+            - invalid_client
+            - invalid_grant
+            - unauthorized_client
+            - unsupported_grant_type
+            - invalid_scope
+          example: invalid_grant
+        error_description:
+          type: string
+          description: Human-readable error description
+          example: Authorization code is invalid or expired
+      required:
+        - error

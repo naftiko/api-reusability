@@ -1,0 +1,420 @@
+openapi: 3.1.0
+info:
+  title: API Reusability API
+  description: |
+    API for retrieving analytics about API paths and schemas, including usage statistics and reuse patterns.
+  version: 1.0.0
+  contact:
+    name: API Evangelist
+    url: https://apievangelist.com
+    email: info@apievangelist.com
+  license:
+    name: Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
+    identifier: CC-BY-NC-SA-4.0
+    url: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
+
+servers:
+  - url: https://api.example.com/v1
+    description: Production
+
+tags:
+  - name: Paths
+    description: Operations related to API path analysis
+  - name: Schemas
+    description: Operations related to API schema analysis
+
+paths:
+  /paths:
+    get:
+      operationId: getPaths
+      summary: Get All Paths
+      description: Returns a complete list of all API paths across all APIs in the catalog.
+      tags:
+        - Paths
+      security:
+        - apiKey: []
+      responses:
+        '200':
+          description: List of all paths
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PathsResponse'
+              example:
+                paths:
+                  - /apis
+                  - /apis/rebuild
+                  - /apis/{apiId}
+                  - /messages
+                  - /orders
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /paths/reuse:
+    get:
+      operationId: getPathReuse
+      summary: Get Path Reuse Statistics
+      description: Returns statistics about which paths are reused across multiple APIs.
+      tags:
+        - Paths
+      security:
+        - apiKey: []
+      responses:
+        '200':
+          description: Path reuse statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PathReuseResponse'
+              example:
+                reuse: []
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /paths/all:
+    get:
+      operationId: getAllPaths
+      summary: Get All Paths (Alternative Endpoint)
+      description: Alternative endpoint that returns all paths with additional metadata.
+      tags:
+        - Paths
+      security:
+        - apiKey: []
+      responses:
+        '200':
+          description: Complete paths list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PathsAllResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /schemas:
+    get:
+      operationId: getSchemas
+      summary: Get All Schemas
+      description: Returns a complete list of all schemas across all APIs in the catalog.
+      tags:
+        - Schemas
+      security:
+        - apiKey: []
+      responses:
+        '200':
+          description: List of all schemas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchemasResponse'
+              example:
+                schemas:
+                  - ApiResource
+                  - Empty
+                  - Error
+                  - Message
+                  - Product
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /schemas/reuse:
+    get:
+      operationId: getSchemaReuse
+      summary: Get Schema Reuse Statistics
+      description: Returns statistics about which schemas are reused across multiple APIs, including usage counts.
+      tags:
+        - Schemas
+      security:
+        - apiKey: []
+      responses:
+        '200':
+          description: Schema reuse statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchemaReuseResponse'
+              example:
+                reuse:
+                  - schema: WrapperResponseCollection
+                    count: 4
+                  - schema: Meta
+                    count: 4
+                  - schema: Problem
+                    count: 4
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /schemas/all:
+    get:
+      operationId: getAllSchemas
+      summary: Get All Schemas (Alternative Endpoint)
+      description: Alternative endpoint that returns all schemas with additional metadata.
+      tags:
+        - Schemas
+      security:
+        - apiKey: []
+      responses:
+        '200':
+          description: Complete schemas list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchemasAllResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /catalog:
+    get:
+      operationId: getCatalog
+      summary: Get Complete Catalog Analytics
+      description: Returns comprehensive analytics including all paths and schemas with their reuse statistics.
+      tags:
+        - Paths
+        - Schemas
+      security:
+        - apiKey: []
+      responses:
+        '200':
+          description: Complete catalog analytics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogResponse'
+              example:
+                paths:
+                  all:
+                    - /apis
+                    - /messages
+                  reuse: []
+                schemas:
+                  all:
+                    - ApiResource
+                    - Message
+                  reuse:
+                    - schema: Meta
+                      count: 4
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      name: X-API-Key
+      in: header
+
+  schemas:
+    PathsResponse:
+      type: object
+      description: Response containing a list of API paths
+      required:
+        - paths
+      properties:
+        paths:
+          type: array
+          description: Array of API path strings
+          items:
+            type: string
+            pattern: ^/.*$
+          example:
+            - /apis
+            - /apis/{apiId}
+            - /messages
+
+    PathReuseResponse:
+      type: object
+      description: Response containing path reuse statistics
+      required:
+        - reuse
+      properties:
+        reuse:
+          type: array
+          description: Array of path reuse statistics
+          items:
+            $ref: '#/components/schemas/PathReuseItem'
+
+    PathReuseItem:
+      type: object
+      description: Statistics for a reused path
+      required:
+        - path
+        - count
+      properties:
+        path:
+          type: string
+          description: The API path
+          pattern: ^/.*$
+        count:
+          type: integer
+          description: Number of times this path is used across APIs
+          minimum: 2
+
+    PathsAllResponse:
+      type: object
+      description: Complete paths response with metadata
+      required:
+        - all
+      properties:
+        all:
+          type: array
+          description: All paths in the catalog
+          items:
+            type: string
+            pattern: ^/.*$
+
+    SchemasResponse:
+      type: object
+      description: Response containing a list of schema names
+      required:
+        - schemas
+      properties:
+        schemas:
+          type: array
+          description: Array of schema name strings
+          items:
+            type: string
+            minLength: 1
+          example:
+            - ApiResource
+            - Message
+            - Product
+
+    SchemaReuseResponse:
+      type: object
+      description: Response containing schema reuse statistics
+      required:
+        - reuse
+      properties:
+        reuse:
+          type: array
+          description: Array of schema reuse statistics
+          items:
+            $ref: '#/components/schemas/SchemaReuseItem'
+
+    SchemaReuseItem:
+      type: object
+      description: Statistics for a reused schema
+      required:
+        - schema
+        - count
+      properties:
+        schema:
+          type: string
+          description: The schema name
+          minLength: 1
+        count:
+          type: integer
+          description: Number of times this schema is used across APIs
+          minimum: 1
+          example: 4
+
+    SchemasAllResponse:
+      type: object
+      description: Complete schemas response with metadata
+      required:
+        - all
+      properties:
+        all:
+          type: array
+          description: All schemas in the catalog
+          items:
+            type: string
+            minLength: 1
+
+    CatalogResponse:
+      type: object
+      description: Complete catalog analytics including paths and schemas
+      required:
+        - paths
+        - schemas
+      properties:
+        paths:
+          type: object
+          required:
+            - all
+            - reuse
+          properties:
+            all:
+              type: array
+              description: All API paths
+              items:
+                type: string
+                pattern: ^/.*$
+            reuse:
+              type: array
+              description: Path reuse statistics
+              items:
+                $ref: '#/components/schemas/PathReuseItem'
+        schemas:
+          type: object
+          required:
+            - all
+            - reuse
+          properties:
+            all:
+              type: array
+              description: All schema names
+              items:
+                type: string
+                minLength: 1
+            reuse:
+              type: array
+              description: Schema reuse statistics
+              items:
+                $ref: '#/components/schemas/SchemaReuseItem'
+
+    Error:
+      type: object
+      description: Standard error response
+      required:
+        - status
+        - message
+      properties:
+        status:
+          type: integer
+          description: HTTP status code
+          example: 400
+        message:
+          type: string
+          description: Error message
+          example: Invalid request parameters
+        detail:
+          type: string
+          description: Additional error details
+          example: The provided API ID does not exist
+
+  responses:
+    Unauthorized:
+      description: Unauthorized - Invalid or missing API key
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: 401
+            message: Unauthorized
+            detail: Invalid or missing API key
+
+    InternalServerError:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            status: 500
+            message: Internal Server Error
+            detail: An unexpected error occurred

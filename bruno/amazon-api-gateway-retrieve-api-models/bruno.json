@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "Amazon API Gateway - Retrieve API Models",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

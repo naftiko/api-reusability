@@ -1,0 +1,84 @@
+#	Ruleset name: API Commons - Rate Limits - All
+#	Ruleset version: 1.1
+
+rules:
+  id-negative:
+    description: Ensures there is a id property.
+    message: You MUST HAVE a id property.
+    given: $
+    severity: error
+    then:
+      field: id
+      function: truthy
+  id-positive:
+    description: Ensures there is a id property.
+    message: There is a id property.
+    given: $
+    severity: info
+    then:
+      field: id
+      function: falsy
+  name-negative:
+    description: Ensures there is a name property.
+    message: You MUST HAVE a name property.
+    given: $
+    severity: error
+    then:
+      field: name
+      function: truthy
+  name-positive:
+    description: Ensures there is a name property.
+    message: There is a name property.
+    given: $
+    severity: info
+    then:
+      field: name
+      function: falsy
+  description-negative:
+    description: Ensures there is a description property.
+    message: You MUST HAVE a description property.
+    given: $
+    severity: error
+    then:
+      field: description
+      function: truthy
+  description-positive:
+    description: Ensures there is a description property.
+    message: There is a description property.
+    given: $
+    severity: info
+    then:
+      field: description
+      function: falsy
+  entries-negative:
+    description: Ensures there is a entries property.
+    message: You MUST HAVE a entries property.
+    given: $
+    severity: error
+    then:
+      field: entries
+      function: truthy
+  entries-positive:
+    description: Ensures there is a entries property.
+    message: There is a entries property.
+    given: $
+    severity: info
+    then:
+      field: entries
+      function: falsy
+  elements-negative:
+    description: Ensures there is a elements property.
+    message: You MUST HAVE a elements property.
+    given: $
+    severity: error
+    then:
+      field: elements
+      function: truthy
+  elements-positive:
+    description: Ensures there is a elements property.
+    message: There is a elements property.
+    given: $
+    severity: info
+    then:
+      field: elements
+      function: falsy

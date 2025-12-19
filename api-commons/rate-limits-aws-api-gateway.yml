@@ -1,0 +1,577 @@
+---
+# AWS API Gateway Rate Limits
+
+# Account-level throttle quotas
+- name: Account Throttle Quota (Standard Regions)
+  type: throttle
+  limit: 10000
+  metric: requests
+  domains:
+    - api-gateway
+  timeframe: per-second
+  description: |
+    Throttle quota per account, per Region across HTTP APIs, REST APIs, WebSocket APIs, 
+    and WebSocket callback APIs with additional burst capacity of 5,000 requests using 
+    token bucket algorithm. This applies to standard AWS regions.
+  userMultiplied: false
+
+- name: Account Throttle Quota (Limited Regions)
+  type: throttle
+  limit: 2500
+  metric: requests
+  domains:
+    - api-gateway
+  timeframe: per-second
+  description: |
+    Throttle quota per account, per Region for Africa (Cape Town), Europe (Milan), 
+    Asia Pacific (Jakarta), Middle East (UAE), Asia Pacific (Hyderabad), Asia Pacific 
+    (Melbourne), Europe (Spain), Europe (Zurich), Israel (Tel Aviv), Canada West (Calgary), 
+    Asia Pacific (Malaysia), Asia Pacific (Thailand), and Mexico (Central). Includes burst 
+    capacity of 1,250 RPS.
+  userMultiplied: false
+
+- name: Account Burst Capacity (Standard Regions)
+  type: burst
+  limit: 5000
+  metric: requests
+  domains:
+    - api-gateway
+  timeframe: burst
+  description: |
+    Additional burst capacity provided by the token bucket algorithm for standard regions. 
+    The burst quota is determined by the API Gateway service team and cannot be controlled 
+    or changed by customers.
+  userMultiplied: false
+
+- name: Account Burst Capacity (Limited Regions)
+  type: burst
+  limit: 1250
+  metric: requests
+  domains:
+    - api-gateway
+  timeframe: burst
+  description: |
+    Additional burst capacity for limited regions including Africa (Cape Town), Europe (Milan), 
+    and others. Determined by API Gateway service team.
+  userMultiplied: false
+
+- name: Portal Throttle Without Access Control
+  type: throttle
+  limit: 250000
+  metric: requests
+  domains:
+    - api-gateway-portals
+  timeframe: per-second
+  description: |
+    Throttle quota without access control per account per Region for API Gateway Portals. 
+    This quota cannot be increased.
+  userMultiplied: false
+
+- name: Portal Throttle With Access Control
+  type: throttle
+  limit: 10000
+  metric: requests
+  domains:
+    - api-gateway-portals
+  timeframe: per-second
+  description: |
+    Throttle quota with access control per account per Region for API Gateway Portals. 
+    This quota cannot be increased.
+  userMultiplied: false
+
+# API Management Operations
+- name: CreateApiKey
+  type: operation
+  limit: 5
+  metric: requests
+  domains:
+    - api-gateway-management
+  timeframe: per-second
+  description: Rate limit for creating API keys via AWS CLI, console, or API Gateway REST API
+  userMultiplied: false
+
+- name: CreateDeployment
+  type: operation
+  limit: 0.2
+  metric: requests
+  domains:
+    - api-gateway-management
+  timeframe: per-second
+  description: Rate limit for creating deployments (1 request every 5 seconds per account)
+  userMultiplied: false
+
+- name: CreateDocumentationVersion
+  type: operation
+  limit: 0.05
+  metric: requests
+  domains:
+    - api-gateway-management
+  timeframe: per-second
+  description: Rate limit for creating documentation versions (1 request every 20 seconds per account)
+  userMultiplied: false
+
+- name: CreateDomainName
+  type: operation
+  limit: 0.0333
+  metric: requests
+  domains:
+    - api-gateway-management
+  timeframe: per-second
+  description: Rate limit for creating domain names (1 request every 30 seconds per account)
+  userMultiplied: false
+
+- name: CreateResource
+  type: operation
+  limit: 5
+  metric: requests
+  domains:
+    - api-gateway-management
+  timeframe: per-second
+  description: Rate limit for creating API resources
+  userMultiplied: false
+
+- name: CreateRestApi Regional or Private
+  type: operation
+  limit: 0.3333
+  metric: requests
+  domains:
+    - api-gateway-management
+  timeframe: per-second
+  description: Rate limit for creating Regional or private REST APIs (1 request every 3 seconds per account)
+  userMultiplied: false
+
+- name: CreateRestApi Edge-Optimized
+  type: operation
+  limit: 0.0333
+  metric: requests
+  domains:
+    - api-gateway-management
+  timeframe: per-second
+  description: Rate limit for creating edge-optimized REST APIs (1 request every 30 seconds per account)
+  userMultiplied: false
+
+- name: CreateVpcLink V2
+  type: operation
+  limit: 0.0667
+  metric: requests
+  domains:
+    - api-gateway-management
+  timeframe: per-second
+  description: Rate limit for creating VPC links V2 (1 request every 15 seconds per account)
+  userMultiplied: false
+
+- name: DeleteApiKey
+  type: operation
+  limit: 5
+  metric: requests
+  domains:
+    - api-gateway-management
+  timeframe: per-second
+  description: Rate limit for deleting API keys
+  userMultiplied: false
+
+- name: DeleteDomainName
+  type: operation
+  limit: 0.0333
+  metric: requests
+  domains:
+    - api-gateway-management
+  timeframe: per-second
+  description: Rate limit for deleting domain names (1 request every 30 seconds per account)
+  userMultiplied: false
+
+- name: DeleteResource
+  type: operation
+  limit: 5
+  metric: requests
+  domains:
+    - api-gateway-management
+  timeframe: per-second
+  description: Rate limit for deleting API resources
+  userMultiplied: false
+
+- name: DeleteRestApi
+  type: operation
+  limit: 0.0333
+  metric: requests
+  domains:
+    - api-gateway-management
+  timeframe: per-second
+  description: Rate limit for deleting REST APIs (1 request every 30 seconds per account)
+  userMultiplied: false
+
+- name: GetResources
+  type: operation
+  limit: 2.5
+  metric: requests
+  domains:
+    - api-gateway-management
+  timeframe: per-second
+  description: Rate limit for getting resources (5 requests every 2 seconds per account)
+  userMultiplied: false
+
+- name: DeleteVpcLink V2
+  type: operation
+  limit: 0.0333
+  metric: requests
+  domains:
+    - api-gateway-management
+  timeframe: per-second
+  description: Rate limit for deleting VPC links V2 (1 request every 30 seconds per account)
+  userMultiplied: false
+
+- name: ImportDocumentationParts
+  type: operation
+  limit: 0.0333
+  metric: requests
+  domains:
+    - api-gateway-management
+  timeframe: per-second
+  description: Rate limit for importing documentation parts (1 request every 30 seconds per account)
+  userMultiplied: false
+
+- name: ImportRestApi Regional or Private
+  type: operation
+  limit: 0.3333
+  metric: requests
+  domains:
+    - api-gateway-management
+  timeframe: per-second
+  description: Rate limit for importing Regional or private REST APIs (1 request every 3 seconds per account)
+  userMultiplied: false
+
+- name: ImportRestApi Edge-Optimized
+  type: operation
+  limit: 0.0333
+  metric: requests
+  domains:
+    - api-gateway-management
+  timeframe: per-second
+  description: Rate limit for importing edge-optimized REST APIs (1 request every 30 seconds per account)
+  userMultiplied: false
+
+- name: PutRestApi
+  type: operation
+  limit: 1
+  metric: requests
+  domains:
+    - api-gateway-management
+  timeframe: per-second
+  description: Rate limit for updating REST APIs (1 request per second per account)
+  userMultiplied: false
+
+- name: UpdateAccount
+  type: operation
+  limit: 0.05
+  metric: requests
+  domains:
+    - api-gateway-management
+  timeframe: per-second
+  description: Rate limit for updating account settings (1 request every 20 seconds per account)
+  userMultiplied: false
+
+- name: UpdateDomainName
+  type: operation
+  limit: 0.0333
+  metric: requests
+  domains:
+    - api-gateway-management
+  timeframe: per-second
+  description: Rate limit for updating domain names (1 request every 30 seconds per account)
+  userMultiplied: false
+
+- name: UpdateUsagePlan
+  type: operation
+  limit: 0.05
+  metric: requests
+  domains:
+    - api-gateway-management
+  timeframe: per-second
+  description: Rate limit for updating usage plans (1 request every 20 seconds per account)
+  userMultiplied: false
+
+# Portal Management Operations
+- name: Create Portal
+  type: operation
+  limit: 0.3333
+  metric: requests
+  domains:
+    - api-gateway-portals
+  timeframe: per-second
+  description: Rate limit for creating portals (1 request every 3 seconds)
+  userMultiplied: false
+
+- name: Update Portal
+  type: operation
+  limit: 0.0333
+  metric: requests
+  domains:
+    - api-gateway-portals
+  timeframe: per-second
+  description: Rate limit for updating portals (2 requests per minute)
+  userMultiplied: false
+
+- name: Get Portal
+  type: operation
+  limit: 10
+  metric: requests
+  domains:
+    - api-gateway-portals
+  timeframe: per-second
+  description: Rate limit for retrieving portal information
+  userMultiplied: false
+
+- name: List Portals
+  type: operation
+  limit: 10
+  metric: requests
+  domains:
+    - api-gateway-portals
+  timeframe: per-second
+  description: Rate limit for listing portals
+  userMultiplied: false
+
+- name: Publish Portal
+  type: operation
+  limit: 0.0333
+  metric: requests
+  domains:
+    - api-gateway-portals
+  timeframe: per-second
+  description: Rate limit for publishing portals (2 requests per minute)
+  userMultiplied: false
+
+- name: Delete Portal
+  type: operation
+  limit: 0.0333
+  metric: requests
+  domains:
+    - api-gateway-portals
+  timeframe: per-second
+  description: Rate limit for deleting portals (2 requests per minute)
+  userMultiplied: false
+
+- name: Preview Portal
+  type: operation
+  limit: 0.3333
+  metric: requests
+  domains:
+    - api-gateway-portals
+  timeframe: per-second
+  description: Rate limit for previewing portals (1 request every 3 seconds)
+  userMultiplied: false
+
+- name: Disable Portal
+  type: operation
+  limit: 0.0333
+  metric: requests
+  domains:
+    - api-gateway-portals
+  timeframe: per-second
+  description: Rate limit for disabling portals (2 requests per minute)
+  userMultiplied: false
+
+- name: Get Portal Product
+  type: operation
+  limit: 10
+  metric: requests
+  domains:
+    - api-gateway-portals
+  timeframe: per-second
+  description: Rate limit for retrieving portal product information
+  userMultiplied: false
+
+- name: List Portal Product
+  type: operation
+  limit: 5
+  metric: requests
+  domains:
+    - api-gateway-portals
+  timeframe: per-second
+  description: Rate limit for listing portal products
+  userMultiplied: false
+
+- name: Create Portal Product
+  type: operation
+  limit: 2
+  metric: requests
+  domains:
+    - api-gateway-portals
+  timeframe: per-second
+  description: Rate limit for creating portal products
+  userMultiplied: false
+
+- name: Update Portal Product
+  type: operation
+  limit: 0.5
+  metric: requests
+  domains:
+    - api-gateway-portals
+  timeframe: per-second
+  description: Rate limit for updating portal products
+  userMultiplied: false
+
+- name: Delete Portal Product
+  type: operation
+  limit: 1
+  metric: requests
+  domains:
+    - api-gateway-portals
+  timeframe: per-second
+  description: Rate limit for deleting portal products
+  userMultiplied: false
+
+- name: Put Portal Product Sharing Policy
+  type: operation
+  limit: 0.3333
+  metric: requests
+  domains:
+    - api-gateway-portals
+  timeframe: per-second
+  description: Rate limit for setting portal product sharing policies (1 request every 3 seconds)
+  userMultiplied: false
+
+- name: Get Portal Product Sharing Policy
+  type: operation
+  limit: 10
+  metric: requests
+  domains:
+    - api-gateway-portals
+  timeframe: per-second
+  description: Rate limit for retrieving portal product sharing policies
+  userMultiplied: false
+
+- name: Delete Portal Product Sharing Policy
+  type: operation
+  limit: 0.3333
+  metric: requests
+  domains:
+    - api-gateway-portals
+  timeframe: per-second
+  description: Rate limit for deleting portal product sharing policies (1 request every 3 seconds)
+  userMultiplied: false
+
+- name: Create Product Rest Endpoint Page
+  type: operation
+  limit: 0.3333
+  metric: requests
+  domains:
+    - api-gateway-portals
+  timeframe: per-second
+  description: Rate limit for creating product REST endpoint pages (1 request every 3 seconds)
+  userMultiplied: false
+
+- name: Get Product Rest Endpoint Page
+  type: operation
+  limit: 10
+  metric: requests
+  domains:
+    - api-gateway-portals
+  timeframe: per-second
+  description: Rate limit for retrieving product REST endpoint pages
+  userMultiplied: false
+
+- name: Update Product Rest Endpoint Page
+  type: operation
+  limit: 0.3333
+  metric: requests
+  domains:
+    - api-gateway-portals
+  timeframe: per-second
+  description: Rate limit for updating product REST endpoint pages (1 request every 3 seconds)
+  userMultiplied: false
+
+- name: Delete Product Rest Endpoint Page
+  type: operation
+  limit: 0.3333
+  metric: requests
+  domains:
+    - api-gateway-portals
+  timeframe: per-second
+  description: Rate limit for deleting product REST endpoint pages (1 request every 3 seconds)
+  userMultiplied: false
+
+- name: List Product Rest Endpoint Pages
+  type: operation
+  limit: 10
+  metric: requests
+  domains:
+    - api-gateway-portals
+  timeframe: per-second
+  description: Rate limit for listing product REST endpoint pages
+  userMultiplied: false
+
+- name: Create Product Page
+  type: operation
+  limit: 0.3333
+  metric: requests
+  domains:
+    - api-gateway-portals
+  timeframe: per-second
+  description: Rate limit for creating product pages (1 request every 3 seconds)
+  userMultiplied: false
+
+- name: Get Product Page
+  type: operation
+  limit: 10
+  metric: requests
+  domains:
+    - api-gateway-portals
+  timeframe: per-second
+  description: Rate limit for retrieving product pages
+  userMultiplied: false
+
+- name: Update Product Page
+  type: operation
+  limit: 0.3333
+  metric: requests
+  domains:
+    - api-gateway-portals
+  timeframe: per-second
+  description: Rate limit for updating product pages (1 request every 3 seconds)
+  userMultiplied: false
+
+- name: Delete Product Page
+  type: operation
+  limit: 0.3333
+  metric: requests
+  domains:
+    - api-gateway-portals
+  timeframe: per-second
+  description: Rate limit for deleting product pages (1 request every 3 seconds)
+  userMultiplied: false
+
+- name: List Product Pages
+  type: operation
+  limit: 10
+  metric: requests
+  domains:
+    - api-gateway-portals
+  timeframe: per-second
+  description: Rate limit for listing product pages
+  userMultiplied: false
+
+# Overall Operations
+- name: Total Operations
+  type: operation
+  limit: 10
+  metric: requests
+  domains:
+    - api-gateway-management
+    - api-gateway-portals
+  timeframe: per-second
+  description: |
+    Total operations rate limit with burst quota of 40 requests per second. 
+    Applies to all API Gateway management operations across the account.
+  userMultiplied: false
+
+- name: Total Operations Burst
+  type: burst
+  limit: 40
+  metric: requests
+  domains:
+    - api-gateway-management
+    - api-gateway-portals
+  timeframe: burst
+  description: Burst capacity for total operations across all API Gateway management operations
+  userMultiplied: false

@@ -1,0 +1,70 @@
+paths:
+
+  all:
+
+    - /apis
+    - /apis/rebuild
+    - /apis/{apiId}
+    - /apis/{apiId}/commit
+    - /apis/{apiId}/properties
+    - /apis/{apiId}/properties/openapi
+    - /apis/{apiId}/properties/openapi/review
+    - /messages
+    - /messages/{messageId}
+    - /messages/{messageId}/send
+    - /orders
+    - /orders/{orderId}
+    - /orders/{orderId}/cancel
+    - /organizations
+    - /organizations/{organizationId}
+    - /organizations/{organizationId}/}
+    - /persons
+    - /persons/{personId}
+    - /persons/{personId}/cancel
+    - /products
+    - /products/{productId}
+    - /products/{productId}/cancel
+    - /resources
+
+  reuse: []
+
+schema:
+
+  all:
+
+    - ApiResource
+    - Empty
+    - Error
+    - GitHubFileContent
+    - LinksPagination
+    - LinksSelf
+    - Message
+    - Meta
+    - OrderRequest
+    - Organization
+    - PaginatedList
+    - Person
+    - Policies
+    - Problem
+    - Product
+    - Response
+    - User
+    - WrapperResponseCollection
+    - WrapperResponseObject
+
+  reuse:
+
+    - schema: WrapperResponseCollection
+      count: 4
+    - schema: WrapperResponseObject
+      count: 4
+    - schema: LinksSelf
+      count: 4
+    - schema: Meta
+      count: 4
+    - schema: LinksPagination
+      count: 4
+    - schema: Problem
+      count: 4
+    - schema: Product
+      count: 2

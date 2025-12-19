@@ -1,0 +1,538 @@
+- id: bfgu4r
+  parentId: m0m4e5
+  path: "/apis/{apiId}/properties"
+  pathPart: properties
+  resourceMethods:
+    OPTIONS:
+      httpMethod: OPTIONS
+      authorizationType: NONE
+      apiKeyRequired: false
+      methodIntegration:
+        type: MOCK
+        requestTemplates:
+          application/json: '{"statusCode": 200}'
+        passthroughBehavior: WHEN_NO_MATCH
+        integrationResponses:
+          '200':
+            statusCode: '200'
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS,PUT'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+            responseTemplates:
+              application/json: ''
+      methodResponses:
+        '200':
+          statusCode: '200'
+          responseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+          responseModels: {}
+- id: m0m4e5
+  parentId: n12swn
+  path: "/apis/{apiId}"
+  pathPart: "{apiId}"
+  resourceMethods:
+    GET:
+      httpMethod: GET
+      authorizationType: AWS_IAM
+      apiKeyRequired: false
+      requestParameters:
+        method.request.path.apiId: true
+      methodIntegration:
+        type: AWS_PROXY
+        httpMethod: POST
+        uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:123456789012:function:GetApiFunction/invocations
+        credentials: arn:aws:iam::123456789012:role/ApiGatewayLambdaExecRole
+        passthroughBehavior: WHEN_NO_MATCH
+        contentHandling: CONVERT_TO_TEXT
+        timeoutInMillis: 29000
+        cacheNamespace: m0m4e5
+        cacheKeyParameters: []
+        integrationResponses:
+          '200':
+            statusCode: '200'
+            responseTemplates:
+              application/json: ''
+      methodResponses:
+        '200':
+          statusCode: '200'
+          responseModels:
+            application/json: ApiModel
+        '404':
+          statusCode: '404'
+          responseModels:
+            application/json: Error
+      operationName: GetApi
+    OPTIONS:
+      httpMethod: OPTIONS
+      authorizationType: NONE
+      apiKeyRequired: false
+      methodIntegration:
+        type: MOCK
+        requestTemplates:
+          application/json: '{"statusCode": 200}'
+        passthroughBehavior: WHEN_NO_MATCH
+        integrationResponses:
+          '200':
+            statusCode: '200'
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+              method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS,PUT'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+      methodResponses:
+        '200':
+          statusCode: '200'
+          responseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+    PUT:
+      httpMethod: PUT
+      authorizationType: AWS_IAM
+      apiKeyRequired: false
+      requestParameters:
+        method.request.path.apiId: true
+      requestModels:
+        application/json: UpdateApiRequest
+      requestValidatorId: validator123
+      methodIntegration:
+        type: AWS
+        httpMethod: POST
+        uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:123456789012:function:UpdateApiFunction/invocations
+        credentials: arn:aws:iam::123456789012:role/ApiGatewayLambdaExecRole
+        requestTemplates:
+          application/json: |-
+            {
+              "apiId": "$input.params('apiId')",
+              "body": $input.json('$')
+            }
+        passthroughBehavior: NEVER
+        contentHandling: CONVERT_TO_TEXT
+        timeoutInMillis: 29000
+        integrationResponses:
+          '200':
+            statusCode: '200'
+            responseTemplates:
+              application/json: "$input.json('$')"
+          '400':
+            statusCode: '400'
+            selectionPattern: .*"statusCode":400.*
+            responseTemplates:
+              application/json: '{"message": "$input.path(''$.errorMessage'')"}'
+      methodResponses:
+        '200':
+          statusCode: '200'
+          responseModels:
+            application/json: ApiModel
+        '400':
+          statusCode: '400'
+          responseModels:
+            application/json: Error
+      operationName: UpdateApi
+- id: muwtab
+  parentId: bfgu4r
+  path: "/apis/{apiId}/properties/openapi"
+  pathPart: openapi
+  resourceMethods:
+    GET:
+      httpMethod: GET
+      authorizationType: AWS_IAM
+      apiKeyRequired: false
+      requestParameters:
+        method.request.path.apiId: true
+        method.request.querystring.format: false
+      methodIntegration:
+        type: AWS_PROXY
+        httpMethod: POST
+        uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:123456789012:function:GetOpenApiSpec/invocations
+        credentials: arn:aws:iam::123456789012:role/ApiGatewayLambdaExecRole
+        passthroughBehavior: WHEN_NO_MATCH
+        timeoutInMillis: 29000
+        integrationResponses:
+          '200':
+            statusCode: '200'
+      methodResponses:
+        '200':
+          statusCode: '200'
+          responseModels:
+            application/json: Empty
+      operationName: GetOpenApiSpec
+    OPTIONS:
+      httpMethod: OPTIONS
+      authorizationType: NONE
+      apiKeyRequired: false
+      methodIntegration:
+        type: MOCK
+        requestTemplates:
+          application/json: '{"statusCode": 200}'
+        integrationResponses:
+          '200':
+            statusCode: '200'
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization'"
+              method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS,PUT'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+      methodResponses:
+        '200':
+          statusCode: '200'
+          responseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+    PUT:
+      httpMethod: PUT
+      authorizationType: AWS_IAM
+      apiKeyRequired: false
+      requestParameters:
+        method.request.path.apiId: true
+      requestModels:
+        application/json: OpenApiSpecRequest
+      methodIntegration:
+        type: AWS
+        httpMethod: POST
+        uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:123456789012:function:UpdateOpenApiSpec/invocations
+        credentials: arn:aws:iam::123456789012:role/ApiGatewayLambdaExecRole
+        requestTemplates:
+          application/json: |-
+            {
+              "apiId": "$input.params('apiId')",
+              "spec": $input.json('$')
+            }
+        passthroughBehavior: NEVER
+        timeoutInMillis: 29000
+        integrationResponses:
+          '200':
+            statusCode: '200'
+      methodResponses:
+        '200':
+          statusCode: '200'
+          responseModels:
+            application/json: Empty
+      operationName: UpdateOpenApiSpec
+- id: myztjr
+  parentId: omm4zs7mge
+  path: "/resources"
+  pathPart: resources
+  resourceMethods:
+    OPTIONS:
+      httpMethod: OPTIONS
+      authorizationType: NONE
+      apiKeyRequired: false
+      methodIntegration:
+        type: MOCK
+        requestTemplates:
+          application/json: '{"statusCode": 200}'
+        integrationResponses:
+          '200':
+            statusCode: '200'
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'*'"
+              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,PUT'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+      methodResponses:
+        '200':
+          statusCode: '200'
+          responseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+    PUT:
+      httpMethod: PUT
+      authorizationType: COGNITO_USER_POOLS
+      authorizerId: abc123
+      authorizationScopes:
+      - admin
+      - write
+      apiKeyRequired: true
+      requestModels:
+        application/json: ResourceModel
+      methodIntegration:
+        type: HTTP
+        httpMethod: PUT
+        uri: https://api.example.com/resources
+        connectionType: INTERNET
+        requestParameters:
+          integration.request.header.X-Api-Key: "'secret-key'"
+          integration.request.header.Content-Type: "'application/json'"
+        passthroughBehavior: WHEN_NO_TEMPLATES
+        contentHandling: CONVERT_TO_TEXT
+        timeoutInMillis: 10000
+        tlsConfig:
+          insecureSkipVerification: false
+        integrationResponses:
+          '200':
+            statusCode: '200'
+            responseTemplates:
+              application/json: "$input.json('$')"
+          4\d{2}:
+            statusCode: '400'
+            selectionPattern: 4\d{2}
+            responseTemplates:
+              application/json: '{"error": "$input.path(''$.message'')"}'
+      methodResponses:
+        '200':
+          statusCode: '200'
+          responseModels:
+            application/json: ResourceModel
+        '400':
+          statusCode: '400'
+          responseModels:
+            application/json: Error
+      operationName: CreateResource
+- id: n12swn
+  parentId: omm4zs7mge
+  path: "/apis"
+  pathPart: apis
+  resourceMethods:
+    GET:
+      httpMethod: GET
+      authorizationType: AWS_IAM
+      apiKeyRequired: false
+      requestParameters:
+        method.request.querystring.limit: false
+        method.request.querystring.nextToken: false
+      methodIntegration:
+        type: AWS_PROXY
+        httpMethod: POST
+        uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:123456789012:function:ListApis/invocations
+        credentials: arn:aws:iam::123456789012:role/ApiGatewayLambdaExecRole
+        passthroughBehavior: WHEN_NO_MATCH
+        timeoutInMillis: 29000
+        cacheNamespace: n12swn
+        cacheKeyParameters:
+        - method.request.querystring.limit
+        integrationResponses:
+          '200':
+            statusCode: '200'
+      methodResponses:
+        '200':
+          statusCode: '200'
+          responseModels:
+            application/json: ApiList
+      operationName: ListApis
+    OPTIONS:
+      httpMethod: OPTIONS
+      authorizationType: NONE
+      apiKeyRequired: false
+      methodIntegration:
+        type: MOCK
+        requestTemplates:
+          application/json: '{"statusCode": 200}'
+        integrationResponses:
+          '200':
+            statusCode: '200'
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'*'"
+              method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS,POST'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+      methodResponses:
+        '200':
+          statusCode: '200'
+          responseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+    POST:
+      httpMethod: POST
+      authorizationType: AWS_IAM
+      apiKeyRequired: false
+      requestModels:
+        application/json: CreateApiRequest
+      requestValidatorId: validator456
+      methodIntegration:
+        type: AWS
+        httpMethod: POST
+        uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:123456789012:function:CreateApi/invocations
+        credentials: arn:aws:iam::123456789012:role/ApiGatewayLambdaExecRole
+        requestTemplates:
+          application/json: "$input.json('$')"
+        passthroughBehavior: NEVER
+        timeoutInMillis: 29000
+        integrationResponses:
+          '200':
+            statusCode: '201'
+            responseTemplates:
+              application/json: "$input.json('$')"
+      methodResponses:
+        '201':
+          statusCode: '201'
+          responseModels:
+            application/json: ApiModel
+          responseParameters:
+            method.response.header.Location: true
+        '400':
+          statusCode: '400'
+          responseModels:
+            application/json: Error
+      operationName: CreateApi
+- id: omm4zs7mge
+  path: "/"
+- id: t31lsx
+  parentId: muwtab
+  path: "/apis/{apiId}/properties/openapi/review"
+  pathPart: review
+  resourceMethods:
+    OPTIONS:
+      httpMethod: OPTIONS
+      authorizationType: NONE
+      apiKeyRequired: false
+      methodIntegration:
+        type: MOCK
+        requestTemplates:
+          application/json: '{"statusCode": 200}'
+        integrationResponses:
+          '200':
+            statusCode: '200'
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'*'"
+              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,PUT'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+      methodResponses:
+        '200':
+          statusCode: '200'
+          responseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+    PUT:
+      httpMethod: PUT
+      authorizationType: AWS_IAM
+      apiKeyRequired: false
+      requestParameters:
+        method.request.path.apiId: true
+      requestModels:
+        application/json: ReviewRequest
+      methodIntegration:
+        type: AWS_PROXY
+        httpMethod: POST
+        uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:123456789012:function:ReviewOpenApi/invocations
+        credentials: arn:aws:iam::123456789012:role/ApiGatewayLambdaExecRole
+        passthroughBehavior: WHEN_NO_MATCH
+        timeoutInMillis: 29000
+        integrationResponses:
+          '200':
+            statusCode: '200'
+      methodResponses:
+        '200':
+          statusCode: '200'
+          responseModels:
+            application/json: ReviewResponse
+      operationName: ReviewOpenApiSpec
+- id: w8et2b
+  parentId: m0m4e5
+  path: "/apis/{apiId}/commit"
+  pathPart: commit
+  resourceMethods:
+    OPTIONS:
+      httpMethod: OPTIONS
+      authorizationType: NONE
+      apiKeyRequired: false
+      methodIntegration:
+        type: MOCK
+        requestTemplates:
+          application/json: '{"statusCode": 200}'
+        integrationResponses:
+          '200':
+            statusCode: '200'
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'*'"
+              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,PUT'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+      methodResponses:
+        '200':
+          statusCode: '200'
+          responseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+    PUT:
+      httpMethod: PUT
+      authorizationType: CUSTOM
+      authorizerId: custom-auth-xyz
+      apiKeyRequired: false
+      requestParameters:
+        method.request.path.apiId: true
+        method.request.header.Authorization: true
+      requestModels:
+        application/json: CommitRequest
+      methodIntegration:
+        type: HTTP_PROXY
+        httpMethod: PUT
+        uri: https://version-control.example.com/apis/{apiId}/commit
+        connectionType: VPC_LINK
+        connectionId: vpclink-abc123
+        requestParameters:
+          integration.request.path.apiId: method.request.path.apiId
+          integration.request.header.X-Custom-Header: "'custom-value'"
+        passthroughBehavior: WHEN_NO_MATCH
+        timeoutInMillis: 15000
+        tlsConfig:
+          insecureSkipVerification: false
+        integrationResponses:
+          '200':
+            statusCode: '200'
+      methodResponses:
+        '200':
+          statusCode: '200'
+          responseModels:
+            application/json: CommitResponse
+      operationName: CommitApiChanges
+- id: zcmwxm
+  parentId: n12swn
+  path: "/apis/rebuild"
+  pathPart: rebuild
+  resourceMethods:
+    GET:
+      httpMethod: GET
+      authorizationType: AWS_IAM
+      apiKeyRequired: false
+      requestParameters:
+        method.request.querystring.apiId: true
+      methodIntegration:
+        type: AWS
+        httpMethod: POST
+        uri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:123456789012:function:RebuildApi/invocations
+        credentials: arn:aws:iam::123456789012:role/ApiGatewayLambdaExecRole
+        requestTemplates:
+          application/json: |-
+            {
+              "apiId": "$input.params('apiId')"
+            }
+        passthroughBehavior: NEVER
+        timeoutInMillis: 29000
+        integrationResponses:
+          '200':
+            statusCode: '200'
+            responseTemplates:
+              application/json: "$input.json('$')"
+      methodResponses:
+        '200':
+          statusCode: '200'
+          responseModels:
+            application/json: RebuildResponse
+      operationName: RebuildApi
+    OPTIONS:
+      httpMethod: OPTIONS
+      authorizationType: NONE
+      apiKeyRequired: false
+      methodIntegration:
+        type: MOCK
+        requestTemplates:
+          application/json: '{"statusCode": 200}'
+        integrationResponses:
+          '200':
+            statusCode: '200'
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'*'"
+              method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+      methodResponses:
+        '200':
+          statusCode: '200'
+          responseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+position: eyJsYXN0RXZhbHVhdGVkS2V5Ijp7ImlkIjoiemNtd3htIn19

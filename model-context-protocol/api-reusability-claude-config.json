@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "api-catalog-analytics": {
+      "command": "node",
+      "args": [
+        "/absolute/path/to/api-catalog-mcp-server.js"
+      ],
+      "env": {},
+      "disabled": false
+    }
+  }
+}

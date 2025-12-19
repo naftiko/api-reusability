@@ -1,0 +1,29 @@
+
+name: API Reusability
+description: |- # Description provides a summary, plus what teams are needing.
+
+  This use case is concerned with encouraging the discoverability and reuse of existing APIs, leveraging existing API infrastructure to quantify what API, schema, and tooling reuse looks like, and incentivizing reuse of APIs and schema across the software development lifecycle—reducing API sprawl and hardening the APIs that already exist.
+  Teams need to be able to easily use existing API paths and operations as part of new integrations and automation, ensuring that paths, operations, and schema are available within IDE and copilot tooling—meeting developers where they already work. API reusability enables developers while also informing leadership regarding what API reuse looks like and where opportunities to refine exist.
+
+benefits: # Benefits used in docks, decks, and diagrams
+
+  - Unlock access to legacy data
+  - Right-size & unify APIs
+  - Foundation for AI initiatives
+
+pain: # Used to align pain with Signals targets
+
+  - title: Build on existing internal APIs
+  - title: Reuse 3rd-party APIs already used
+  - title: Need to leverage existing OpenAPIs     
+  - title: We do not understand what API reuse is 
+  - title: We aren't able to communicate API reuse        
+  - title: Need to incentivize reuse within IDEs and copilots
+
+gains: # Used to align gains with Signals targets
+
+  - title: Leverage existing internal API catalog
+  - title: Establish API catalog for 3rd-party APIs
+  - title: Extend existing OpenAPI for MCP delivery
+  - title: We are able to communicate reuse to leadership
+  - title: We are able to meet developers where they work

@@ -1,0 +1,243 @@
+# This capability focuses on pulling the API catalog for the domain that will be evaluated for reuse.
+# This capability provides an option for pulling API paths and schema from AWS API Gateway
+# This capability provides an option for pulling OpenAPIs from a GitHub repository
+
+info:
+
+  name: API Reusability - Catalog
+  description: This is an capability for pulling the API catalog to be used to quantify reusability for a specific domain.
+
+  icon: https://example.com/icon.jpg
+
+  tags:
+
+    - APIs
+    - Catalogs
+    - Discovery
+    - Gateway
+    - OpenAPI
+
+  jsonLd: >
+
+    {
+      "@context": "https://schema.org",
+      "@type": "WebAPI"
+    }    
+
+  pinned: true
+  featured: true
+
+ports:
+
+  source:
+
+    - adapter: HTTP API
+      aid: aws-api-gateway
+      title: Amazon API Gateway Resources
+      description: Pulls API resources from Amazon API Gateway.
+      openApi:
+
+        - $ref: 'openapi/api-reusability-amazon-api-gateway-retrieve-api-resources.yml'  
+
+      brunoCollection:
+
+        - $ref: '/bruno/amazon-api-gateway-retrieve-api-models/bruno.json'   
+
+      brunoEnvironment:
+
+        - $ref: '/bruno/amazon-api-gateway-retrieve-api-models/amazon-api-gateway.bru'           
+
+    - adapter: HTTP API
+      aid: aws-api-gateway
+      title: Amazon API Gateway Schema
+      description: Pulls API schema from Amazon API Gateway.
+      openApi:
+
+        - $ref: 'openapi/api-reusability-amazon-api-gateway-retrieve-api-schema.yml'  
+
+      brunoCollection:
+
+        - $ref: '/bruno/amazon-api-gateway-retrieve-api-resources/bruno.json'    
+
+      brunoEnvironment:
+
+        - $ref: '/bruno/amazon-api-gateway-retrieve-api-resources/amazon-api-gateway.bru'          
+
+    - adapter: HTTP API
+      aid: github
+      title: GitHub Repositories OpenAPI Content
+      description: Pulls OpenAPI artifacts from repository using GitHub API.
+      openApi:
+
+        - $ref: 'openapi/api-reusability-github-repository-openapi-contents.yml'  
+
+      brunoCollection:
+
+        - $ref: '/bruno/github-retrieve-repository-openapi-content/bruno.json'   
+
+      brunoEnvironment:
+
+        - $ref: '/bruno/github-retrieve-repository-openapi-content/github.bru'                                              
+
+useCase:
+
+  - $ref: 'use-case/api-reusability.yml' 
+
+stakeholders:
+
+  - FN: Kin Lane
+    ROLE: Chief Community Officer (CCO)
+    EMAIL: kinlane@naftiko.io
+    SOCIALPROFILE: https://www.linkedin.com/in/kinlane/
+
+events:
+
+  - specversion: '1.0'
+    type: com.amazon-api-gateway.catalog.pulled
+    source: https://github.com/cloudevents/spec
+    datacontenttype: application/json
+    dataschema: https://github.com/cloudevents/spec/schemas/pr.json
+
+  - specversion: '1.0'
+    type: com.github.catalog.pulled
+    source: https://github.com/cloudevents/spec
+    datacontenttype: application/json
+    dataschema: https://github.com/cloudevents/spec/schemas/pr.json
+
+metrics:
+
+  weavingScore: 100
+  maturityScore: 25
+  rating: 8
+  numberOfDownloads: 100
+  forks: 25
+  watches: 25
+  likes: 25
+
+change:
+
+  state: New
+  
+  schemaVersion: 0.1.0
+  capabilityVersion: 0.1.0
+
+  updated: 2025-12-18T00:00:00Z
+  created: 2025-12-18T00:00:00Z
+
+source:
+
+  httpUrl: https://github.com/naftiko-capabilities/api-reusability
+  sshUrl: git@github.com:-capabilities/api-reusability.git
+  dockertHub: https://hub.docker.com/u/capability
+
+support:
+
+  issues: https://github.com/naftiko-capabilities/api-reusability/issues
+  discussions: https://github.com/naftiko-capabilities/api-reusability/discussions
+  slack: https://example.slack.com/archives/C09EAC4RXNW
+
+license:
+
+  data:
+
+    type: https://creativecommons.org/licenses/by/4.0/
+    attribution: CC BY
+    instance: http://example.com/location-of-license
+
+  code:
+
+    type: https://opensource.org/license/apache-2-0
+    attribution: Apache 2.0
+    instance: http://example.com/location-of-license
+
+  api:
+
+    type: https://creativecommons.org/licenses/by/4.0/
+    attribution: CC BY
+    instance: http://example.com/location-of-license 
+
+standards:
+
+  - name: Naftiko Capabilities
+    description: This uses a exploratory schema to help inform and shape capabilities.
+    docUrl: https://psychic-bassoon-z2vjvn4.pages.github.io/docs/capabilities/
+
+  - name: OpenAPI
+    description: This uses OpenAPI to define access to all HTTP APIs.
+    docUrl: https://psychic-bassoon-z2vjvn4.pages.github.io/docs/standards/openapi/
+
+  - name: Arazzo
+    description: This uses Arazzo to define workflows used to support this capability.
+    docUrl: https://psychic-bassoon-z2vjvn4.pages.github.io/docs/standards/arazzo/
+
+  - name: JSON Schema
+    description: This uses JSON Schema to define and validate all entities used.
+    docUrl: https://psychic-bassoon-z2vjvn4.pages.github.io/docs/standards/json-schema/    
+
+  - name: Spectral
+    description: This uses Spectral rules to define and enforce policies across entities.
+    docUrl: https://psychic-bassoon-z2vjvn4.pages.github.io/docs/standards/spectral/     
+
+  - name: Model Context Protocol
+    description: This uses MCP expresed as JSON schema to define each MCP server.
+    docUrl: https://psychic-bassoon-z2vjvn4.pages.github.io/docs/standards/model-context-protocol/
+
+  - name: Bruno Collections
+    description: This uses Bruno Collections to define each executable HTTP API integration.
+    docUrl: https://psychic-bassoon-z2vjvn4.pages.github.io/docs/standards/bruno-collections/        
+
+  - name: Bruno Environments
+    description: This uses Bruno Environments to store keys for each API to use in automation.
+    docUrl: https://psychic-bassoon-z2vjvn4.pages.github.io/docs/standards/bruno-environments/  
+
+  - name: API Commons
+    description: This uses an API Commons schema to define the plans and rate limits.
+    docUrl: https://psychic-bassoon-z2vjvn4.pages.github.io/docs/standards/api-commons/      
+
+  - name: OAuth 2.0
+    description: This uses a exploratory schema to help inform and shape capabilities.
+    docUrl: https://psychic-bassoon-z2vjvn4.pages.github.io/docs/standards/oauth-20/       
+
+security:
+
+  openAPI:
+
+    - $ref: 'openapi/api-reusability-github-authentication.yml'  
+
+  arazzo:
+
+    - $ref: 'arazzo/oauth-workflow-github.yml'
+
+services:
+
+  - aid: aws-api-gateway
+    name: AWS API Gateway
+    description: Amazon API Gateway is a fully managed service that makes it easy for developers to create, publish, maintain, monitor, and secure APIs at any scale.
+    docUrl: https://urban-adventure-6l4jvje.pages.github.io/docs/services/aws/
+    apisJson: https://raw.githubusercontent.com/api-evangelist/aws/refs/heads/main/apis.yml
+    loginUrl: https://console.aws.amazon.com/console/home/
+    signUpUrl: https://portal.aws.amazon.com/gp/aws/developer/registration/index.html
+    termsOfServiceUrl: https://aws.amazon.com/terms/?nc1=f_pr
+    privacyPolicyUrl: https://aws.amazon.com/privacy/?nc1=f_pr
+    plans:
+      - $ref: 'api-commons/plans-aws-api-gateway.yml'    
+    rateLimits:
+      - $ref: 'api-commons/rate-limits-aws-api-gateway.yml'   
+
+  - aid: github
+    name: GitHub
+    description: GitHub is a web-based platform for hosting and collaborating on software projects. It’s built around Git, a version control system that tracks changes to files over time.
+    docUrl: https://urban-adventure-6l4jvje.pages.github.io/docs/services/github/
+    apisJson: https://raw.githubusercontent.com/api-evangelist/github/refs/heads/main/apis.yml
+    loginUrl: https://github.com/login
+    signUpUrl: https://github.com/signup
+    termsOfServiceUrl: https://docs.github.com/site-policy/github-terms/github-terms-of-service
+    privacyPolicyUrl: https://docs.github.com/site-policy/privacy-policies/github-privacy-statement
+    plans:
+      - $ref: 'api-commons/plans-github.yml'    
+    rateLimits:
+      - $ref: 'api-commons/plans-github.yml'      
+
+observability: 
+
+    visibility: Public  

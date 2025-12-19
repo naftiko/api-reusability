@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "GitHub - Retrieve Repository OpenAPI Content",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}
