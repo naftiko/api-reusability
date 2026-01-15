@@ -1,0 +1,575 @@
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: GitHub REST API - Repository OpenAPI Contents
+  description: Pull Github repository content to look for OpenAPI files.
+  tags:
+    - Source Control
+    - GitHub
+    - OpenAPI
+    - Content
+  links:
+    - title: Link
+      icon: code
+      url: https://example.com
+spec:
+  type: openapi
+  lifecycle: experimental
+  owner: team-c
+  definition: |
+
+    openapi: 3.1.0
+    info:
+      title: GitHub REST API - Repository OpenAPi Contents
+      description: |
+        Pull Github repository content to look for OpenAPI files.
+      version: 2022-11-28
+      contact:
+        name: GitHub Support
+        url: https://support.github.com
+      license:
+        name: MIT
+        url: https://opensource.org/licenses/MIT
+
+    servers:
+      - url: https://api.github.com
+        description: GitHub API v3
+
+    security:
+      - bearer_token: []
+
+    tags:
+      - name: Repository Contents
+        description: Endpoints for managing repository file contents
+
+    paths:
+      /repos/{owner}/{repo}/contents/{path}:
+        get:
+          summary: Get repository content
+          description: |
+            Looks for OpenAPI in the contents of a repository.
+          operationId: getRepositoryContent
+          tags:
+            - Repository
+            - Content
+            - OpenAPI
+          parameters:
+            - name: owner
+              in: path
+              required: true
+              description: The account owner of the repository. The name is not case sensitive.
+              schema:
+                type: string
+              example: octokit
+            
+            - name: repo
+              in: path
+              required: true
+              description: The name of the repository without the .git extension. The name is not case sensitive.
+              schema:
+                type: string
+              example: octokit.rb
+            
+            - name: path
+              in: path
+              required: true
+              description: Path to the file or directory
+              schema:
+                type: string
+              example: README.md
+            
+            - name: ref
+              in: query
+              required: false
+              description: The name of the commit/branch/tag. Default is the repository's default branch.
+              schema:
+                type: string
+              example: main
+            
+            - name: accept
+              in: header
+              required: false
+              description: |
+                Setting to application/vnd.github+json is recommended.
+                
+                Custom media types:
+                - application/vnd.github.raw+json
+                - application/vnd.github.html+json
+                - application/vnd.github.object+json
+              schema:
+                type: string
+                default: application/vnd.github+json
+              examples:
+                default:
+                  value: application/vnd.github+json
+                raw:
+                  value: application/vnd.github.raw+json
+                html:
+                  value: application/vnd.github.html+json
+                object:
+                  value: application/vnd.github.object+json
+            
+            - name: X-GitHub-Api-Version
+              in: header
+              required: false
+              description: GitHub API version
+              schema:
+                type: string
+                default: "2022-11-28"
+              example: "2022-11-28"
+
+          responses:
+            '200':
+              description: OK - Content retrieved successfully
+              content:
+                application/json:
+                  schema:
+                    oneOf:
+                      - $ref: '#/components/schemas/FileContent'
+                      - $ref: '#/components/schemas/DirectoryContentArray'
+                      - $ref: '#/components/schemas/SymlinkContent'
+                      - $ref: '#/components/schemas/SubmoduleContent'
+                  examples:
+
+                    default:
+                      summary: A default response from API catalog.
+                      value:
+                        - name: README.md
+                          path: README.md
+                          sha: 4f2af74eac6200ba1d4a2e802a79ff9ff99569ad
+                          size: 325
+                          url: https://api.github.com/repos/naftiko-capabilities/api-catalog/contents/README.md?ref=main
+                          html_url: https://github.com/naftiko-capabilities/api-catalog/blob/main/README.md
+                          git_url: https://api.github.com/repos/naftiko-capabilities/api-catalog/git/blobs/4f2af74eac6200ba1d4a2e802a79ff9ff99569ad
+                          download_url: https://raw.githubusercontent.com/naftiko-capabilities/api-catalog/main/README.md
+                          type: file
+                          _links:
+                            self: https://api.github.com/repos/naftiko-capabilities/api-catalog/contents/README.md?ref=main
+                            git: https://api.github.com/repos/naftiko-capabilities/api-catalog/git/blobs/4f2af74eac6200ba1d4a2e802a79ff9ff99569ad
+                            html: https://github.com/naftiko-capabilities/api-catalog/blob/main/README.md
+                        - name: messaging-api-openapi.yml
+                          path: messaging-api-openapi.yml
+                          sha: 2dce5f70dc248138e66b9924527f9a674f65bdf1
+                          size: 22456
+                          url: https://api.github.com/repos/naftiko-capabilities/api-catalog/contents/messaging-api-openapi.yml?ref=main
+                          html_url: https://github.com/naftiko-capabilities/api-catalog/blob/main/messaging-api-openapi.yml
+                          git_url: https://api.github.com/repos/naftiko-capabilities/api-catalog/git/blobs/2dce5f70dc248138e66b9924527f9a674f65bdf1
+                          download_url: https://raw.githubusercontent.com/naftiko-capabilities/api-catalog/main/messaging-api-openapi.yml
+                          type: file
+                          _links:
+                            self: https://api.github.com/repos/naftiko-capabilities/api-catalog/contents/messaging-api-openapi.yml?ref=main
+                            git: https://api.github.com/repos/naftiko-capabilities/api-catalog/git/blobs/2dce5f70dc248138e66b9924527f9a674f65bdf1
+                            html: https://github.com/naftiko-capabilities/api-catalog/blob/main/messaging-api-openapi.yml
+                        - name: orders-api-openapi.yml
+                          path: orders-api-openapi.yml
+                          sha: 286866dfc2cc154a122451db5587f8befb0cad80
+                          size: 24527
+                          url: https://api.github.com/repos/naftiko-capabilities/api-catalog/contents/orders-api-openapi.yml?ref=main
+                          html_url: https://github.com/naftiko-capabilities/api-catalog/blob/main/orders-api-openapi.yml
+                          git_url: https://api.github.com/repos/naftiko-capabilities/api-catalog/git/blobs/286866dfc2cc154a122451db5587f8befb0cad80
+                          download_url: https://raw.githubusercontent.com/naftiko-capabilities/api-catalog/main/orders-api-openapi.yml
+                          type: file
+                          _links:
+                            self: https://api.github.com/repos/naftiko-capabilities/api-catalog/contents/orders-api-openapi.yml?ref=main
+                            git: https://api.github.com/repos/naftiko-capabilities/api-catalog/git/blobs/286866dfc2cc154a122451db5587f8befb0cad80
+                            html: https://github.com/naftiko-capabilities/api-catalog/blob/main/orders-api-openapi.yml
+                        - name: organizations-api-openapi.yml
+                          path: organizations-api-openapi.yml
+                          sha: f8ba2162e384b0bb6aa5664b9b978a0996c68a50
+                          size: 23632
+                          url: https://api.github.com/repos/naftiko-capabilities/api-catalog/contents/organizations-api-openapi.yml?ref=main
+                          html_url: https://github.com/naftiko-capabilities/api-catalog/blob/main/organizations-api-openapi.yml
+                          git_url: https://api.github.com/repos/naftiko-capabilities/api-catalog/git/blobs/f8ba2162e384b0bb6aa5664b9b978a0996c68a50
+                          download_url: https://raw.githubusercontent.com/naftiko-capabilities/api-catalog/main/organizations-api-openapi.yml
+                          type: file
+                          _links:
+                            self: https://api.github.com/repos/naftiko-capabilities/api-catalog/contents/organizations-api-openapi.yml?ref=main
+                            git: https://api.github.com/repos/naftiko-capabilities/api-catalog/git/blobs/f8ba2162e384b0bb6aa5664b9b978a0996c68a50
+                            html: https://github.com/naftiko-capabilities/api-catalog/blob/main/organizations-api-openapi.yml
+                        - name: persons-api-openapi.yml
+                          path: persons-api-openapi.yml
+                          sha: 104717ce809775ae05da83bf09a1ec0a3108291a
+                          size: 21921
+                          url: https://api.github.com/repos/naftiko-capabilities/api-catalog/contents/persons-api-openapi.yml?ref=main
+                          html_url: https://github.com/naftiko-capabilities/api-catalog/blob/main/persons-api-openapi.yml
+                          git_url: https://api.github.com/repos/naftiko-capabilities/api-catalog/git/blobs/104717ce809775ae05da83bf09a1ec0a3108291a
+                          download_url: https://raw.githubusercontent.com/naftiko-capabilities/api-catalog/main/persons-api-openapi.yml
+                          type: file
+                          _links:
+                            self: https://api.github.com/repos/naftiko-capabilities/api-catalog/contents/persons-api-openapi.yml?ref=main
+                            git: https://api.github.com/repos/naftiko-capabilities/api-catalog/git/blobs/104717ce809775ae05da83bf09a1ec0a3108291a
+                            html: https://github.com/naftiko-capabilities/api-catalog/blob/main/persons-api-openapi.yml
+                        - name: products-api-openapi.yml
+                          path: products-api-openapi.yml
+                          sha: 303ef3ae14de0e693c7b0d1a2db68bba0dea9694
+                          size: 22127
+                          url: https://api.github.com/repos/naftiko-capabilities/api-catalog/contents/products-api-openapi.yml?ref=main
+                          html_url: https://github.com/naftiko-capabilities/api-catalog/blob/main/products-api-openapi.yml
+                          git_url: https://api.github.com/repos/naftiko-capabilities/api-catalog/git/blobs/303ef3ae14de0e693c7b0d1a2db68bba0dea9694
+                          download_url: https://raw.githubusercontent.com/naftiko-capabilities/api-catalog/main/products-api-openapi.yml
+                          type: file
+                          _links:
+                            self: https://api.github.com/repos/naftiko-capabilities/api-catalog/contents/products-api-openapi.yml?ref=main
+                            git: https://api.github.com/repos/naftiko-capabilities/api-catalog/git/blobs/303ef3ae14de0e693c7b0d1a2db68bba0dea9694
+                            html: https://github.com/naftiko-capabilities/api-catalog/blob/main/products-api-openapi.yml
+
+
+                    file:
+                      summary: File content response
+                      value:
+                        type: file
+                        encoding: base64
+                        size: 5362
+                        name: README.md
+                        path: README.md
+                        content: "IyBZb2dhIEJvmsgaW4gcHJvZ3Jlc3MhIEZlZWwgdAoKOndhcm5pbmc6IFdvc\\nZnJlZSBmUgdG8gY0byBjaGVjayBvdXQgdGhlIGFwcCwgYnV0IGJlIHN1c29t\\nZSBiYWNrIG9uY2UgaXQgaXMgY29tcGxldGUuCgpBIHdlYiBhcHAgdGhhdCBs\\nZWFkcyB5b3UgdGhyb3VnaCBhIHlvZ2Egc2Vzc2lvbi4KCltXb3Jrb3V0IG5v\\ndyFdKGh0dHBzOi8vc2tlZHdhcmRzODguZ2l0aHViLmlvL3lvZ2EvKQoKPGlt\\nZyBzcmM9InNyYy9pbWFnZXMvbWFza2FibGVfaWNvbl81MTIucG5nIiBhbHQ9\\nImJvdCBsaWZ0aW5nIHdlaWdodHMiIHdpZHRoPSIxMDAiLz4KCkRvIHlvdSBo\\nYXZlIGZlZWRiYWNrIG9yIGlkZWFzIGZvciBpbXByb3ZlbWVudD8gW09wZW4g\\nYW4gaXNzdWVdKGh0dHBzOi8vZ2l0aHViLmNvbS9za2Vkd2FyZHM4OC95b2dh\\nL2lzc3Vlcy9uZXcpLgoKV2FudCBtb3JlIGdhbWVzPyBWaXNpdCBbQ25TIEdh\\nbWVzXShodHRwczovL3NrZWR3YXJkczg4LmdpdGh1Yi5pby9wb3J0Zm9saW8v\\nKS4KCiMjIERldmVsb3BtZW50CgpUbyBhZGQgYSBuZXcgcG9zZSwgYWRkIGFu\\nIGVudHJ5IHRvIHRoZSByZWxldmFudCBmaWxlIGluIGBzcmMvYXNhbmFzYC4K\\nClRvIGJ1aWxkLCBydW4gYG5wbSBydW4gYnVpbGRgLgoKVG8gcnVuIGxvY2Fs\\nbHkgd2l0aCBsaXZlIHJlbG9hZGluZyBhbmQgbm8gc2VydmljZSB3b3JrZXIs\\nIHJ1biBgbnBtIHJ1biBkZXZgLiAoSWYgYSBzZXJ2aWNlIHdvcmtlciB3YXMg\\ncHJldmlvdXNseSByZWdpc3RlcmVkLCB5b3UgY2FuIHVucmVnaXN0ZXIgaXQg\\naW4gY2hyb21lIGRldmVsb3BlciB0b29sczogYEFwcGxpY2F0aW9uYCA+IGBT\\nZXJ2aWNlIHdvcmtlcnNgID4gYFVucmVnaXN0ZXJgLikKClRvIHJ1biBsb2Nh\\nbGx5IGFuZCByZWdpc3RlciB0aGUgc2VydmljZSB3b3JrZXIsIHJ1biBgbnBt\\nIHN0YXJ0YC4KClRvIGRlcGxveSwgcHVzaCB0byBgbWFpbmAgb3IgbWFudWFs\\nbHkgdHJpZ2dlciB0aGUgYC5naXRodWIvd29ya2Zsb3dzL2RlcGxveS55bWxg\\nIHdvcmtmbG93Lgo=\\n"
+                        sha: "3d21ec53a331a6f037a91c368710b99387d012c1"
+                        url: "https://api.github.com/repos/octokit/octokit.rb/contents/README.md"
+                        git_url: "https://api.github.com/repos/octokit/octokit.rb/git/blobs/3d21ec53a331a6f037a91c368710b99387d012c1"
+                        html_url: "https://github.com/octokit/octokit.rb/blob/master/README.md"
+                        download_url: "https://raw.githubusercontent.com/octokit/octokit.rb/master/README.md"
+                        _links:
+                          git: "https://api.github.com/repos/octokit/octokit.rb/git/blobs/3d21ec53a331a6f037a91c368710b99387d012c1"
+                          self: "https://api.github.com/repos/octokit/octokit.rb/contents/README.md"
+                          html: "https://github.com/octokit/octokit.rb/blob/master/README.md"
+                    
+                    directory:
+                      summary: Directory content response
+                      value:
+                        - type: file
+                          size: 625
+                          name: README.md
+                          path: lib/README.md
+                          sha: "3d21ec53a331a6f037a91c368710b99387d012c1"
+                          url: "https://api.github.com/repos/octokit/octokit.rb/contents/lib/README.md"
+                          git_url: "https://api.github.com/repos/octokit/octokit.rb/git/blobs/3d21ec53a331a6f037a91c368710b99387d012c1"
+                          html_url: "https://github.com/octokit/octokit.rb/blob/master/lib/README.md"
+                          download_url: "https://raw.githubusercontent.com/octokit/octokit.rb/master/lib/README.md"
+                          _links:
+                            git: "https://api.github.com/repos/octokit/octokit.rb/git/blobs/3d21ec53a331a6f037a91c368710b99387d012c1"
+                            self: "https://api.github.com/repos/octokit/octokit.rb/contents/lib/README.md"
+                            html: "https://github.com/octokit/octokit.rb/blob/master/lib/README.md"
+                        - type: dir
+                          size: 0
+                          name: octokit
+                          path: lib/octokit
+                          sha: "a84d88e7554fc1fa21bcbc4efae3c782a70d2b9d"
+                          url: "https://api.github.com/repos/octokit/octokit.rb/contents/lib/octokit"
+                          git_url: "https://api.github.com/repos/octokit/octokit.rb/git/trees/a84d88e7554fc1fa21bcbc4efae3c782a70d2b9d"
+                          html_url: "https://github.com/octokit/octokit.rb/tree/master/lib/octokit"
+                          download_url: null
+                          _links:
+                            git: "https://api.github.com/repos/octokit/octokit.rb/git/trees/a84d88e7554fc1fa21bcbc4efae3c782a70d2b9d"
+                            self: "https://api.github.com/repos/octokit/octokit.rb/contents/lib/octokit"
+                            html: "https://github.com/octokit/octokit.rb/tree/master/lib/octokit"
+            
+            '302':
+              description: Found - Redirect to download URL
+            
+            '304':
+              description: Not modified
+            
+            '403':
+              description: Forbidden
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/Error'
+                  example:
+                    message: "API rate limit exceeded"
+                    documentation_url: "https://docs.github.com/rest/overview/resources-in-the-rest-api#rate-limiting"
+            
+            '404':
+              description: Resource not found
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/Error'
+                  example:
+                    message: "Not Found"
+                    documentation_url: "https://docs.github.com/rest/repos/contents#get-repository-content"
+
+    components:
+      securitySchemes:
+        bearer_token:
+          type: http
+          scheme: bearer
+          description: GitHub personal access token or OAuth token
+
+      schemas:
+        FileContent:
+          type: object
+          description: Response for a file
+          properties:
+            type:
+              type: string
+              enum:
+                - file
+              description: Type of content
+            encoding:
+              type: string
+              enum:
+                - base64
+                - none
+              description: Encoding of the content. "none" for files larger than 1MB when using object media type
+            size:
+              type: integer
+              description: Size of the file in bytes
+            name:
+              type: string
+              description: Name of the file
+            path:
+              type: string
+              description: Path to the file in the repository
+            content:
+              type: string
+              description: Base64 encoded content of the file. Empty string for files larger than 1MB when using object media type
+            sha:
+              type: string
+              description: SHA-1 hash of the file
+            url:
+              type: string
+              format: uri
+              description: API URL for the file
+            git_url:
+              type: string
+              format: uri
+              description: Git API URL for the blob
+            html_url:
+              type: string
+              format: uri
+              description: GitHub URL for the file
+            download_url:
+              type: string
+              format: uri
+              nullable: true
+              description: Direct download URL for the file (expires after one use)
+            _links:
+              type: object
+              properties:
+                git:
+                  type: string
+                  format: uri
+                self:
+                  type: string
+                  format: uri
+                html:
+                  type: string
+                  format: uri
+          required:
+            - type
+            - encoding
+            - size
+            - name
+            - path
+            - content
+            - sha
+            - url
+            - git_url
+            - html_url
+            - download_url
+            - _links
+        
+        DirectoryContent:
+          type: object
+          description: A single item in a directory listing
+          properties:
+            type:
+              type: string
+              enum:
+                - file
+                - dir
+                - symlink
+                - submodule
+              description: Type of the content item
+            size:
+              type: integer
+              description: Size in bytes
+            name:
+              type: string
+              description: Name of the item
+            path:
+              type: string
+              description: Path to the item in the repository
+            sha:
+              type: string
+              description: SHA-1 hash
+            url:
+              type: string
+              format: uri
+              description: API URL for the item
+            git_url:
+              type: string
+              format: uri
+              nullable: true
+              description: Git API URL
+            html_url:
+              type: string
+              format: uri
+              description: GitHub URL for the item
+            download_url:
+              type: string
+              format: uri
+              nullable: true
+              description: Direct download URL (null for directories)
+            _links:
+              type: object
+              properties:
+                git:
+                  type: string
+                  format: uri
+                  nullable: true
+                self:
+                  type: string
+                  format: uri
+                html:
+                  type: string
+                  format: uri
+          required:
+            - type
+            - size
+            - name
+            - path
+            - sha
+            - url
+            - html_url
+            - _links
+        
+        DirectoryContentArray:
+          type: array
+          description: Response for a directory (array of items)
+          items:
+            $ref: '#/components/schemas/DirectoryContent'
+          maxItems: 1000
+        
+        SymlinkContent:
+          type: object
+          description: Response for a symbolic link
+          properties:
+            type:
+              type: string
+              enum:
+                - symlink
+            target:
+              type: string
+              description: Target of the symlink
+            size:
+              type: integer
+            name:
+              type: string
+            path:
+              type: string
+            sha:
+              type: string
+            url:
+              type: string
+              format: uri
+            git_url:
+              type: string
+              format: uri
+            html_url:
+              type: string
+              format: uri
+            download_url:
+              type: string
+              format: uri
+              nullable: true
+            _links:
+              type: object
+              properties:
+                git:
+                  type: string
+                  format: uri
+                self:
+                  type: string
+                  format: uri
+                html:
+                  type: string
+                  format: uri
+          required:
+            - type
+            - target
+            - size
+            - name
+            - path
+            - sha
+            - url
+            - git_url
+            - html_url
+            - _links
+        
+        SubmoduleContent:
+          type: object
+          description: Response for a submodule
+          properties:
+            type:
+              type: string
+              enum:
+                - file
+              description: Currently returns "file" for backwards compatibility
+            submodule_git_url:
+              type: string
+              format: uri
+              description: Git URL of the submodule repository
+            size:
+              type: integer
+            name:
+              type: string
+            path:
+              type: string
+            sha:
+              type: string
+              description: Specific commit SHA in the submodule repository
+            url:
+              type: string
+              format: uri
+            git_url:
+              type: string
+              format: uri
+              nullable: true
+              description: Null if submodule is not hosted on github.com
+            html_url:
+              type: string
+              format: uri
+              nullable: true
+              description: Null if submodule is not hosted on github.com
+            download_url:
+              type: string
+              format: uri
+              nullable: true
+            _links:
+              type: object
+              properties:
+                git:
+                  type: string
+                  format: uri
+                  nullable: true
+                self:
+                  type: string
+                  format: uri
+                html:
+                  type: string
+                  format: uri
+                  nullable: true
+          required:
+            - type
+            - submodule_git_url
+            - size
+            - name
+            - path
+            - sha
+            - url
+            - _links
+        
+        Error:
+          type: object
+          properties:
+            message:
+              type: string
+              description: Error message
+            documentation_url:
+              type: string
+              format: uri
+              description: URL to relevant documentation
+          required:
+            - message

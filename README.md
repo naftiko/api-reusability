@@ -28,12 +28,12 @@ This repository is currently broken down into the following folders that help su
 - agent-2-agent - Using A2A cards for any of the individual agents.
 - api-commons - Using two API commons schema for plans and rate limits.
 - arazzo - Using Arazzo for the oauth workflows and eventually events.
+- backstage - Backstage software catalog system and APIs artifacts.
 - bruno - Every HTTP adapter is setup and tested using Bruno client.
 - diagrams - Produced a diagram to help illustrate how capability works.
 - model-context-protocol - Generating MCP servers from each OpenAPI.
 - openapi - Providing all of the OpenAPI needed for each HTTP adapter.
 - postman - Alternatively using Postman instead of Bruno for a client.
-- store - Added to provide a place to cache responses and for requests.
 
 In this exercise, a capabilities is just an aggregate of pointers to existing standards that provide abstractions for schema, interfaces, use cases, plans, rate limits, workflows, and governance, bundling up all the moving parts.
 

@@ -1,0 +1,557 @@
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: Notion API - Update Page
+  description: Publish an API Reusability page update.
+  tags:
+    - CMS
+    - Pages
+  links:
+    - title: Link
+      icon: code
+      url: https://example.com
+spec:
+  type: openapi
+  lifecycle: experimental
+  owner: team-c
+  definition: |
+
+    openapi: 3.1.0
+    info:
+      title: Notion API - Update Page
+      description: |
+        Publish an API Reusability page update.
+      version: 2025-09-03
+      contact:
+        name: Notion Support
+        url: https://developers.notion.com
+
+    servers:
+      - url: https://api.notion.com/v1
+        description: Notion API v1
+
+    security:
+      - bearer_token: []
+
+    tags:
+      - name: Pages
+        description: Page management endpoints
+
+    paths:
+      /pages/{page_id}:
+        patch:
+          summary: Update page
+          description: |
+            Modify attributes of a Notion page, including properties, icon, cover, lock status, 
+            and content.
+            
+            **Updating Properties:**
+            To change page properties, use the properties body parameter. This requires the page's 
+            parent to be a data source (database), except for updating the title of standalone pages.
+            The page's properties schema must match the parent data source's properties.
+            
+            **Setting Icon, Cover, or Archive Status:**
+            This endpoint can update any page icon or cover, and archive or restore any page.
+            
+            **Locking Pages:**
+            Use is_locked to prevent editing in the Notion UI. This doesn't affect API updates.
+            
+            **Applying Templates:**
+            Use the template parameter to apply a default template or specific template to the page.
+            Template application happens asynchronously after the API request completes.
+            
+            **Erasing Content:**
+            Use erase_content flag to delete all block children. This is destructive and cannot 
+            be reversed via API. Useful when applying templates to replace existing content.
+          operationId: updatePage
+          tags:
+            - Pages
+          parameters:
+            - name: page_id
+              in: path
+              required: true
+              description: The identifier for the Notion page to be updated
+              schema:
+                type: string
+                format: uuid
+              example: 60bdc8bd-3880-44b8-a9cd-8a145b3ffbd7
+            
+            - name: Notion-Version
+              in: header
+              required: true
+              description: The API version to use for this request. The latest version is 2025-09-03
+              schema:
+                type: string
+                default: "2025-09-03"
+              example: "2022-06-28"
+          
+          requestBody:
+            required: false
+            description: Page update parameters
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    properties:
+                      type: object
+                      description: |
+                        Page property values to update. Only for pages in a data source.
+                        The schema must match the parent data source's properties.
+                      additionalProperties:
+                        type: object
+                      example:
+                        In stock:
+                          checkbox: true
+                        Name:
+                          title:
+                            - text:
+                                content: Updated page title
+                    
+                    icon:
+                      description: A page icon. Supports external file object or emoji object
+                      oneOf:
+                        - $ref: '#/components/schemas/EmojiIcon'
+                        - $ref: '#/components/schemas/ExternalFileIcon'
+                    
+                    cover:
+                      description: A cover image for the page. Only external file objects are supported
+                      allOf:
+                        - $ref: '#/components/schemas/ExternalFileCover'
+                    
+                    in_trash:
+                      type: boolean
+                      default: false
+                      description: Set to true to delete (archive) a page. Set to false to restore
+                      example: false
+                    
+                    is_locked:
+                      type: boolean
+                      description: |
+                        Whether the page should be locked from editing in the Notion app UI.
+                        If not provided, the locked state will not be updated.
+                        Note: This doesn't affect API updates.
+                      example: false
+                    
+                    erase_content:
+                      type: boolean
+                      default: false
+                      description: |
+                        Whether to erase all existing content from the page. This is a destructive 
+                        action that cannot be reversed using the API. When used with a template, 
+                        the template content replaces existing content. Without a template, simply 
+                        clears the page content.
+                      example: false
+                    
+                    template:
+                      description: |
+                        For pages in a data source, optionally specify a template to apply.
+                        Template application is asynchronous. Use webhooks (page.content_updated) 
+                        to be notified when complete.
+                      oneOf:
+                        - $ref: '#/components/schemas/DefaultTemplate'
+                        - $ref: '#/components/schemas/TemplateIdTemplate'
+                
+                examples:
+                  update_properties:
+                    summary: Update page properties
+                    value:
+                      properties:
+                        In stock:
+                          checkbox: true
+                  
+                  set_icon_and_cover:
+                    summary: Set emoji icon and external cover
+                    value:
+                      icon:
+                        type: emoji
+                        emoji: "🥬"
+                      cover:
+                        type: external
+                        external:
+                          url: https://upload.wikimedia.org/wikipedia/commons/6/62/Tuscankale.jpg
+                  
+                  lock_page:
+                    summary: Lock page from UI editing
+                    value:
+                      is_locked: true
+                  
+                  archive_page:
+                    summary: Archive (trash) page
+                    value:
+                      in_trash: true
+                  
+                  apply_default_template:
+                    summary: Apply default template
+                    value:
+                      template:
+                        type: default
+                  
+                  apply_specific_template:
+                    summary: Apply specific template and erase existing content
+                    value:
+                      template:
+                        type: template_id
+                        template_id: 550e8400-e29b-41d4-a716-446655440000
+                      erase_content: true
+                  
+                  complete_update:
+                    summary: Update multiple attributes
+                    value:
+                      properties:
+                        Name:
+                          title:
+                            - text:
+                                content: Updated Product
+                        In stock:
+                          checkbox: true
+                        Price:
+                          number: 29.99
+                      icon:
+                        type: emoji
+                        emoji: "🎯"
+                      cover:
+                        type: external
+                        external:
+                          url: https://example.com/cover.jpg
+                      is_locked: false
+
+          responses:
+            '200':
+              description: OK - Page successfully updated
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/Page'
+                  example:
+                    object: page
+                    id: 59833787-2cf9-4fdf-8782-e53db20768a5
+                    created_time: "2022-03-01T19:05:00.000Z"
+                    last_edited_time: "2022-07-06T19:16:00.000Z"
+                    created_by:
+                      object: user
+                      id: ee5f0f84-409a-440f-983a-a5315961c6e4
+                    last_edited_by:
+                      object: user
+                      id: ee5f0f84-409a-440f-983a-a5315961c6e4
+                    cover:
+                      type: external
+                      external:
+                        url: https://upload.wikimedia.org/wikipedia/commons/6/62/Tuscankale.jpg
+                    icon:
+                      type: emoji
+                      emoji: "🥬"
+                    parent:
+                      type: data_source_id
+                      data_source_id: d9824bdc-8445-4327-be8b-5b47500af6ce
+                      database_id: 9ce034a5-74ca-4259-8b01-8494453204fe
+                    archived: false
+                    is_locked: false
+                    properties:
+                      Store availability:
+                        id: "%3AUPp"
+                      Food group:
+                        id: "A%40Hk"
+                      Price:
+                        id: BJXS
+                      Responsible Person:
+                        id: Iowm
+                      In stock:
+                        id: YfIu
+                        type: checkbox
+                        checkbox: true
+                    url: https://www.notion.so/59833787-2cf9-4fdf-8782-e53db20768a5
+                    public_url: null
+            
+            '400':
+              description: Bad Request - Invalid request parameters
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/Error'
+                  examples:
+                    invalid_request:
+                      summary: Invalid request body
+                      value:
+                        object: error
+                        status: 400
+                        code: validation_error
+                        message: "body failed validation: body.properties should be defined, instead was `undefined`."
+                    
+                    invalid_property:
+                      summary: Invalid property type
+                      value:
+                        object: error
+                        status: 400
+                        code: validation_error
+                        message: "Properties do not match schema"
+            
+            '403':
+              description: Forbidden - Missing update content capabilities
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/Error'
+                  example:
+                    object: error
+                    status: 403
+                    code: restricted_resource
+                    message: "The integration does not have update content capabilities for this page."
+            
+            '404':
+              description: Not Found - Page does not exist or is not accessible
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/Error'
+                  example:
+                    object: error
+                    status: 404
+                    code: object_not_found
+                    message: "Could not find page with ID: 60bdc8bd-3880-44b8-a9cd-8a145b3ffbd7"
+            
+            '429':
+              description: Too Many Requests - Rate limit exceeded
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/Error'
+                  example:
+                    object: error
+                    status: 429
+                    code: rate_limited
+                    message: "Rate limit exceeded"
+
+    components:
+      securitySchemes:
+        bearer_token:
+          type: http
+          scheme: bearer
+          description: Notion integration token
+
+      schemas:
+        Page:
+          type: object
+          description: A Notion page object
+          properties:
+            object:
+              type: string
+              enum:
+                - page
+              description: Always "page"
+            id:
+              type: string
+              format: uuid
+              description: Unique identifier for the page
+            created_time:
+              type: string
+              format: date-time
+              description: Date and time when the page was created
+            last_edited_time:
+              type: string
+              format: date-time
+              description: Date and time when the page was last edited
+            created_by:
+              $ref: '#/components/schemas/User'
+            last_edited_by:
+              $ref: '#/components/schemas/User'
+            cover:
+              description: Page cover image
+              nullable: true
+              oneOf:
+                - $ref: '#/components/schemas/ExternalFileCover'
+            icon:
+              description: Page icon
+              nullable: true
+              oneOf:
+                - $ref: '#/components/schemas/EmojiIcon'
+                - $ref: '#/components/schemas/ExternalFileIcon'
+            parent:
+              $ref: '#/components/schemas/Parent'
+            archived:
+              type: boolean
+              description: Whether the page is archived (in trash)
+            is_locked:
+              type: boolean
+              description: Whether the page is locked from editing in Notion UI
+            properties:
+              type: object
+              description: Property values of the page
+              additionalProperties:
+                type: object
+            url:
+              type: string
+              format: uri
+              description: The URL of the Notion page
+            public_url:
+              type: string
+              format: uri
+              nullable: true
+              description: The public URL of the page if it has been shared publicly
+          required:
+            - object
+            - id
+            - created_time
+            - last_edited_time
+            - created_by
+            - last_edited_by
+            - parent
+            - archived
+            - properties
+            - url
+        
+        User:
+          type: object
+          properties:
+            object:
+              type: string
+              enum:
+                - user
+            id:
+              type: string
+              format: uuid
+          required:
+            - object
+            - id
+        
+        Parent:
+          type: object
+          description: The parent of the page (database or page)
+          properties:
+            type:
+              type: string
+              enum:
+                - data_source_id
+                - page_id
+                - workspace
+            data_source_id:
+              type: string
+              format: uuid
+              description: ID of the parent data source (if type is data_source_id)
+            database_id:
+              type: string
+              format: uuid
+              description: ID of the parent database (if type is data_source_id)
+            page_id:
+              type: string
+              format: uuid
+              description: ID of the parent page (if type is page_id)
+          required:
+            - type
+        
+        EmojiIcon:
+          type: object
+          description: An emoji icon
+          properties:
+            type:
+              type: string
+              enum:
+                - emoji
+            emoji:
+              type: string
+              description: The emoji character
+              example: "🥬"
+          required:
+            - type
+            - emoji
+        
+        ExternalFileIcon:
+          type: object
+          description: An external file icon
+          properties:
+            type:
+              type: string
+              enum:
+                - external
+            external:
+              type: object
+              properties:
+                url:
+                  type: string
+                  format: uri
+                  description: URL of the external file
+              required:
+                - url
+          required:
+            - type
+            - external
+        
+        ExternalFileCover:
+          type: object
+          description: An external file cover image
+          properties:
+            type:
+              type: string
+              enum:
+                - external
+            external:
+              type: object
+              properties:
+                url:
+                  type: string
+                  format: uri
+                  description: URL of the external cover image
+              required:
+                - url
+          required:
+            - type
+            - external
+        
+        DefaultTemplate:
+          type: object
+          description: Apply the parent data source's default template
+          properties:
+            type:
+              type: string
+              enum:
+                - default
+              description: Use the default template
+          required:
+            - type
+        
+        TemplateIdTemplate:
+          type: object
+          description: Apply a specific template by ID
+          properties:
+            type:
+              type: string
+              enum:
+                - template_id
+              description: Use a specific template
+            template_id:
+              type: string
+              format: uuid
+              description: The ID of the template to apply
+          required:
+            - type
+            - template_id
+        
+        Error:
+          type: object
+          description: Error response object
+          properties:
+            object:
+              type: string
+              enum:
+                - error
+            status:
+              type: integer
+              description: HTTP status code
+            code:
+              type: string
+              description: Error code
+              enum:
+                - validation_error
+                - restricted_resource
+                - object_not_found
+                - rate_limited
+                - internal_server_error
+                - service_unavailable
+            message:
+              type: string
+              description: Human-readable error message
+          required:
+            - object
+            - status
+            - code
+            - message
