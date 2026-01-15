@@ -81,6 +81,7 @@ I am rapidly iterating upon this set of capabilities as part of ongoing pilot cu
 - [API Reusability Change Log #1](https://github.com/naftiko-capabilities/api-reusability/issues/1)
 - [API Reusability Thoughts #2](https://github.com/naftiko-capabilities/api-reusability/issues/2)
 - [Complexity #3](https://github.com/naftiko-capabilities/api-reusability/issues/3)
+- [API Resuability Improvements #4](https://github.com/naftiko/api-reusability/issues/4)
 
 ## Contributions
 I need your feedback. Please leave via [issues](https://github.com/naftiko-capabilities/api-reusability/issues) or in [Slack](https://naftiko.slack.com/archives/C09LLFZDLL9), but also don't hesitate submitting pull requests to fix any problems encountered and leave feedback to help contribute to this work as it happening.
