@@ -2,6 +2,10 @@
 # This capability will push API reusability results into a Splunk dashboard.
 # This capability will push API resuability results into a Notion page.
 
+naftiko:
+
+  schema:  'https://github.com/naftiko/schema/blob/main/core/capability/capabiity-schema.yml'
+
 info:
 
   name: name: API Reusability - Communicate
@@ -52,7 +56,7 @@ ports:
 
 useCase:
 
-  - $ref: 'use-case/api-reusability.yml' 
+  - $ref: 'https://github.com/naftiko/schema/blob/main/secondary/use-case/examples/use-case-example-api-reusability.yml' 
 
 stakeholders:
 
@@ -131,35 +135,35 @@ standards:
 
   - name: Naftiko Capabilities
     description: This uses a exploratory schema to help inform and shape capabilities.
-    docUrl: https://psychic-bassoon-z2vjvn4.pages.github.io/docs/capabilities/
+    docUrl: https://naftiko.github.io/technology/docs/capabilities/
 
   - name: OpenAPI
     description: This uses OpenAPI to define access to all HTTP APIs.
-    docUrl: https://psychic-bassoon-z2vjvn4.pages.github.io/docs/standards/openapi/
+    docUrl: https://naftiko.github.io/technology/docs/standards/openapi/
 
   - name: Arazzo
     description: This uses Arazzo to define workflows used to support this capability.
-    docUrl: https://psychic-bassoon-z2vjvn4.pages.github.io/docs/standards/arazzo/
+    docUrl: https://naftiko.github.io/technology/docs/standards/arazzo/
 
   - name: JSON Schema
     description: This uses JSON Schema to define and validate all entities used.
-    docUrl: https://psychic-bassoon-z2vjvn4.pages.github.io/docs/standards/json-schema/    
+    docUrl: https://naftiko.github.io/technology/docs/standards/json-schema/    
 
   - name: Spectral
     description: This uses Spectral rules to define and enforce policies across entities.
-    docUrl: https://psychic-bassoon-z2vjvn4.pages.github.io/docs/standards/spectral/     
+    docUrl: https://naftiko.github.io/technology/docs/standards/spectral/     
 
   - name: Bruno Collections
     description: This uses Bruno Collections to define each executable HTTP API integration.
-    docUrl: https://psychic-bassoon-z2vjvn4.pages.github.io/docs/standards/bruno-collections/        
+    docUrl: https://naftiko.github.io/technology/docs/standards/bruno-collections/        
 
   - name: Bruno Environments
     description: This uses Bruno Environments to store keys for each API to use in automation.
-    docUrl: https://psychic-bassoon-z2vjvn4.pages.github.io/docs/standards/bruno-environments/  
+    docUrl: https://naftiko.github.io/technology/docs/standards/bruno-environments/  
 
   - name: API Commons
     description: This uses an API Commons schema to define the plans and rate limits.
-    docUrl: https://psychic-bassoon-z2vjvn4.pages.github.io/docs/standards/api-commons/      
+    docUrl: https://naftiko.github.io/technology/docs/standards/api-commons/      
 
 security:
 
@@ -177,7 +181,7 @@ services:
   - aid: aws-api-gateway
     name: AWS API Gateway
     description: Amazon API Gateway is a fully managed service that makes it easy for developers to create, publish, maintain, monitor, and secure APIs at any scale.
-    docUrl: https://urban-adventure-6l4jvje.pages.github.io/docs/services/aws/
+    docUrl: https://naftiko.github.io/technology/docs/services/aws/
     apisJson: https://raw.githubusercontent.com/api-evangelist/aws/refs/heads/main/apis.yml
     loginUrl: https://console.aws.amazon.com/console/home/
     signUpUrl: https://portal.aws.amazon.com/gp/aws/developer/registration/index.html
@@ -191,7 +195,7 @@ services:
   - aid: splunk
     name: Splunk
     description: Splunk is a powerful software platform for searching, monitoring, and analyzing machine-generated data (logs, metrics, events) in real-time.
-    docUrl: https://urban-adventure-6l4jvje.pages.github.io/docs/services/splunk/
+    docUrl: https://naftiko.github.io/technology/docs/services/splunk/
     apisJson: https://raw.githubusercontent.com/api-evangelist/splunk/refs/heads/main/apis.yml
     loginUrl: https://login.splunk.com/
     signUpUrl: https://www.splunk.com/en_us/form/sign-up.html
@@ -205,7 +209,7 @@ services:
   - aid: notion
     name: Notion
     description: Notion is an all-in-one workspace and productivity platform that combines notes, documents, databases, wikis, project management, and collaboration tools into a single application.
-    docUrl: https://urban-adventure-6l4jvje.pages.github.io/docs/services/notion/
+    docUrl: https://naftiko.github.io/technology/docs/services/notion/
     apisJson: https://raw.githubusercontent.com/api-evangelist/notion/refs/heads/main/apis.yml
     loginUrl: https://www.notion.so/login
     signUpUrl: https://www.notion.so/signup

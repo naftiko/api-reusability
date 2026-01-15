@@ -1,6 +1,10 @@
 # This is a capabaility for defining wht is API reusability across the API catalog.
 # There are 
 
+naftiko:
+
+  schema:  'https://github.com/naftiko/schema/blob/main/core/capability/capabiity-schema.yml'
+
 info:
 
   name: API Reusability - Definition
@@ -45,7 +49,7 @@ ports:
 
 useCase:
 
-  - $ref: 'use-case/api-reusability.yml' 
+  - $ref: 'https://github.com/naftiko/schema/blob/main/secondary/use-case/examples/use-case-example-api-reusability.yml' 
 
 stakeholders:
 
@@ -118,7 +122,7 @@ standards:
 
   - name: Naftiko Capabilities
     description: This uses a exploratory schema to help inform and shape capabilities.
-    docUrl: https://psychic-bassoon-z2vjvn4.pages.github.io/docs/capabilities/
+    docUrl: https://naftiko.github.io/technology/docs/capabilities/
 
 observability: 
 

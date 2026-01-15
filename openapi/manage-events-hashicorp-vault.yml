@@ -1,0 +1,1360 @@
+openapi: 3.1.0
+info:
+  title: HashiCorp Vault HTTP API
+  description: |
+    The Vault HTTP API gives you full access to Vault using REST-like HTTP verbs.
+    Every aspect of Vault can be controlled using the APIs. The Vault CLI uses 
+    the HTTP API to access Vault similar to all other consumers.
+    
+    ## Authentication
+    Once Vault is unsealed, almost every operation requires a client token. The token
+    can be sent via:
+    - `X-Vault-Token` HTTP header
+    - `Authorization` header using Bearer token scheme
+    
+    ## Namespaces (Enterprise)
+    When using Namespaces, the final path is relative to the `X-Vault-Namespace` header.
+    For HCP Vault Dedicated, the top-level namespace is `admin`.
+    
+    ## API Versioning
+    All API routes are prefixed with `/v1/`. This is currently the only version.
+    
+    **Note:** Vault does not yet promise backwards compatibility even with the v1 prefix.
+    The core API (`sys/` routes) changes infrequently, but secrets engines and auth 
+    methods may have minor changes to accommodate new features.
+    
+    ## Transport
+    The API should be accessed over TLS with a valid, verified certificate.
+  version: "1.0.0"
+  contact:
+    name: HashiCorp
+    url: https://www.vaultproject.io
+  license:
+    name: Business Source License 1.1
+    url: https://github.com/hashicorp/vault/blob/main/LICENSE
+
+servers:
+  - url: http://127.0.0.1:8200/v1
+    description: Local development server
+  - url: https://{host}:{port}/v1
+    description: Custom Vault server
+    variables:
+      host:
+        default: vault.example.com
+        description: Vault server hostname
+      port:
+        default: "8200"
+        description: Vault server port
+
+security:
+  - VaultToken: []
+  - BearerAuth: []
+
+tags:
+  - name: System
+    description: System backend operations (seal status, health, initialization)
+  - name: KVv1
+    description: Key-Value secrets engine version 1
+  - name: KVv2
+    description: Key-Value secrets engine version 2
+  - name: Auth
+    description: Authentication operations
+
+paths:
+  # ============================================================================
+  # System Backend Endpoints
+  # ============================================================================
+  /sys/health:
+    get:
+      operationId: getHealth
+      summary: Check Vault health status
+      description: |
+        Returns the health status of Vault. This is an unauthenticated endpoint.
+        
+        Status codes:
+        - 200: initialized, unsealed, and active
+        - 429: unsealed and standby
+        - 472: disaster recovery mode replication secondary and active
+        - 473: performance standby
+        - 501: not initialized
+        - 503: sealed
+      tags:
+        - System
+      security: []
+      parameters:
+        - name: standbyok
+          in: query
+          description: Return 200 instead of 429 for standby nodes
+          schema:
+            type: boolean
+            default: false
+        - name: perfstandbyok
+          in: query
+          description: Return 200 instead of 473 for performance standby nodes
+          schema:
+            type: boolean
+            default: false
+        - name: activecode
+          in: query
+          description: Custom status code for active node
+          schema:
+            type: integer
+            default: 200
+        - name: standbycode
+          in: query
+          description: Custom status code for standby node
+          schema:
+            type: integer
+            default: 429
+        - name: drsecondarycode
+          in: query
+          description: Custom status code for DR secondary node
+          schema:
+            type: integer
+            default: 472
+        - name: performancestandbycode
+          in: query
+          description: Custom status code for performance standby node
+          schema:
+            type: integer
+            default: 473
+        - name: sealedcode
+          in: query
+          description: Custom status code for sealed node
+          schema:
+            type: integer
+            default: 503
+        - name: uninitcode
+          in: query
+          description: Custom status code for uninitialized node
+          schema:
+            type: integer
+            default: 501
+      responses:
+        '200':
+          description: Vault is initialized, unsealed, and active
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '429':
+          description: Vault is unsealed and in standby mode
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '472':
+          description: Vault is in disaster recovery mode
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '473':
+          description: Vault is a performance standby
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '501':
+          description: Vault is not initialized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '503':
+          description: Vault is sealed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  # ============================================================================
+  # KVv1 Secrets Engine Endpoints
+  # ============================================================================
+  /secret/{path}:
+    get:
+      operationId: kvV1ReadSecret
+      summary: Read a secret (KVv1)
+      description: |
+        Reads the value of the secret at the specified path.
+        This endpoint is for KVv1 secrets engine.
+      tags:
+        - KVv1
+      parameters:
+        - $ref: '#/components/parameters/SecretPath'
+      responses:
+        '200':
+          description: Secret data returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KVv1ReadResponse'
+        '404':
+          description: Secret not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      operationId: kvV1WriteSecret
+      summary: Create or update a secret (KVv1)
+      description: |
+        Stores a secret at the specified path. If the secret already exists, 
+        it will be overwritten. PUT and POST are treated as synonyms.
+      tags:
+        - KVv1
+      parameters:
+        - $ref: '#/components/parameters/SecretPath'
+      requestBody:
+        required: true
+        description: Key-value pairs to store as the secret
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              example:
+                value: "bar"
+                api_key: "secret123"
+      responses:
+        '204':
+          description: Secret written successfully
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      operationId: kvV1UpdateSecret
+      summary: Create or update a secret (KVv1)
+      description: Alias for POST. Stores a secret at the specified path.
+      tags:
+        - KVv1
+      parameters:
+        - $ref: '#/components/parameters/SecretPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '204':
+          description: Secret written successfully
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      operationId: kvV1DeleteSecret
+      summary: Delete a secret (KVv1)
+      description: Deletes the secret at the specified path
+      tags:
+        - KVv1
+      parameters:
+        - $ref: '#/components/parameters/SecretPath'
+      responses:
+        '204':
+          description: Secret deleted successfully
+        '404':
+          description: Secret not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /secret/:
+    get:
+      operationId: kvV1ListSecrets
+      summary: List secrets (KVv1)
+      description: |
+        Lists secret keys at the specified path. Returns keys at the root of the 
+        secrets engine. Use `list=true` query parameter or LIST method.
+        
+        Returns 404 with empty errors array if no keys exist.
+      tags:
+        - KVv1
+      parameters:
+        - name: list
+          in: query
+          required: true
+          description: Must be set to true for listing
+          schema:
+            type: boolean
+            enum: [true]
+      responses:
+        '200':
+          description: List of secret keys
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListResponse'
+        '404':
+          description: No secrets found or path is not a directory
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyErrorResponse'
+
+  /secret/{path}/:
+    get:
+      operationId: kvV1ListSecretsAtPath
+      summary: List secrets at path (KVv1)
+      description: Lists secret keys at the specified directory path
+      tags:
+        - KVv1
+      parameters:
+        - name: path
+          in: path
+          required: true
+          description: Directory path to list
+          schema:
+            type: string
+          example: "myapp"
+        - name: list
+          in: query
+          required: true
+          schema:
+            type: boolean
+            enum: [true]
+      responses:
+        '200':
+          description: List of secret keys
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListResponse'
+        '404':
+          description: Path not found or empty
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyErrorResponse'
+
+  # ============================================================================
+  # KVv2 Secrets Engine Endpoints
+  # ============================================================================
+  /secret/data/{path}:
+    get:
+      operationId: kvV2ReadSecret
+      summary: Read a secret (KVv2)
+      description: |
+        Reads the value of the secret at the specified path.
+        This endpoint is for KVv2 secrets engine (versioned KV).
+      tags:
+        - KVv2
+      parameters:
+        - name: path
+          in: path
+          required: true
+          description: Path to the secret
+          schema:
+            type: string
+          example: "myapp/config"
+        - name: version
+          in: query
+          required: false
+          description: Specific version to read. Defaults to latest.
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Secret data with metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KVv2ReadResponse'
+        '404':
+          description: Secret not found or version does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      operationId: kvV2WriteSecret
+      summary: Create or update a secret (KVv2)
+      description: |
+        Creates a new version of a secret at the specified path.
+        If check-and-set (cas) is enabled, the cas parameter must match 
+        the current version or the write will fail.
+      tags:
+        - KVv2
+      parameters:
+        - name: path
+          in: path
+          required: true
+          description: Path to the secret
+          schema:
+            type: string
+          example: "myapp/config"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KVv2WriteRequest'
+      responses:
+        '200':
+          description: Secret version created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KVv2WriteResponse'
+        '400':
+          description: Invalid request or CAS mismatch
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      operationId: kvV2DeleteLatestSecret
+      summary: Delete latest version of a secret (KVv2)
+      description: |
+        Issues a soft delete of the latest version of a secret.
+        The secret can be recovered with undelete.
+      tags:
+        - KVv2
+      parameters:
+        - name: path
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Secret version deleted successfully
+
+  /secret/delete/{path}:
+    post:
+      operationId: kvV2DeleteVersions
+      summary: Delete specific versions (KVv2)
+      description: Soft deletes specific versions of a secret
+      tags:
+        - KVv2
+      parameters:
+        - name: path
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - versions
+              properties:
+                versions:
+                  type: array
+                  items:
+                    type: integer
+                  description: List of version numbers to delete
+                  example: [1, 2, 3]
+      responses:
+        '204':
+          description: Versions deleted successfully
+
+  /secret/undelete/{path}:
+    post:
+      operationId: kvV2UndeleteVersions
+      summary: Undelete secret versions (KVv2)
+      description: Recovers previously soft-deleted versions
+      tags:
+        - KVv2
+      parameters:
+        - name: path
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - versions
+              properties:
+                versions:
+                  type: array
+                  items:
+                    type: integer
+                  example: [1, 2]
+      responses:
+        '204':
+          description: Versions recovered successfully
+
+  /secret/destroy/{path}:
+    post:
+      operationId: kvV2DestroyVersions
+      summary: Permanently destroy versions (KVv2)
+      description: |
+        Permanently destroys specific versions of a secret.
+        This action is irreversible.
+      tags:
+        - KVv2
+      parameters:
+        - name: path
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - versions
+              properties:
+                versions:
+                  type: array
+                  items:
+                    type: integer
+                  example: [1, 2]
+      responses:
+        '204':
+          description: Versions permanently destroyed
+
+  /secret/metadata/{path}:
+    get:
+      operationId: kvV2ReadMetadata
+      summary: Read secret metadata (KVv2)
+      description: Returns metadata and all version history for a secret
+      tags:
+        - KVv2
+      parameters:
+        - name: path
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Secret metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KVv2MetadataResponse'
+        '404':
+          description: Secret not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      operationId: kvV2WriteMetadata
+      summary: Update secret metadata (KVv2)
+      description: Updates metadata settings for a secret
+      tags:
+        - KVv2
+      parameters:
+        - name: path
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KVv2MetadataRequest'
+      responses:
+        '204':
+          description: Metadata updated successfully
+
+    delete:
+      operationId: kvV2DeleteMetadata
+      summary: Delete all secret versions and metadata (KVv2)
+      description: |
+        Permanently deletes all versions and metadata for a secret.
+        This action is irreversible.
+      tags:
+        - KVv2
+      parameters:
+        - name: path
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Secret and all versions permanently deleted
+
+  /secret/metadata/:
+    get:
+      operationId: kvV2ListSecrets
+      summary: List secrets (KVv2)
+      description: Lists all secrets at the root of the secrets engine
+      tags:
+        - KVv2
+      parameters:
+        - name: list
+          in: query
+          required: true
+          schema:
+            type: boolean
+            enum: [true]
+      responses:
+        '200':
+          description: List of secret keys
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListResponse'
+        '404':
+          description: No secrets found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyErrorResponse'
+
+  # ============================================================================
+  # Token Auth Endpoints
+  # ============================================================================
+  /auth/token/lookup-self:
+    get:
+      operationId: lookupSelfToken
+      summary: Lookup current token
+      description: Returns information about the current client token
+      tags:
+        - Auth
+      responses:
+        '200':
+          description: Token information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenLookupResponse'
+
+  /auth/token/renew-self:
+    post:
+      operationId: renewSelfToken
+      summary: Renew current token
+      description: Renews the lease on the current client token
+      tags:
+        - Auth
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                increment:
+                  type: string
+                  description: Requested lease increment (e.g., "1h")
+                  example: "1h"
+      responses:
+        '200':
+          description: Token renewed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+
+  /auth/token/revoke-self:
+    post:
+      operationId: revokeSelfToken
+      summary: Revoke current token
+      description: Revokes the current client token and all child tokens
+      tags:
+        - Auth
+      responses:
+        '204':
+          description: Token revoked successfully
+
+  /auth/token/create:
+    post:
+      operationId: createToken
+      summary: Create a new token
+      description: Creates a new token as a child of the current token
+      tags:
+        - Auth
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenCreateRequest'
+      responses:
+        '200':
+          description: Token created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+
+components:
+  securitySchemes:
+    VaultToken:
+      type: apiKey
+      in: header
+      name: X-Vault-Token
+      description: Vault client token
+    BearerAuth:
+      type: http
+      scheme: bearer
+      description: Vault client token using Bearer scheme
+
+  parameters:
+    MountPath:
+      name: path
+      in: path
+      required: true
+      description: Mount path for the secrets engine (cannot end in periods)
+      schema:
+        type: string
+        pattern: '^[^.]+[^.]*$'
+      example: "secret"
+
+    SecretPath:
+      name: path
+      in: path
+      required: true
+      description: Path to the secret (cannot end in periods)
+      schema:
+        type: string
+        pattern: '^[^.]+[^.]*$'
+      example: "myapp/config"
+
+    VaultNamespace:
+      name: X-Vault-Namespace
+      in: header
+      required: false
+      description: |
+        Target namespace for the request (Enterprise feature).
+        For HCP Vault Dedicated, use "admin" as the top-level namespace.
+      schema:
+        type: string
+      example: "admin/my-namespace"
+
+    VaultRequest:
+      name: X-Vault-Request
+      in: header
+      required: false
+      description: |
+        Required when sending requests through Vault Proxy with 
+        require_request_header enabled. Set to "true".
+      schema:
+        type: string
+        enum: ["true"]
+
+  schemas:
+    # Health and Status
+    HealthResponse:
+      type: object
+      properties:
+        initialized:
+          type: boolean
+        sealed:
+          type: boolean
+        standby:
+          type: boolean
+        performance_standby:
+          type: boolean
+        replication_performance_mode:
+          type: string
+        replication_dr_mode:
+          type: string
+        server_time_utc:
+          type: integer
+        version:
+          type: string
+        cluster_name:
+          type: string
+        cluster_id:
+          type: string
+
+    SealStatusResponse:
+      type: object
+      properties:
+        type:
+          type: string
+          description: Seal type (e.g., "shamir")
+        initialized:
+          type: boolean
+        sealed:
+          type: boolean
+        t:
+          type: integer
+          description: Threshold of keys required to unseal
+        n:
+          type: integer
+          description: Total number of key shares
+        progress:
+          type: integer
+          description: Number of unseal keys provided
+        nonce:
+          type: string
+        version:
+          type: string
+        build_date:
+          type: string
+        migration:
+          type: boolean
+        cluster_name:
+          type: string
+        cluster_id:
+          type: string
+        recovery_seal:
+          type: boolean
+        storage_type:
+          type: string
+
+    # Initialization
+    InitRequest:
+      type: object
+      properties:
+        secret_shares:
+          type: integer
+          description: Number of key shares to split the root key into
+          minimum: 1
+          example: 5
+        secret_threshold:
+          type: integer
+          description: Number of key shares required to reconstruct the root key
+          minimum: 1
+          example: 3
+        pgp_keys:
+          type: array
+          items:
+            type: string
+          description: PGP public keys for encrypting key shares
+        root_token_pgp_key:
+          type: string
+          description: PGP public key for encrypting the root token
+        recovery_shares:
+          type: integer
+          description: Number of recovery key shares (for auto-unseal)
+        recovery_threshold:
+          type: integer
+          description: Recovery key threshold (for auto-unseal)
+        recovery_pgp_keys:
+          type: array
+          items:
+            type: string
+      required:
+        - secret_shares
+        - secret_threshold
+
+    InitResponse:
+      type: object
+      properties:
+        keys:
+          type: array
+          items:
+            type: string
+          description: Unseal key shares (base64 or PGP encrypted)
+        keys_base64:
+          type: array
+          items:
+            type: string
+          description: Unseal key shares in base64
+        root_token:
+          type: string
+          description: Initial root token
+        recovery_keys:
+          type: array
+          items:
+            type: string
+        recovery_keys_base64:
+          type: array
+          items:
+            type: string
+
+    UnsealRequest:
+      type: object
+      properties:
+        key:
+          type: string
+          description: Single unseal key share
+        reset:
+          type: boolean
+          description: Reset the unseal progress
+          default: false
+        migrate:
+          type: boolean
+          description: Migrate to a different seal type
+
+    # Mounts
+    MountsResponse:
+      type: object
+      properties:
+        request_id:
+          type: string
+        lease_id:
+          type: string
+        renewable:
+          type: boolean
+        lease_duration:
+          type: integer
+        data:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/MountInfo'
+
+    MountInfo:
+      type: object
+      properties:
+        type:
+          type: string
+          example: "kv"
+        description:
+          type: string
+        accessor:
+          type: string
+        config:
+          type: object
+          properties:
+            default_lease_ttl:
+              type: integer
+            max_lease_ttl:
+              type: integer
+            force_no_cache:
+              type: boolean
+        options:
+          type: object
+          additionalProperties:
+            type: string
+        local:
+          type: boolean
+        seal_wrap:
+          type: boolean
+        external_entropy_access:
+          type: boolean
+
+    MountRequest:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          description: Type of secrets engine to mount
+          example: "kv"
+        description:
+          type: string
+          description: Human-friendly description
+        config:
+          type: object
+          properties:
+            default_lease_ttl:
+              type: string
+              example: "1h"
+            max_lease_ttl:
+              type: string
+              example: "24h"
+            force_no_cache:
+              type: boolean
+            audit_non_hmac_request_keys:
+              type: array
+              items:
+                type: string
+            audit_non_hmac_response_keys:
+              type: array
+              items:
+                type: string
+        options:
+          type: object
+          additionalProperties:
+            type: string
+          description: Mount options (e.g., version for KV)
+          example:
+            version: "2"
+        local:
+          type: boolean
+          default: false
+        seal_wrap:
+          type: boolean
+          default: false
+
+    # KVv1 Responses
+    KVv1ReadResponse:
+      type: object
+      properties:
+        request_id:
+          type: string
+        lease_id:
+          type: string
+        renewable:
+          type: boolean
+        lease_duration:
+          type: integer
+        data:
+          type: object
+          additionalProperties: true
+          description: The secret key-value pairs
+          example:
+            value: "bar"
+            api_key: "secret123"
+        wrap_info:
+          type: object
+          nullable: true
+        warnings:
+          type: array
+          items:
+            type: string
+          nullable: true
+        auth:
+          type: object
+          nullable: true
+
+    # KVv2 Schemas
+    KVv2ReadResponse:
+      type: object
+      properties:
+        request_id:
+          type: string
+        lease_id:
+          type: string
+        renewable:
+          type: boolean
+        lease_duration:
+          type: integer
+        data:
+          type: object
+          properties:
+            data:
+              type: object
+              additionalProperties: true
+              description: The secret key-value pairs
+            metadata:
+              type: object
+              properties:
+                created_time:
+                  type: string
+                  format: date-time
+                custom_metadata:
+                  type: object
+                  additionalProperties:
+                    type: string
+                  nullable: true
+                deletion_time:
+                  type: string
+                destroyed:
+                  type: boolean
+                version:
+                  type: integer
+
+    KVv2WriteRequest:
+      type: object
+      required:
+        - data
+      properties:
+        options:
+          type: object
+          properties:
+            cas:
+              type: integer
+              description: Check-and-Set version. Set to 0 to only create if key doesn't exist.
+        data:
+          type: object
+          additionalProperties: true
+          description: Key-value pairs to store
+          example:
+            value: "bar"
+            api_key: "secret123"
+
+    KVv2WriteResponse:
+      type: object
+      properties:
+        request_id:
+          type: string
+        lease_id:
+          type: string
+        renewable:
+          type: boolean
+        lease_duration:
+          type: integer
+        data:
+          type: object
+          properties:
+            created_time:
+              type: string
+              format: date-time
+            custom_metadata:
+              type: object
+              nullable: true
+            deletion_time:
+              type: string
+            destroyed:
+              type: boolean
+            version:
+              type: integer
+
+    KVv2MetadataResponse:
+      type: object
+      properties:
+        request_id:
+          type: string
+        lease_id:
+          type: string
+        renewable:
+          type: boolean
+        lease_duration:
+          type: integer
+        data:
+          type: object
+          properties:
+            cas_required:
+              type: boolean
+            created_time:
+              type: string
+              format: date-time
+            current_version:
+              type: integer
+            custom_metadata:
+              type: object
+              additionalProperties:
+                type: string
+              nullable: true
+            delete_version_after:
+              type: string
+            max_versions:
+              type: integer
+            oldest_version:
+              type: integer
+            updated_time:
+              type: string
+              format: date-time
+            versions:
+              type: object
+              additionalProperties:
+                type: object
+                properties:
+                  created_time:
+                    type: string
+                    format: date-time
+                  deletion_time:
+                    type: string
+                  destroyed:
+                    type: boolean
+
+    KVv2MetadataRequest:
+      type: object
+      properties:
+        max_versions:
+          type: integer
+          description: Maximum number of versions to keep
+          minimum: 0
+        cas_required:
+          type: boolean
+          description: Require check-and-set for all writes
+        delete_version_after:
+          type: string
+          description: Duration after which versions are deleted (e.g., "30d")
+        custom_metadata:
+          type: object
+          additionalProperties:
+            type: string
+          description: Custom metadata key-value pairs
+
+    # List Response
+    ListResponse:
+      type: object
+      properties:
+        request_id:
+          type: string
+        lease_id:
+          type: string
+        renewable:
+          type: boolean
+        lease_duration:
+          type: integer
+        data:
+          type: object
+          properties:
+            keys:
+              type: array
+              items:
+                type: string
+              description: List of keys/paths
+              example: ["foo", "bar/"]
+
+    EmptyErrorResponse:
+      type: object
+      description: Returned when list result is empty (404 status)
+      properties:
+        errors:
+          type: array
+          items:
+            type: string
+          example: []
+
+    # Auth Responses
+    AuthResponse:
+      type: object
+      properties:
+        request_id:
+          type: string
+        lease_id:
+          type: string
+        renewable:
+          type: boolean
+        lease_duration:
+          type: integer
+        data:
+          type: object
+          nullable: true
+        auth:
+          type: object
+          properties:
+            client_token:
+              type: string
+            accessor:
+              type: string
+            policies:
+              type: array
+              items:
+                type: string
+            token_policies:
+              type: array
+              items:
+                type: string
+            metadata:
+              type: object
+              additionalProperties:
+                type: string
+            lease_duration:
+              type: integer
+            renewable:
+              type: boolean
+            entity_id:
+              type: string
+            token_type:
+              type: string
+            orphan:
+              type: boolean
+
+    TokenLookupResponse:
+      type: object
+      properties:
+        request_id:
+          type: string
+        lease_id:
+          type: string
+        renewable:
+          type: boolean
+        lease_duration:
+          type: integer
+        data:
+          type: object
+          properties:
+            accessor:
+              type: string
+            creation_time:
+              type: integer
+            creation_ttl:
+              type: integer
+            display_name:
+              type: string
+            entity_id:
+              type: string
+            expire_time:
+              type: string
+              format: date-time
+              nullable: true
+            explicit_max_ttl:
+              type: integer
+            id:
+              type: string
+            issue_time:
+              type: string
+              format: date-time
+            meta:
+              type: object
+              additionalProperties:
+                type: string
+              nullable: true
+            num_uses:
+              type: integer
+            orphan:
+              type: boolean
+            path:
+              type: string
+            policies:
+              type: array
+              items:
+                type: string
+            renewable:
+              type: boolean
+            ttl:
+              type: integer
+            type:
+              type: string
+
+    TokenCreateRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Specific token ID to create (requires sudo)
+        role_name:
+          type: string
+          description: Token role to use
+        policies:
+          type: array
+          items:
+            type: string
+          description: List of policies to attach
+        meta:
+          type: object
+          additionalProperties:
+            type: string
+          description: Metadata to attach to the token
+        no_parent:
+          type: boolean
+          description: Create an orphan token
+        no_default_policy:
+          type: boolean
+          description: Do not include default policy
+        renewable:
+          type: boolean
+          description: Whether the token is renewable
+          default: true
+        ttl:
+          type: string
+          description: Token TTL (e.g., "1h")
+        explicit_max_ttl:
+          type: string
+          description: Explicit maximum TTL
+        display_name:
+          type: string
+          description: Display name for the token
+        num_uses:
+          type: integer
+          description: Maximum number of uses (0 = unlimited)
+        period:
+          type: string
+          description: Renewal period for periodic tokens
+        entity_alias:
+          type: string
+          description: Entity alias to associate
+
+    # Error Response
+    ErrorResponse:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            type: string
+          description: List of error messages
+          example: ["permission denied"]

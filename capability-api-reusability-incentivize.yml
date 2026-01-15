@@ -2,6 +2,10 @@
 # I am using this explore pilot customer capabilities for the Ai context use case.
 # This will vary radically from the current classes, but is meant to explore variations.
 
+naftiko:
+
+  schema:  'https://github.com/naftiko/schema/blob/main/core/capability/capabiity-schema.yml'
+
 info:
 
   name: API Reusability - Incentivize
@@ -37,7 +41,7 @@ ports:
 
 useCase:
 
-  - $ref: 'use-case/api-reusability.yml' 
+  - $ref: 'https://github.com/naftiko/schema/blob/main/secondary/use-case/examples/use-case-example-api-reusability.yml' 
 
 stakeholders:
 
@@ -102,15 +106,15 @@ standards:
 
   - name: Naftiko Capabilities
     description: This uses a exploratory schema to help inform and shape capabilities.
-    docUrl: https://psychic-bassoon-z2vjvn4.pages.github.io/docs/capabilities/
+    docUrl: https://naftiko.github.io/technology/docs/capabilities/
 
   - name: OpenAPI
     description: This uses OpenAPI to generate the MCP server being implemented.
-    docUrl: https://psychic-bassoon-z2vjvn4.pages.github.io/docs/standards/openapi/
+    docUrl: https://naftiko.github.io/technology/docs/standards/openapi/
 
   - name: Model Context Protocol
     description: This uses MCP expresed as JSON schema to define each MCP server.
-    docUrl: https://psychic-bassoon-z2vjvn4.pages.github.io/docs/standards/model-context-protocol/
+    docUrl: https://naftiko.github.io/technology/docs/standards/model-context-protocol/
       
 observability: 
 

@@ -1,0 +1,512 @@
+# ============================================
+# NRDB Record Ingest Limits
+# ============================================
+
+- name: nrdb-record-ingest-rate
+  type: RateLimit
+  limit: 55000000
+  metric: records
+  domains:
+    - "insights-collector.newrelic.com"
+    - "metric-api.newrelic.com"
+    - "log-api.newrelic.com"
+    - "trace-api.newrelic.com"
+  timeframe: minute
+  description: >-
+    Maximum rate of NRDB record ingest per account per minute. 
+    NRDB records include events, metrics (dimensional), logs, and 
+    distributed tracing (span) data stored in the New Relic database. 
+    When exceeded, returns 429 status code for the duration of the minute.
+  userMultiplied: false
+
+- name: nrdb-records-per-api-call
+  type: ApiLimit
+  limit: 1000000
+  metric: bytes
+  domains:
+    - "insights-collector.newrelic.com"
+    - "metric-api.newrelic.com"
+    - "log-api.newrelic.com"
+    - "trace-api.newrelic.com"
+  timeframe: request
+  description: >-
+    Maximum NRDB records ingested per single API call (1MB / 10^6 bytes). 
+    This is a per-request limit, not a time-based rate limit.
+  userMultiplied: false
+
+- name: max-payload-size
+  type: ApiLimit
+  limit: 1000000
+  metric: bytes
+  domains:
+    - "insights-collector.newrelic.com"
+    - "metric-api.newrelic.com"
+    - "log-api.newrelic.com"
+    - "trace-api.newrelic.com"
+  timeframe: request
+  description: >-
+    Maximum payload size per API request (1MB / 10^6 bytes). 
+    Requests exceeding this size will be rejected.
+  userMultiplied: false
+
+# ============================================
+# Attribute Limits
+# ============================================
+
+- name: max-attribute-value-size
+  type: ApiLimit
+  limit: 1000
+  metric: bytes
+  domains:
+    - "insights-collector.newrelic.com"
+    - "metric-api.newrelic.com"
+    - "log-api.newrelic.com"
+    - "trace-api.newrelic.com"
+  timeframe: request
+  description: >-
+    Maximum attribute value size (1KB / 10^3 bytes). 
+    Individual attribute values exceeding this size will be truncated or rejected.
+  userMultiplied: false
+
+- name: max-attribute-name-length
+  type: ApiLimit
+  limit: 255
+  metric: characters
+  domains:
+    - "insights-collector.newrelic.com"
+    - "metric-api.newrelic.com"
+    - "log-api.newrelic.com"
+    - "trace-api.newrelic.com"
+  timeframe: request
+  description: >-
+    Maximum attribute name length in characters. 
+    Attribute names exceeding 255 characters will be rejected.
+  userMultiplied: false
+
+- name: max-attribute-value-length-metric-trace-event
+  type: ApiLimit
+  limit: 4096
+  metric: characters
+  domains:
+    - "insights-collector.newrelic.com"
+    - "metric-api.newrelic.com"
+    - "trace-api.newrelic.com"
+  timeframe: request
+  description: >-
+    Maximum attribute value length for Metric, Trace, and Event APIs. 
+    Values exceeding 4096 characters will be truncated.
+  userMultiplied: false
+
+- name: max-attribute-value-length-log
+  type: ApiLimit
+  limit: 4094
+  metric: characters
+  domains:
+    - "log-api.newrelic.com"
+  timeframe: request
+  description: >-
+    Maximum attribute value length for Log API. 
+    Values exceeding 4094 characters will be truncated.
+  userMultiplied: false
+
+- name: max-attributes-per-data-type
+  type: ApiLimit
+  limit: 254
+  metric: attributes
+  domains:
+    - "insights-collector.newrelic.com"
+    - "metric-api.newrelic.com"
+    - "log-api.newrelic.com"
+    - "trace-api.newrelic.com"
+  timeframe: request
+  description: >-
+    Maximum total attributes per data type including default attributes. 
+    Some tools have lower limits (e.g., 64 for agents). 
+    Additional attributes beyond the limit will be dropped.
+  userMultiplied: false
+
+# ============================================
+# Custom Data Type Limits
+# ============================================
+
+- name: unique-custom-data-types-per-namespace
+  type: RateLimit
+  limit: 250
+  metric: custom-event-types
+  domains:
+    - "insights-collector.newrelic.com"
+  timeframe: day
+  description: >-
+    Maximum number of unique custom data types per account per namespace 
+    per day. Primarily a limit for custom events. Exceeding this limit 
+    will prevent new custom event types from being created until the 
+    next UTC day.
+  userMultiplied: false
+
+# ============================================
+# APM Limits
+# ============================================
+
+- name: apm-agent-instances-per-account
+  type: ApiLimit
+  limit: 50000
+  metric: agent-instances
+  domains:
+    - "collector.newrelic.com"
+    - "collector.eu.newrelic.com"
+  timeframe: total
+  description: >-
+    Maximum number of APM agent instances per account. 
+    Accounts exceeding 50,000 agent instances may experience 
+    degraded performance or data loss.
+  userMultiplied: false
+
+- name: apm-agent-instances-per-app
+  type: ApiLimit
+  limit: 10000
+  metric: agent-instances
+  domains:
+    - "collector.newrelic.com"
+    - "collector.eu.newrelic.com"
+  timeframe: total
+  description: >-
+    Maximum number of APM agent instances per application. 
+    Applications exceeding 10,000 instances should be segmented 
+    into multiple logical applications.
+  userMultiplied: true
+
+# ============================================
+# Browser Monitoring Limits
+# ============================================
+
+- name: browser-page-views
+  type: RateLimit
+  limit: 1000000
+  metric: page-views
+  domains:
+    - "bam.nr-data.net"
+    - "bam-cell.nr-data.net"
+  timeframe: minute
+  description: >-
+    Maximum number of browser page views per minute per application. 
+    When exceeded, data sampling may be applied or additional 
+    page views may be dropped.
+  userMultiplied: true
+
+# ============================================
+# Metric Timeslice Data Limits
+# ============================================
+
+- name: metric-timeslice-ingest-rate
+  type: RateLimit
+  limit: 2000000
+  metric: metric-timeslices
+  domains:
+    - "collector.newrelic.com"
+    - "collector.eu.newrelic.com"
+    - "mobile-collector.newrelic.com"
+    - "bam.nr-data.net"
+  timeframe: minute
+  description: >-
+    Maximum rate of metric timeslice data ingest per minute. 
+    Used by APM, browser, and mobile monitoring. When exceeded, 
+    metric data may be aggregated or dropped.
+  userMultiplied: false
+
+- name: metric-timeslice-name-rate
+  type: RateLimit
+  limit: 4000000
+  metric: metric-names
+  domains:
+    - "collector.newrelic.com"
+    - "collector.eu.newrelic.com"
+  timeframe: minute
+  description: >-
+    Maximum rate of unique metric names per minute per account. 
+    High cardinality metrics may trigger this limit and result 
+    in aggregation being turned off.
+  userMultiplied: false
+
+- name: metric-timeslice-per-app
+  type: ApiLimit
+  limit: 300000
+  metric: metrics
+  domains:
+    - "collector.newrelic.com"
+    - "collector.eu.newrelic.com"
+  timeframe: total
+  description: >-
+    Maximum number of unique metric timeslices per monitored application. 
+    Applications exceeding 300,000 metrics should review their 
+    instrumentation for high-cardinality issues.
+  userMultiplied: true
+
+# ============================================
+# Infrastructure Monitoring Limits
+# ============================================
+
+- name: infrastructure-new-containers
+  type: RateLimit
+  limit: 5000
+  metric: containers
+  domains:
+    - "infra-api.newrelic.com"
+    - "infrastructure-api.newrelic.com"
+  timeframe: hour
+  description: >-
+    Gross number of new monitored containers per hour per account. 
+    Rapid container scaling beyond this rate may result in delayed 
+    or dropped container metrics.
+  userMultiplied: false
+
+- name: cloud-integration-new-entities
+  type: RateLimit
+  limit: 30000
+  metric: entities
+  domains:
+    - "infra-api.newrelic.com"
+    - "infrastructure-api.newrelic.com"
+  timeframe: hour
+  description: >-
+    Gross number of new monitored entities from cloud integrations 
+    (AWS, Azure, GCP) per hour per account. Rapid provisioning of 
+    cloud resources may trigger this limit.
+  userMultiplied: false
+
+- name: aws-metric-streams-kinesis-firehose
+  type: RateLimit
+  limit: 50
+  metric: requests
+  domains:
+    - "aws-api.newrelic.com"
+    - "cloud-collector.newrelic.com"
+  timeframe: minute
+  description: >-
+    Maximum AWS Metric Streams Kinesis Data Firehose requests 
+    per minute. Exceeding this limit may result in throttling 
+    of AWS CloudWatch metric ingestion.
+  userMultiplied: false
+
+# ============================================
+# Mobile Monitoring Limits
+# ============================================
+
+- name: mobile-crash-reports
+  type: RateLimit
+  limit: 10000
+  metric: crash-reports
+  domains:
+    - "mobile-collector.newrelic.com"
+    - "mobile-crash.newrelic.com"
+  timeframe: hour
+  description: >-
+    Maximum number of mobile crash reports per hour. 
+    When exceeded, additional crash reports may be sampled 
+    or dropped until the next hour.
+  userMultiplied: false
+
+# ============================================
+# Query Limits (NRQL)
+# ============================================
+
+- name: nrql-query-rate-limit
+  type: RateLimit
+  limit: 3000
+  metric: queries
+  domains:
+    - "insights-api.newrelic.com"
+    - "nrql-api.newrelic.com"
+    - "api.newrelic.com"
+  timeframe: minute
+  description: >-
+    Maximum number of NRQL queries per minute per account. 
+    Query limit events are generated at the one-minute level. 
+    Incidents are generated for continually exceeding the limit 
+    at the 5-minute level.
+  userMultiplied: false
+
+- name: nrql-records-inspected
+  type: RateLimit
+  limit: 20000000000
+  metric: records
+  domains:
+    - "insights-api.newrelic.com"
+    - "nrql-api.newrelic.com"
+    - "api.newrelic.com"
+  timeframe: minute
+  description: >-
+    Maximum number of records inspected per minute across all 
+    NRQL queries. Large queries scanning extensive time ranges 
+    may contribute significantly to this limit.
+  userMultiplied: false
+
+# ============================================
+# API Request Limits
+# ============================================
+
+- name: api-requests-per-minute
+  type: RateLimit
+  limit: 100
+  metric: requests
+  domains:
+    - "api.newrelic.com"
+    - "api.eu.newrelic.com"
+  timeframe: minute
+  description: >-
+    Maximum number of REST API requests per minute per data type. 
+    When this limit is reached, New Relic stops accepting data 
+    and returns a 429 status code for the duration of the minute.
+  userMultiplied: false
+
+# ============================================
+# Metric Cardinality Limits
+# ============================================
+
+- name: metric-cardinality-per-account
+  type: RateLimit
+  limit: 1000000
+  metric: unique-timeseries
+  domains:
+    - "metric-api.newrelic.com"
+  timeframe: day
+  description: >-
+    Maximum number of unique time series (cardinality) per account. 
+    When this limit is reached, aggregated data is turned off for 
+    the rest of the UTC day. High-cardinality metrics should be 
+    reviewed and optimized.
+  userMultiplied: false
+
+- name: metric-cardinality-per-metric
+  type: RateLimit
+  limit: 100000
+  metric: unique-timeseries
+  domains:
+    - "metric-api.newrelic.com"
+  timeframe: day
+  description: >-
+    Maximum number of unique time series (cardinality) per individual 
+    metric. Metrics exceeding this cardinality should be redesigned 
+    to reduce dimensionality.
+  userMultiplied: false
+
+# ============================================
+# Event API Limits
+# ============================================
+
+- name: event-api-payload-size
+  type: ApiLimit
+  limit: 1000000
+  metric: bytes
+  domains:
+    - "insights-collector.newrelic.com"
+  timeframe: request
+  description: >-
+    Maximum payload size for Event API requests (1MB). 
+    Payloads exceeding this limit will be rejected with an error.
+  userMultiplied: false
+
+- name: event-api-events-per-request
+  type: ApiLimit
+  limit: 2000
+  metric: events
+  domains:
+    - "insights-collector.newrelic.com"
+  timeframe: request
+  description: >-
+    Maximum number of events per single Event API request. 
+    Requests with more than 2000 events should be batched 
+    into multiple requests.
+  userMultiplied: false
+
+# ============================================
+# Log API Limits
+# ============================================
+
+- name: log-api-payload-size
+  type: ApiLimit
+  limit: 1000000
+  metric: bytes
+  domains:
+    - "log-api.newrelic.com"
+    - "log-api.eu.newrelic.com"
+  timeframe: request
+  description: >-
+    Maximum payload size for Log API requests (1MB). 
+    Log payloads exceeding this limit will be rejected.
+  userMultiplied: false
+
+- name: log-message-size
+  type: ApiLimit
+  limit: 32768
+  metric: bytes
+  domains:
+    - "log-api.newrelic.com"
+    - "log-api.eu.newrelic.com"
+  timeframe: request
+  description: >-
+    Maximum size of individual log messages (32KB). 
+    Messages exceeding this size will be truncated.
+  userMultiplied: false
+
+# ============================================
+# Trace API Limits
+# ============================================
+
+- name: trace-api-payload-size
+  type: ApiLimit
+  limit: 1000000
+  metric: bytes
+  domains:
+    - "trace-api.newrelic.com"
+    - "trace-api.eu.newrelic.com"
+  timeframe: request
+  description: >-
+    Maximum payload size for Trace API requests (1MB). 
+    Trace payloads exceeding this limit will be rejected.
+  userMultiplied: false
+
+- name: trace-spans-per-request
+  type: ApiLimit
+  limit: 1000
+  metric: spans
+  domains:
+    - "trace-api.newrelic.com"
+    - "trace-api.eu.newrelic.com"
+  timeframe: request
+  description: >-
+    Maximum number of spans per single Trace API request. 
+    Requests exceeding this limit should be split into 
+    multiple batches.
+  userMultiplied: false
+
+# ============================================
+# Alert Limits
+# ============================================
+
+- name: alert-conditions-per-account
+  type: ApiLimit
+  limit: 10000
+  metric: alert-conditions
+  domains:
+    - "api.newrelic.com"
+    - "alerts.newrelic.com"
+  timeframe: total
+  description: >-
+    Maximum number of alert conditions per account. 
+    Accounts approaching this limit should consolidate 
+    or optimize their alerting strategy.
+  userMultiplied: false
+
+- name: alert-policies-per-account
+  type: ApiLimit
+  limit: 10000
+  metric: alert-policies
+  domains:
+    - "api.newrelic.com"
+    - "alerts.newrelic.com"
+  timeframe: total
+  description: >-
+    Maximum number of alert policies per account. 
+    Organizations should use policy grouping to stay 
+    within this limit.
+  userMultiplied: false

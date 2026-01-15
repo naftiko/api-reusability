@@ -4,9 +4,7 @@ This is an exploratory proof of concept to quantify what API reuse is across a c
 API reusaability has been identified as a need across multiple conversations Naftiko is having with companies, and this repository is mean to explore what is possible across many different providers, helping better understand what API reuse means in way that others can use.
 
 ## Use Case
-This is an implementation of the API reusable use cases for multiple pilot customers, leveraging the use case schema being developed to drive use case conversations, as well as how they are applied to each individual capability.
-
-- [API Reusability](use-case/api-reusability.yml) - Defining and driving API reusability across a domain.
+This is an implementation of the [API Reusability use case](https://github.com/naftiko/schema/blob/main/secondary/use-case/examples/use-case-example-api-reusability.yml) based upon feedback from multiple design partners and leveraging the use case schema being developed to drive use case conversations, as well as how they are applied to each individual capability.
 
 ## Capabilities
 This end-to-end use cases has six separate capabilities, providing five individual capabilities that can be applied individually, as well as an aggregate capability that brings them all together to provide the right-size context window for an MCP server incentivizing reuse in VSCode, while also updating leadership and other teams of the reuse.
@@ -27,21 +25,55 @@ This is an image of this aggregate events AI context capability to try and captu
 ## Folders
 This repository is currently broken down into the following folders that help support references made within each capability, providing different layers of the capabilities using existing standards that our customers are using.
 
-- **api-commons** - Using two API commons schema for plans and rate limits.
-- **arazzo** - Using Arazzo for the oauth workflows of APIs being used.
-- **bruno** - Every HTTP adapter is setup and tested using Bruno client.
-- **diagrams** - Produced a diagram to help illustrate how capability works.
-- **json-schema** - Localizing all the JSON schema needed to validate.
-- **model-context-protocol** - Generating MCP servers from the OpenAPI.
-- **openapi** - Providing all of the OpenAPI needed for each HTTP adapter.
-- **spectral** - Providing all of the rules used to govern the capabilities.
-- **use-case** - The use case being applied as part of this aggregate capability.
-- **store** - Added to provide a place to cache responses and for requests.
+- agent-2-agent - Using A2A cards for any of the individual agents.
+- api-commons - Using two API commons schema for plans and rate limits.
+- arazzo - Using Arazzo for the oauth workflows and eventually events.
+- bruno - Every HTTP adapter is setup and tested using Bruno client.
+- diagrams - Produced a diagram to help illustrate how capability works.
+- model-context-protocol - Generating MCP servers from each OpenAPI.
+- openapi - Providing all of the OpenAPI needed for each HTTP adapter.
+- postman - Alternatively using Postman instead of Bruno for a client.
+- store - Added to provide a place to cache responses and for requests.
 
 In this exercise, a capabilities is just an aggregate of pointers to existing standards that provide abstractions for schema, interfaces, use cases, plans, rate limits, workflows, and governance, bundling up all the moving parts.
 
 ## Schemas
-All of the JSON Schema are stored locally in this folder for development and learning purposes, but all schema will be centralized via the [schema repository](https://github.com/naftiko/schema) to ensure their reuse across each of the capabilities and use cases being developed as part of this work.
+All of the JSON Schema are stored centrally via the [schema repository](https://github.com/naftiko/schema) to ensure their reuse across each of the capabilities and use cases being developed as part of this work.
+
+## Rules
+All of the Spectral and Vacuum are stored centrally via the [rules repository](https://github.com/naftiko/rules) to ensure their reuse across each of the capabilities and use cases being developed as part of this work.
+
+## Services
+These are the different types of services in use across these capabilities, providing the different layers of integration needed to deliver this capbility.
+
+- **Fleet** - The different services produced from this capability.
+    - **API Reusability (HTTP)** - The aggregate HTTP JSON API produced.
+    - **API Reusability (MCP)** - The aggregate HTTP MCP produced.
+    - **API Reusability (A2A)** - The aggregate A2A produced.        
+- **Rigging** - The different services needed to deliver business value.
+    - **Amazon API Gateway (HTTP)** - Pulling of API paths.
+    - **Amazon API Gateway (HTTP)** - Pulling of API schema
+    - **GitHub Authentication (HTTP)** - Authenticating with GitHub.
+    - **GitHub Repository OpenAPI Contents (HTTP)** - Pulling OpenAPI from GitHub.
+    - **Notion Authentication (HTTP)** - Authenticating with Notion.
+    - **Notion Page (HTTP)** - PUblishing a notion page.
+    - **Splunk Authentication (HTTP)** - Authenticating with Splunk.
+    - **Splunk HTTP Event Colelctor (HTTP)** - Publishing to Splunk dashboard.
+- **Hull** - The different services needed to deliver operational value.
+    - **New Relic Logs (HTTP)** - Logging of capbility activity via New Relic.
+    - **New Relic Tracing (HTTP)** - Tracing of capbility activity via New Relic.
+    - **Hashicorp Vault (HTTP)** - Management of secrets and keys.
+
+## Tools
+This capability possesses the common artifacts that other open-source tooling already speak, and can power the following tools:
+
+- [**Bruno**](https://naftiko.github.io/technology/docs/tooling/bruno/) - Use Bruno collections and enviroments to work with each individual API used as part of this capbility.
+- [**Microcks**](https://naftiko.github.io/technology/docs/tooling/microcks/) - Use Microcks for turning OpenAPI + Examples into sandboxes for all the API used in this collection.
+- [**Backstage**](https://naftiko.github.io/technology/docs/tooling/backstage/) - Distribute capabilities and APIs used as part of the capabilities to any Backstage instance.
+
+This capability will eventually run using the Naftiko engine, but also simulatneoulsy work across these open-source tools.
+
+![Artifact and Tooling Workflow](diagrams/capability-artifact-tooling-flow.png "Artifact and Tooling Workflow")
 
 ## Changes
 I am rapidly iterating upon this set of capabilities as part of ongoing pilot customer conversations and GTM storytelling, helping evolve and strengthen our API reusability use case. To help capture the changes I will try to do bulk updates via commits and PRs, but will wrap with an issue for logging purposes.

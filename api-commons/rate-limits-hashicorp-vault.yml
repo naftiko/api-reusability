@@ -1,0 +1,264 @@
+# ============================================
+# IP-Based Rate Limiting (Default Mode)
+# ============================================
+
+- name: api-rate-limit-by-ip
+  type: ip
+  limit: 500
+  metric: requests
+  domains:
+    - "vault.example.com"
+    - "api.vault.example.com"
+  timeframe: second
+  description: >-
+    Default rate limit quota grouped by source IP address. 
+    Each unique IP address gets its own bucket of 500 requests 
+    per second. Suitable for environments with distinct client IPs.
+  userMultiplied: true
+
+# ============================================
+# Collective Rate Limiting (None Mode)
+# ============================================
+
+- name: namespace-collective-rate-limit
+  type: none
+  limit: 10000
+  metric: requests
+  domains:
+    - "vault.example.com/v1/customer-a/*"
+  timeframe: second
+  description: >-
+    Collective rate limit for all requests within a namespace. 
+    Creates a single shared bucket for all entities and workloads. 
+    Use with caution - a single application can exhaust the quota 
+    and block all other users.
+  userMultiplied: false
+
+- name: global-collective-rate-limit
+  type: none
+  limit: 50000
+  metric: requests
+  domains:
+    - "vault.example.com/v1/*"
+  timeframe: second
+  description: >-
+    Global collective rate limit across all Vault API endpoints. 
+    WARNING: High risk configuration - use only when you need to 
+    enforce an absolute ceiling on total cluster throughput.
+  userMultiplied: false
+
+# ============================================
+# Entity-Based Rate Limiting (entity_then_ip)
+# ============================================
+
+- name: entity-rate-limit-with-ip-fallback
+  type: entity_then_ip
+  limit: 1000
+  metric: requests
+  domains:
+    - "vault.example.com/v1/secret/*"
+    - "vault.example.com/v1/auth/*"
+  timeframe: second
+  description: >-
+    Primary rate limit of 1000 req/s per entity ID for authenticated 
+    requests. Unauthenticated requests or those without entity 
+    association fall back to IP-based grouping. Ideal for environments 
+    with workloads using the same IP or dynamic/scaling IPs.
+  userMultiplied: true
+
+- name: entity-ip-secondary-rate-limit
+  type: entity_then_ip
+  limit: 2000
+  metric: requests
+  domains:
+    - "vault.example.com/v1/transit/*"
+  timeframe: second
+  description: >-
+    Secondary rate limit applied to IP-grouped requests when using 
+    entity_then_ip mode. This limit applies to unauthenticated 
+    requests or requests whose authentication is not connected to 
+    an entity, while authenticated entity requests use primary rate.
+  userMultiplied: true
+
+# ============================================
+# Entity-Based Rate Limiting (entity_then_none)
+# ============================================
+
+- name: entity-rate-limit-collective-fallback
+  type: entity_then_none
+  limit: 1000
+  metric: requests
+  domains:
+    - "vault.example.com/v1/secret/data/*"
+    - "vault.example.com/v1/kv/*"
+  timeframe: second
+  description: >-
+    Rate limit of 1000 req/s per entity regardless of source IP count. 
+    Requests without entity ID (unauthenticated or non-entity auth) 
+    are grouped collectively. Best for multi-IP workloads where 
+    entity identity is the primary concern.
+  userMultiplied: true
+
+- name: entity-none-high-throughput
+  type: entity_then_none
+  limit: 5000
+  metric: requests
+  domains:
+    - "vault.example.com/v1/transit/encrypt/*"
+    - "vault.example.com/v1/transit/decrypt/*"
+  timeframe: second
+  description: >-
+    High-throughput rate limit for encryption operations. 5000 req/s 
+    per entity with collective fallback for non-entity requests. 
+    Designed for Transit secrets engine bulk operations.
+  userMultiplied: true
+
+# ============================================
+# Path-Specific Rate Limits (Granular)
+# ============================================
+
+- name: auth-login-rate-limit
+  type: ip
+  limit: 100
+  metric: requests
+  domains:
+    - "vault.example.com/v1/auth/ldap/login"
+    - "vault.example.com/v1/auth/userpass/login"
+    - "vault.example.com/v1/auth/oidc/login"
+  timeframe: second
+  description: >-
+    Strict rate limit on authentication login endpoints to prevent 
+    brute-force attacks. Lower limit at path level overrides higher 
+    namespace limits due to granularity precedence.
+  userMultiplied: true
+
+- name: secrets-read-rate-limit
+  type: entity_then_ip
+  limit: 2000
+  metric: requests
+  domains:
+    - "vault.example.com/v1/secret/data/*"
+  timeframe: second
+  description: >-
+    Rate limit for secret read operations. Higher limit than write 
+    operations to accommodate frequent secret retrieval by applications.
+  userMultiplied: true
+
+- name: secrets-write-rate-limit
+  type: entity_then_ip
+  limit: 500
+  metric: requests
+  domains:
+    - "vault.example.com/v1/secret/data/*"
+  timeframe: second
+  description: >-
+    Rate limit for secret write operations. Lower than read limit 
+    to protect storage backend from excessive write load.
+  userMultiplied: true
+
+# ============================================
+# Namespace-Level Rate Limits
+# ============================================
+
+- name: customer-namespace-rate-limit
+  type: ip
+  limit: 1000
+  metric: requests
+  domains:
+    - "vault.example.com/v1/customer-a/*"
+    - "vault.example.com/v1/customer-b/*"
+    - "vault.example.com/v1/customer-c/*"
+  timeframe: second
+  description: >-
+    Per-customer namespace rate limiting for multi-tenant Vault 
+    deployments. Each customer namespace has independent IP-based 
+    rate limiting to ensure fair resource allocation.
+  userMultiplied: true
+
+- name: internal-namespace-high-limit
+  type: entity_then_none
+  limit: 10000
+  metric: requests
+  domains:
+    - "vault.example.com/v1/internal/*"
+  timeframe: second
+  description: >-
+    Higher rate limit for internal namespace used by trusted 
+    infrastructure services. Entity-based with collective fallback 
+    for service accounts.
+  userMultiplied: true
+
+# ============================================
+# Lease Count Quotas (Protection)
+# ============================================
+
+- name: global-lease-count-quota
+  type: none
+  limit: 100000
+  metric: leases
+  domains:
+    - "vault.example.com/v1/*"
+  timeframe: total
+  description: >-
+    Global lease count quota to protect Vault cluster from lease 
+    explosions. Limits total active leases across all namespaces 
+    and mounts. Critical for cluster stability.
+  userMultiplied: false
+
+- name: database-lease-count-quota
+  type: none
+  limit: 10000
+  metric: leases
+  domains:
+    - "vault.example.com/v1/database/creds/*"
+  timeframe: total
+  description: >-
+    Lease count quota for database dynamic credentials. Prevents 
+    runaway credential generation that could overwhelm database 
+    connection pools.
+  userMultiplied: false
+
+# ============================================
+# Mount-Level Rate Limits
+# ============================================
+
+- name: pki-mount-rate-limit
+  type: ip
+  limit: 200
+  metric: requests
+  domains:
+    - "vault.example.com/v1/pki/*"
+    - "vault.example.com/v1/pki_int/*"
+  timeframe: second
+  description: >-
+    Rate limit for PKI secrets engine operations. Certificate 
+    generation is resource-intensive; this limit protects the 
+    cluster from excessive PKI workloads.
+  userMultiplied: true
+
+- name: transit-mount-rate-limit
+  type: entity_then_ip
+  limit: 5000
+  metric: requests
+  domains:
+    - "vault.example.com/v1/transit/*"
+  timeframe: second
+  description: >-
+    High-throughput rate limit for Transit secrets engine. 
+    Encryption/decryption operations are common in high-volume 
+    applications requiring cryptographic services.
+  userMultiplied: true
+
+- name: aws-secrets-rate-limit
+  type: entity_then_none
+  limit: 500
+  metric: requests
+  domains:
+    - "vault.example.com/v1/aws/creds/*"
+    - "vault.example.com/v1/aws/sts/*"
+  timeframe: second
+  description: >-
+    Rate limit for AWS secrets engine credential generation. 
+    Lower limit due to external API dependencies and to prevent 
+    AWS API throttling issues.
+  userMultiplied: true

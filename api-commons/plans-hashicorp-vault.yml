@@ -1,0 +1,221 @@
+- id: hcp-vault-dedicated-development
+  name: HCP Vault Dedicated - Development
+  description: Explore enterprise features in a limited environment for up to 25 clients. Ideal for testing and development purposes.
+  entries:
+    - label: Cluster Hourly Rate
+      description: Base cost per cluster per hour for development tier
+      metric: cluster-hour
+      limit: 25
+      timeFrame: hour
+      geo: global
+      unit: 1
+      price: "0.62"
+  elements:
+    - name: Versioned key value storage
+    - name: User & group management
+    - name: Vault agent
+    - name: UI with cluster management
+    - name: Encryption as a Service
+    - name: Dynamic secrets
+    - name: Auto-rotating secrets
+    - name: Leasing & revoking secrets
+    - name: Workload Identity Federation plugin
+    - name: Secrets sync
+
+- id: hcp-vault-dedicated-essentials
+  name: HCP Vault Dedicated - Essentials
+  description: Secure secrets, keys, and certificates with highly available clusters designed to scale with production workloads. Includes $500 HCP trial credit.
+  entries:
+    - label: Cluster Hourly Rate
+      description: Base cost per cluster per hour for essentials tier
+      metric: cluster-hour
+      limit: 0
+      timeFrame: hour
+      geo: global
+      unit: 1
+      price: "1.58"
+    - label: Vault Client Cost
+      description: Monthly cost per Vault client
+      metric: vault-client
+      limit: 0
+      timeFrame: month
+      geo: global
+      unit: 1
+      price: "73.00"
+  elements:
+    - name: Versioned key value storage
+    - name: User & group management
+    - name: Vault agent
+    - name: UI with cluster management
+    - name: Encryption as a Service
+    - name: Dynamic secrets
+    - name: Auto-rotating secrets
+    - name: Leasing & revoking secrets
+    - name: Workload Identity Federation plugin
+    - name: Secrets sync
+
+- id: hcp-vault-dedicated-standard
+  name: HCP Vault Dedicated - Standard
+  description: Secure secrets, keys, and certificates across multiple datacenters with high-availability replication. Includes $500 HCP trial credit.
+  entries:
+    - label: Cluster Hourly Rate
+      description: Base cost per cluster per hour for standard tier
+      metric: cluster-hour
+      limit: 0
+      timeFrame: hour
+      geo: global
+      unit: 1
+      price: "1.85"
+    - label: Vault Client Cost
+      description: Monthly cost per Vault client
+      metric: vault-client
+      limit: 0
+      timeFrame: month
+      geo: global
+      unit: 1
+      price: "73.00"
+  elements:
+    - name: Versioned key value storage
+    - name: User & group management
+    - name: Vault agent
+    - name: UI with cluster management
+    - name: Encryption as a Service
+    - name: Dynamic secrets
+    - name: Auto-rotating secrets
+    - name: Leasing & revoking secrets
+    - name: Workload Identity Federation plugin
+    - name: Secrets sync
+
+# ============================================
+# IBM HCP Vault Radar Plans
+# ============================================
+
+- id: hcp-vault-radar-free-trial
+  name: HCP Vault Radar - Free Trial
+  description: Uncover and eliminate leaked credentials and rogue secrets across your infrastructure. Free for 30 days with product limits.
+  entries:
+    - label: Trial Period
+      description: Free trial period with product limits
+      metric: days
+      limit: 30
+      timeFrame: trial
+      geo: global
+      unit: 1
+      price: "0.00"
+  elements:
+    - name: Continuous Monitoring of Source Code
+    - name: Continuous Monitoring of Collaboration Tools
+    - name: JIRA Scanning
+    - name: Slack Scanning
+    - name: PII Identification
+    - name: Actionable Meta-Data
+    - name: Custom Secret Detection
+    - name: Ignore Rules
+    - name: On Prem Scanning
+    - name: Multi-Cloud Scanning
+    - name: On Demand Scanning
+    - name: Exclusion Rules
+    - name: Custom RegEx Expressions
+
+- id: hcp-vault-radar-essentials
+  name: HCP Vault Radar - Essentials
+  description: Discover and remediate leaked credentials and unmanaged secrets across your technical estate. Costs based on each active contributor per data source. Includes $500 HCP trial credit.
+  entries:
+    - label: Active Contributor Cost
+      description: Monthly cost per active contributor
+      metric: active-contributor
+      limit: 0
+      timeFrame: month
+      geo: global
+      unit: 1
+      price: "7.00"
+  elements:
+    - name: Continuous Monitoring of Source Code
+    - name: Continuous Monitoring of Collaboration Tools
+    - name: JIRA Scanning
+    - name: Slack Scanning
+    - name: PII Identification
+    - name: Actionable Meta-Data
+    - name: Custom Secret Detection
+    - name: Ignore Rules
+    - name: On Prem Scanning
+    - name: Multi-Cloud Scanning
+    - name: On Demand Scanning
+    - name: Exclusion Rules
+    - name: Custom RegEx Expressions
+
+# ============================================
+# IBM Vault Enterprise Plans
+# ============================================
+
+- id: vault-enterprise-essentials
+  name: Vault Enterprise - Essentials
+  description: Self-managed solution for enterprises with enhanced security, compliance, and additional operational requirements including hybrid workloads. Premium support included.
+  entries:
+    - label: Custom Pricing
+      description: Contact sales for custom enterprise pricing - Essentials edition
+      metric: custom
+      limit: 0
+      timeFrame: custom
+      geo: global
+      unit: 1
+      price: "contact-sales"
+  elements:
+    - name: Versioned key value storage
+    - name: User & group management
+    - name: Vault agent
+    - name: UI with cluster management
+    - name: Encryption as a Service
+    - name: Dynamic secrets
+    - name: Auto-rotating secrets
+    - name: Leasing & revoking secrets
+    - name: Workload Identity Federation plugin
+    - name: Secrets sync
+
+- id: vault-enterprise-standard
+  name: Vault Enterprise - Standard
+  description: Self-managed solution for enterprises with enhanced security, compliance, and additional operational requirements including hybrid workloads. Standard edition with premium support included.
+  entries:
+    - label: Custom Pricing
+      description: Contact sales for custom enterprise pricing - Standard edition
+      metric: custom
+      limit: 0
+      timeFrame: custom
+      geo: global
+      unit: 1
+      price: "contact-sales"
+  elements:
+    - name: Versioned key value storage
+    - name: User & group management
+    - name: Vault agent
+    - name: UI with cluster management
+    - name: Encryption as a Service
+    - name: Dynamic secrets
+    - name: Auto-rotating secrets
+    - name: Leasing & revoking secrets
+    - name: Workload Identity Federation plugin
+    - name: Secrets sync
+
+- id: vault-enterprise-premium
+  name: Vault Enterprise - Premium
+  description: Self-managed solution for enterprises with enhanced security, compliance, and additional operational requirements including hybrid workloads. Premium edition with premium support included.
+  entries:
+    - label: Custom Pricing
+      description: Contact sales for custom enterprise pricing - Premium edition
+      metric: custom
+      limit: 0
+      timeFrame: custom
+      geo: global
+      unit: 1
+      price: "contact-sales"
+  elements:
+    - name: Versioned key value storage
+    - name: User & group management
+    - name: Vault agent
+    - name: UI with cluster management
+    - name: Encryption as a Service
+    - name: Dynamic secrets
+    - name: Auto-rotating secrets
+    - name: Leasing & revoking secrets
+    - name: Workload Identity Federation plugin
+    - name: Secrets sync

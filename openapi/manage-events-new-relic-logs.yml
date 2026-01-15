@@ -1,0 +1,469 @@
+openapi: 3.1.0
+info:
+  title: New Relic Log API
+  description: |
+    The New Relic Log API allows you to send log data directly to New Relic via HTTP endpoints.
+    Use this API when standard log forwarding solutions don't meet your needs.
+    
+    ## Authentication
+    Your license key authenticates requests and determines which New Relic account receives the logs.
+    It can be passed as either an HTTP header (`Api-Key`) or a query string parameter.
+    
+    ## Payload Formats
+    The API accepts two JSON formats:
+    - **Simplified**: A flat JSON object with timestamp, message, and attributes
+    - **Detailed**: An array containing `common` and `logs` blocks for batch submissions
+    
+    ## Limits
+    - Maximum payload size: 1MB per POST (compression recommended)
+    - Maximum attributes per event: 255
+    - Maximum attribute name length: 255 characters
+    - Maximum attribute value length: 4,094 characters (longer values stored as blob)
+    - Payloads with timestamps older than 48 hours may be dropped
+    
+    ## Rate Limits
+    - Maximum HTTP requests: 300,000 per minute
+    - Maximum uncompressed JSON: 10 GB per minute
+  version: "1.0.0"
+  contact:
+    name: New Relic
+    url: https://newrelic.com
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+
+servers:
+  - url: https://log-api.newrelic.com
+    description: United States (US) endpoint
+  - url: https://log-api.eu.newrelic.com
+    description: European Union (EU) endpoint
+  - url: https://gov-log-api.newrelic.com
+    description: FedRAMP endpoint
+
+security:
+  - ApiKeyHeader: []
+  - ApiKeyQuery: []
+
+paths:
+  /log/v1:
+    post:
+      operationId: sendLogs
+      summary: Send log data to New Relic
+      description: |
+        Submit log data to New Relic. The API accepts both simplified (single log) and 
+        detailed (batch) JSON formats.
+        
+        **Tips:**
+        - Use compression for large payloads (include `Content-Encoding: gzip` header)
+        - Avoid calling this API synchronously from customer-facing applications
+        - Logs may take a few minutes to appear in your account
+      tags:
+        - Logs
+      parameters:
+        - name: Api-Key
+          in: query
+          required: false
+          description: |
+            Your New Relic license key (headerless authentication).
+            Useful when sending logs from cloud-based sources that don't allow custom HTTP headers.
+            Alternative to the `Api-Key` header.
+          schema:
+            type: string
+          example: "YOUR_LICENSE_KEY"
+        - name: Content-Encoding
+          in: header
+          required: false
+          description: Set to `gzip` when sending compressed JSON payloads
+          schema:
+            type: string
+            enum:
+              - gzip
+      requestBody:
+        required: true
+        description: |
+          Log data in JSON format. Supports both simplified (single object) and detailed (array with common/logs blocks) formats.
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/SimplifiedLogPayload'
+                - $ref: '#/components/schemas/DetailedLogPayload'
+            examples:
+              simplifiedSingle:
+                summary: Simplified format - single log entry
+                value:
+                  timestamp: 1562767499238
+                  message: "User 'xyz' logged in"
+                  logtype: "accesslogs"
+                  service: "login-service"
+                  hostname: "login.example.com"
+              detailedBatch:
+                summary: Detailed format - batch with common attributes
+                value:
+                  - common:
+                      attributes:
+                        logtype: "accesslogs"
+                        service: "login-service"
+                        hostname: "login.example.com"
+                    logs:
+                      - timestamp: 1562767499238
+                        message: "User 'xyz' logged in"
+                      - timestamp: 1562767499500
+                        message: "User 'xyz' logged out"
+                        attributes:
+                          auditId: 123
+              jsonMessageParsing:
+                summary: Log with JSON message (will be auto-parsed)
+                value:
+                  timestamp: 1562767499238
+                  message: "{\"service-name\": \"login-service\", \"user\": {\"id\": 123, \"name\": \"alice\"}}"
+              nestedAttributes:
+                summary: Log with nested attributes (will be flattened)
+                value:
+                  timestamp: 1562767499238
+                  message: "User login event"
+                  attributes:
+                    action: "login"
+                    user:
+                      id: 123
+                      name: "alice"
+          application/gzip:
+            schema:
+              type: string
+              format: binary
+              description: Gzip-compressed JSON payload
+      responses:
+        '202':
+          description: Accepted - Log data has been accepted for processing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Bad Request - Invalid payload format, encoding, or restricted characters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - API key does not have permission to send log data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '408':
+          description: Request Timeout - The request took too long to process
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '413':
+          description: Payload Too Large - Exceeds 1MB maximum size
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: |
+            Too Many Requests - Rate limit exceeded.
+            Either HTTP requests per minute (300,000) or JSON bytes per minute (10 GB) limit reached.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    ApiKeyHeader:
+      type: apiKey
+      in: header
+      name: Api-Key
+      description: Your New Relic license key passed via HTTP header
+    ApiKeyQuery:
+      type: apiKey
+      in: query
+      name: Api-Key
+      description: |
+        Your New Relic license key passed via query parameter.
+        Useful for cloud-based sources that don't allow custom HTTP headers.
+
+  schemas:
+    # Simplified format - single log object
+    SimplifiedLogPayload:
+      type: object
+      description: |
+        Simplified log format - a flat JSON object representing a single log entry.
+        All top-level keys become log attributes.
+      properties:
+        timestamp:
+          $ref: '#/components/schemas/Timestamp'
+        message:
+          type: string
+          description: |
+            The main log message. If the value is valid JSON, it will be automatically 
+            parsed and its fields extracted as separate attributes.
+          example: "User 'xyz' logged in"
+        logtype:
+          type: string
+          description: Category or type of log for filtering and organization
+          example: "accesslogs"
+        hostname:
+          type: string
+          description: The hostname where the log originated
+          example: "login.example.com"
+        service:
+          type: string
+          description: The service name that generated the log
+          example: "login-service"
+      additionalProperties:
+        description: Any additional attributes to attach to the log entry
+      example:
+        timestamp: 1562767499238
+        message: "User 'xyz' logged in"
+        logtype: "accesslogs"
+        service: "login-service"
+        hostname: "login.example.com"
+
+    # Detailed format - array of trace objects with common block
+    DetailedLogPayload:
+      type: array
+      description: |
+        Detailed log format - an array of objects, each containing an optional `common` 
+        block and a required `logs` array. Use this format for batch submissions with 
+        shared attributes.
+      minItems: 1
+      items:
+        $ref: '#/components/schemas/LogBatch'
+
+    LogBatch:
+      type: object
+      description: |
+        A batch of logs with optional common attributes.
+        Attributes in the `common` block apply to all logs in the batch unless overridden.
+      required:
+        - logs
+      properties:
+        common:
+          $ref: '#/components/schemas/CommonBlock'
+        logs:
+          type: array
+          description: Array of individual log entries
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/LogEntry'
+
+    CommonBlock:
+      type: object
+      description: |
+        Optional block containing attributes shared across all logs in the batch.
+        Individual log entries can override these values.
+      properties:
+        attributes:
+          $ref: '#/components/schemas/CommonAttributes'
+
+    CommonAttributes:
+      type: object
+      description: Key-value pairs applied to all logs in the batch
+      properties:
+        logtype:
+          type: string
+          description: Category or type of log
+          example: "accesslogs"
+        service:
+          type: string
+          description: Service name that generated the logs
+          example: "login-service"
+        hostname:
+          type: string
+          description: Hostname where the logs originated
+          example: "login.example.com"
+        environment:
+          type: string
+          description: Deployment environment
+          example: "production"
+      additionalProperties:
+        description: Any custom attributes to share across logs
+
+    LogEntry:
+      type: object
+      description: An individual log entry within a batch
+      properties:
+        timestamp:
+          $ref: '#/components/schemas/Timestamp'
+        message:
+          type: string
+          description: |
+            The main log message. JSON-formatted strings will be automatically parsed
+            and their fields extracted as separate attributes.
+          example: "User 'xyz' logged in"
+        attributes:
+          $ref: '#/components/schemas/LogAttributes'
+      example:
+        timestamp: 1562767499238
+        message: "User 'xyz' logged out"
+        attributes:
+          auditId: 123
+
+    LogAttributes:
+      type: object
+      description: |
+        Additional attributes for this specific log entry.
+        Nested objects will be flattened (e.g., `user.id`, `user.name`).
+      additionalProperties:
+        oneOf:
+          - type: string
+          - type: number
+          - type: integer
+          - type: boolean
+          - type: object
+          - type: array
+      example:
+        auditId: 123
+        action: "logout"
+        user:
+          id: 456
+          name: "alice"
+
+    Timestamp:
+      oneOf:
+        - type: integer
+          format: int64
+          description: Unix epoch timestamp in seconds or milliseconds
+          example: 1562767499238
+        - type: string
+          format: date-time
+          description: ISO 8601 formatted timestamp
+          example: "2023-07-10T14:30:00Z"
+      description: |
+        Log timestamp. Accepts Unix epoch (seconds or milliseconds) or ISO 8601 format.
+        **Important:** Payloads with timestamps older than 48 hours may be dropped.
+
+    # Response schemas
+    SuccessResponse:
+      type: object
+      description: Response returned when log data is successfully accepted
+      properties:
+        requestId:
+          type: string
+          description: Unique identifier for this request
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+
+    ErrorResponse:
+      type: object
+      description: Error response returned when the request fails
+      properties:
+        error:
+          type: string
+          description: Error type or code
+          example: "InvalidPayload"
+        message:
+          type: string
+          description: Human-readable error message
+          example: "Payload exceeds maximum size of 1MB"
+        requestId:
+          type: string
+          description: Unique identifier for troubleshooting
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+
+    # Attribute types reference
+    AttributeTypes:
+      description: |
+        Reference for supported attribute types and their storage in New Relic.
+        This schema is for documentation purposes only.
+      oneOf:
+        - type: boolean
+          description: Stored as boolean in New Relic
+        - type: integer
+          description: Stored as integer in New Relic
+        - type: number
+          description: Stored as float/double in New Relic
+        - type: string
+          description: |
+            Stored as string. If the string is valid JSON, it will be parsed
+            and fields extracted. Maximum 4,094 characters before blob storage.
+        - type: array
+          description: Converted to string and stored
+
+    # Reserved/Special attributes documentation
+    ReservedAttributes:
+      type: object
+      description: |
+        Documentation of reserved and special attributes.
+        These should not be used or have specific requirements.
+        
+        **Reserved (will be dropped during ingest):**
+        - `accountId`
+        - `eventType`
+        
+        **Special handling:**
+        - `appId`: Must be an integer; non-integer values become unqueryable
+        - `entity.guid`, `entity.name`, `entity.type`: Used internally for entity identification;
+          custom values may cause undefined behavior
+      properties:
+        accountId:
+          type: string
+          description: "RESERVED - Will be dropped during ingest"
+        eventType:
+          type: string
+          description: "RESERVED - Will be dropped during ingest"
+        appId:
+          type: integer
+          description: "Must be an integer or data becomes unqueryable"
+        entity.guid:
+          type: string
+          description: "Internal use - may cause undefined behavior if set"
+        entity.name:
+          type: string
+          description: "Internal use - may cause undefined behavior if set"
+        entity.type:
+          type: string
+          description: "Internal use - may cause undefined behavior if set"
+
+tags:
+  - name: Logs
+    description: Operations for sending log data to New Relic
+
+x-rate-limits:
+  requests:
+    limit: 300000
+    period: minute
+    description: Maximum HTTP requests per minute
+  bytes:
+    limit: 10GB
+    period: minute
+    description: Maximum uncompressed JSON bytes per minute
+
+x-payload-limits:
+  maxPayloadSize:
+    value: 1MB
+    description: Maximum size per POST request
+  maxAttributesPerEvent:
+    value: 255
+    description: Maximum number of attributes per log event
+  maxAttributeNameLength:
+    value: 255
+    unit: characters
+    description: Maximum length of attribute names
+  maxAttributeValueLength:
+    value: 4094
+    unit: characters
+    description: Values exceeding this are stored as blob
+  encoding:
+    value: UTF-8
+    description: Required payload encoding
+  timestampAge:
+    value: 48
+    unit: hours
+    description: Maximum age for timestamps; older payloads may be dropped

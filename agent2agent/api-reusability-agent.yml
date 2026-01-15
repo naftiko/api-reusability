@@ -1,0 +1,167 @@
+name: API Reusability Agent
+description: >-
+  An agent for retrieving analytics about API paths and schemas, including usage
+  statistics and reuse patterns across API catalogs.
+url: https://api.example.com/v1
+provider:
+  organization: API Evangelist
+  url: https://apievangelist.com
+  contactEmail: info@apievangelist.com
+version: 1.0.0
+documentationUrl: https://apievangelist.com/docs
+capabilities:
+  streaming: false
+  pushNotifications: false
+  stateTransitionHistory: false
+authentication:
+  schemes:
+    - scheme: apiKey
+      in: header
+      name: X-API-Key
+defaultInputModes:
+  - application/json
+defaultOutputModes:
+  - application/json
+skills:
+  - id: get-paths
+    name: Get All Paths
+    description: Returns a complete list of all API paths across all APIs in the catalog.
+    tags:
+      - paths
+      - analytics
+    examples:
+      - name: Get all API paths
+        description: Retrieve the complete list of paths in the API catalog
+        input:
+          text: Show me all API paths in the catalog
+        output:
+          text: >-
+            Here are all the API paths: /apis, /apis/rebuild, /apis/{apiId},
+            /messages, /orders
+    inputModes:
+      - application/json
+    outputModes:
+      - application/json
+  - id: get-path-reuse
+    name: Get Path Reuse Statistics
+    description: Returns statistics about which paths are reused across multiple APIs.
+    tags:
+      - paths
+      - analytics
+      - reuse
+    examples:
+      - name: Get path reuse stats
+        description: Find out which paths are reused across multiple APIs
+        input:
+          text: Which API paths are reused across multiple APIs?
+        output:
+          text: >-
+            Here are the paths that are reused across multiple APIs with their
+            usage counts.
+    inputModes:
+      - application/json
+    outputModes:
+      - application/json
+  - id: get-all-paths
+    name: Get All Paths (Alternative)
+    description: Alternative endpoint that returns all paths with additional metadata.
+    tags:
+      - paths
+      - analytics
+      - metadata
+    examples:
+      - name: Get all paths with metadata
+        description: Retrieve all paths with additional metadata
+        input:
+          text: Get all paths with their metadata
+        output:
+          text: Here are all paths with their associated metadata.
+    inputModes:
+      - application/json
+    outputModes:
+      - application/json
+  - id: get-schemas
+    name: Get All Schemas
+    description: Returns a complete list of all schemas across all APIs in the catalog.
+    tags:
+      - schemas
+      - analytics
+    examples:
+      - name: Get all schemas
+        description: Retrieve the complete list of schemas in the API catalog
+        input:
+          text: What schemas are defined across all APIs?
+        output:
+          text: >-
+            Here are all the schemas: ApiResource, Empty, Error, Message,
+            Product
+    inputModes:
+      - application/json
+    outputModes:
+      - application/json
+  - id: get-schema-reuse
+    name: Get Schema Reuse Statistics
+    description: >-
+      Returns statistics about which schemas are reused across multiple APIs,
+      including usage counts.
+    tags:
+      - schemas
+      - analytics
+      - reuse
+    examples:
+      - name: Get schema reuse stats
+        description: Find out which schemas are reused across multiple APIs
+        input:
+          text: Which schemas are most commonly reused?
+        output:
+          text: >-
+            The most reused schemas are: WrapperResponseCollection (4 times),
+            Meta (4 times), Problem (4 times)
+    inputModes:
+      - application/json
+    outputModes:
+      - application/json
+  - id: get-all-schemas
+    name: Get All Schemas (Alternative)
+    description: Alternative endpoint that returns all schemas with additional metadata.
+    tags:
+      - schemas
+      - analytics
+      - metadata
+    examples:
+      - name: Get all schemas with metadata
+        description: Retrieve all schemas with additional metadata
+        input:
+          text: Get all schemas with their metadata
+        output:
+          text: Here are all schemas with their associated metadata.
+    inputModes:
+      - application/json
+    outputModes:
+      - application/json
+  - id: get-catalog
+    name: Get Complete Catalog Analytics
+    description: >-
+      Returns comprehensive analytics including all paths and schemas with their
+      reuse statistics.
+    tags:
+      - paths
+      - schemas
+      - analytics
+      - catalog
+      - reuse
+    examples:
+      - name: Get complete catalog analytics
+        description: Retrieve comprehensive analytics for the entire API catalog
+        input:
+          text: >-
+            Give me a complete overview of the API catalog with all paths,
+            schemas, and reuse statistics
+        output:
+          text: >-
+            Here is the complete catalog analytics including all paths, schemas,
+            and their reuse statistics.
+    inputModes:
+      - application/json
+    outputModes:
+      - application/json

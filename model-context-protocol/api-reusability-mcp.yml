@@ -1,0 +1,259 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+serverInfo:
+  name: api-reusability-server
+  title: API Reusability MCP Server
+  version: 1.0.0
+capabilities:
+  tools:
+    listChanged: false
+instructions: >-
+  This MCP server provides access to the API Reusability API for retrieving
+  analytics about API paths and schemas, including usage statistics and reuse
+  patterns. Authentication is handled via API key (X-API-Key header). The server
+  connects to https://api.example.com/v1.
+tools:
+  - name: get_paths
+    title: Get All Paths
+    description: Returns a complete list of all API paths across all APIs in the catalog.
+    inputSchema:
+      type: object
+      properties: {}
+      required: []
+    outputSchema:
+      type: object
+      properties:
+        paths:
+          type: array
+          description: Array of API path strings
+          items:
+            type: string
+            pattern: ^/.*$
+      required:
+        - paths
+    annotations:
+      title: Get All Paths
+      readOnlyHint: true
+      destructiveHint: false
+      idempotentHint: true
+      openWorldHint: true
+  - name: get_path_reuse
+    title: Get Path Reuse Statistics
+    description: Returns statistics about which paths are reused across multiple APIs.
+    inputSchema:
+      type: object
+      properties: {}
+      required: []
+    outputSchema:
+      type: object
+      properties:
+        reuse:
+          type: array
+          description: Array of path reuse statistics
+          items:
+            type: object
+            properties:
+              path:
+                type: string
+                description: The API path
+                pattern: ^/.*$
+              count:
+                type: integer
+                description: Number of times this path is used across APIs
+                minimum: 2
+            required:
+              - path
+              - count
+      required:
+        - reuse
+    annotations:
+      title: Get Path Reuse Statistics
+      readOnlyHint: true
+      destructiveHint: false
+      idempotentHint: true
+      openWorldHint: true
+  - name: get_all_paths
+    title: Get All Paths (Alternative)
+    description: Alternative endpoint that returns all paths with additional metadata.
+    inputSchema:
+      type: object
+      properties: {}
+      required: []
+    outputSchema:
+      type: object
+      properties:
+        all:
+          type: array
+          description: All paths in the catalog
+          items:
+            type: string
+            pattern: ^/.*$
+      required:
+        - all
+    annotations:
+      title: Get All Paths (Alternative)
+      readOnlyHint: true
+      destructiveHint: false
+      idempotentHint: true
+      openWorldHint: true
+  - name: get_schemas
+    title: Get All Schemas
+    description: Returns a complete list of all schemas across all APIs in the catalog.
+    inputSchema:
+      type: object
+      properties: {}
+      required: []
+    outputSchema:
+      type: object
+      properties:
+        schemas:
+          type: array
+          description: Array of schema name strings
+          items:
+            type: string
+            minLength: 1
+      required:
+        - schemas
+    annotations:
+      title: Get All Schemas
+      readOnlyHint: true
+      destructiveHint: false
+      idempotentHint: true
+      openWorldHint: true
+  - name: get_schema_reuse
+    title: Get Schema Reuse Statistics
+    description: >-
+      Returns statistics about which schemas are reused across multiple APIs,
+      including usage counts.
+    inputSchema:
+      type: object
+      properties: {}
+      required: []
+    outputSchema:
+      type: object
+      properties:
+        reuse:
+          type: array
+          description: Array of schema reuse statistics
+          items:
+            type: object
+            properties:
+              schema:
+                type: string
+                description: The schema name
+                minLength: 1
+              count:
+                type: integer
+                description: Number of times this schema is used across APIs
+                minimum: 1
+            required:
+              - schema
+              - count
+      required:
+        - reuse
+    annotations:
+      title: Get Schema Reuse Statistics
+      readOnlyHint: true
+      destructiveHint: false
+      idempotentHint: true
+      openWorldHint: true
+  - name: get_all_schemas
+    title: Get All Schemas (Alternative)
+    description: Alternative endpoint that returns all schemas with additional metadata.
+    inputSchema:
+      type: object
+      properties: {}
+      required: []
+    outputSchema:
+      type: object
+      properties:
+        all:
+          type: array
+          description: All schemas in the catalog
+          items:
+            type: string
+            minLength: 1
+      required:
+        - all
+    annotations:
+      title: Get All Schemas (Alternative)
+      readOnlyHint: true
+      destructiveHint: false
+      idempotentHint: true
+      openWorldHint: true
+  - name: get_catalog
+    title: Get Complete Catalog Analytics
+    description: >-
+      Returns comprehensive analytics including all paths and schemas with their
+      reuse statistics.
+    inputSchema:
+      type: object
+      properties: {}
+      required: []
+    outputSchema:
+      type: object
+      properties:
+        paths:
+          type: object
+          description: Path analytics
+          properties:
+            all:
+              type: array
+              description: All API paths
+              items:
+                type: string
+                pattern: ^/.*$
+            reuse:
+              type: array
+              description: Path reuse statistics
+              items:
+                type: object
+                properties:
+                  path:
+                    type: string
+                    description: The API path
+                  count:
+                    type: integer
+                    description: Number of times this path is used across APIs
+                required:
+                  - path
+                  - count
+          required:
+            - all
+            - reuse
+        schemas:
+          type: object
+          description: Schema analytics
+          properties:
+            all:
+              type: array
+              description: All schema names
+              items:
+                type: string
+                minLength: 1
+            reuse:
+              type: array
+              description: Schema reuse statistics
+              items:
+                type: object
+                properties:
+                  schema:
+                    type: string
+                    description: The schema name
+                  count:
+                    type: integer
+                    description: Number of times this schema is used across APIs
+                required:
+                  - schema
+                  - count
+          required:
+            - all
+            - reuse
+      required:
+        - paths
+        - schemas
+    annotations:
+      title: Get Complete Catalog Analytics
+      readOnlyHint: true
+      destructiveHint: false
+      idempotentHint: true
+      openWorldHint: true
