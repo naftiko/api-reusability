@@ -1,0 +1,405 @@
+arazzo: 1.0.0
+info:
+  title: GitHub OAuth Web Application Flow
+  summary: Complete OAuth 2.0 authorization flow for GitHub applications
+  description: |
+    This workflow demonstrates the complete OAuth web application flow for authorizing 
+    a GitHub OAuth app and obtaining an access token to make API requests on behalf of a user.
+    
+    The workflow includes:
+    1. Redirecting users to GitHub for authorization
+    2. Receiving the authorization callback with code
+    3. Exchanging the code for an access token
+    4. Using the token to access GitHub API resources
+    5. Managing tokens (check, reset, revoke)
+  version: 1.0.0
+
+sourceDescriptions:
+  - name: github-oauth-api
+    type: openapi
+    url: ./github-oauth-api-spec.yaml
+
+workflows:
+  - workflowId: complete-oauth-flow
+    summary: Complete GitHub OAuth authorization flow
+    description: |
+      Execute the full OAuth flow from authorization to making authenticated API calls.
+      This is the standard web application flow for OAuth apps.
+    inputs:
+      type: object
+      properties:
+        client_id:
+          type: string
+          description: Your OAuth app's client ID
+        client_secret:
+          type: string
+          description: Your OAuth app's client secret
+        redirect_uri:
+          type: string
+          description: The callback URL registered with your OAuth app
+        scope:
+          type: string
+          description: Space-delimited scopes to request
+          default: "repo user"
+        state:
+          type: string
+          description: Random state string for CSRF protection
+    steps:
+      - stepId: authorize-user
+        description: Redirect user to GitHub authorization page
+        operationId: authorizeOAuthApp
+        parameters:
+          - name: client_id
+            in: query
+            value: $inputs.client_id
+          - name: redirect_uri
+            in: query
+            value: $inputs.redirect_uri
+          - name: scope
+            in: query
+            value: $inputs.scope
+          - name: state
+            in: query
+            value: $inputs.state
+          - name: allow_signup
+            in: query
+            value: true
+        successCriteria:
+          - condition: $statusCode == 302
+        outputs:
+          authorization_url:
+            description: The URL where the user authorizes the app
+            value: $url
+      
+      - stepId: receive-callback
+        description: User authorizes app and is redirected back with authorization code
+        operationPath: $sourceDescriptions.github-oauth-api
+        operationId: authorizeOAuthApp
+        requestBody:
+          contentType: application/json
+        successCriteria:
+          - condition: $statusCode == 302
+        outputs:
+          authorization_code:
+            description: Temporary authorization code from callback
+            value: $response.query.code
+          returned_state:
+            description: State parameter returned for validation
+            value: $response.query.state
+      
+      - stepId: validate-state
+        description: Validate state parameter to prevent CSRF attacks
+        operationPath: $sourceDescriptions.github-oauth-api
+        successCriteria:
+          - condition: $steps.receive-callback.outputs.returned_state == $inputs.state
+            type: simple
+      
+      - stepId: exchange-token
+        description: Exchange authorization code for access token
+        operationId: exchangeCodeForToken
+        requestBody:
+          contentType: application/json
+          payload:
+            client_id: $inputs.client_id
+            client_secret: $inputs.client_secret
+            code: $steps.receive-callback.outputs.authorization_code
+            redirect_uri: $inputs.redirect_uri
+        successCriteria:
+          - condition: $statusCode == 200
+          - condition: $response.body.access_token
+            type: simple
+        outputs:
+          access_token:
+            description: OAuth access token for API requests
+            value: $response.body.access_token
+          token_type:
+            description: Type of token (bearer)
+            value: $response.body.token_type
+          scope:
+            description: Granted scopes
+            value: $response.body.scope
+      
+      - stepId: verify-token
+        description: Verify the access token is valid
+        operationId: checkToken
+        parameters:
+          - name: client_id
+            in: path
+            value: $inputs.client_id
+        requestBody:
+          contentType: application/json
+          payload:
+            access_token: $steps.exchange-token.outputs.access_token
+        successCriteria:
+          - condition: $statusCode == 200
+        outputs:
+          token_info:
+            description: Full token authorization information
+            value: $response.body
+          user_login:
+            description: Authenticated user's login name
+            value: $response.body.user.login
+    
+    outputs:
+      access_token: $steps.exchange-token.outputs.access_token
+      token_type: $steps.exchange-token.outputs.token_type
+      scope: $steps.exchange-token.outputs.scope
+      user_login: $steps.verify-token.outputs.user_login
+
+  - workflowId: token-management
+    summary: Manage OAuth tokens
+    description: Check, reset, and revoke OAuth tokens
+    inputs:
+      type: object
+      properties:
+        client_id:
+          type: string
+          description: Your OAuth app's client ID
+        client_secret:
+          type: string
+          description: Your OAuth app's client secret
+        access_token:
+          type: string
+          description: The access token to manage
+        action:
+          type: string
+          enum:
+            - check
+            - reset
+            - revoke
+          description: Action to perform on the token
+    steps:
+      - stepId: check-token
+        description: Verify token validity
+        operationId: checkToken
+        parameters:
+          - name: client_id
+            in: path
+            value: $inputs.client_id
+        requestBody:
+          contentType: application/json
+          payload:
+            access_token: $inputs.access_token
+        successCriteria:
+          - condition: $statusCode == 200
+          - condition: $inputs.action == 'check'
+            type: simple
+        outputs:
+          is_valid:
+            description: Token is valid
+            value: true
+          token_info:
+            description: Token authorization details
+            value: $response.body
+      
+      - stepId: reset-token
+        description: Reset the OAuth token (generates new token)
+        operationId: resetToken
+        parameters:
+          - name: client_id
+            in: path
+            value: $inputs.client_id
+        requestBody:
+          contentType: application/json
+          payload:
+            access_token: $inputs.access_token
+        successCriteria:
+          - condition: $statusCode == 200
+          - condition: $inputs.action == 'reset'
+            type: simple
+        outputs:
+          new_access_token:
+            description: The new access token (old one is invalidated)
+            value: $response.body.token
+          token_info:
+            description: New token authorization details
+            value: $response.body
+      
+      - stepId: revoke-token
+        description: Revoke a single OAuth token
+        operationId: deleteToken
+        parameters:
+          - name: client_id
+            in: path
+            value: $inputs.client_id
+        requestBody:
+          contentType: application/json
+          payload:
+            access_token: $inputs.access_token
+        successCriteria:
+          - condition: $statusCode == 204
+          - condition: $inputs.action == 'revoke'
+            type: simple
+        outputs:
+          revoked:
+            description: Token successfully revoked
+            value: true
+    
+    outputs:
+      action_performed: $inputs.action
+      result: |
+        $inputs.action == 'check' ? $steps.check-token.outputs.is_valid : 
+        $inputs.action == 'reset' ? $steps.reset-token.outputs.new_access_token : 
+        $steps.revoke-token.outputs.revoked
+
+  - workflowId: revoke-app-authorization
+    summary: Revoke all app access for a user
+    description: |
+      Revoke the entire grant for an OAuth app and a specific user. This deletes 
+      all OAuth tokens associated with the application for the user.
+    inputs:
+      type: object
+      properties:
+        client_id:
+          type: string
+          description: Your OAuth app's client ID
+        client_secret:
+          type: string
+          description: Your OAuth app's client secret
+        access_token:
+          type: string
+          description: Any valid access token for the user/app combination
+    steps:
+      - stepId: verify-token-before-revoke
+        description: Verify the token exists before revoking grant
+        operationId: checkToken
+        parameters:
+          - name: client_id
+            in: path
+            value: $inputs.client_id
+        requestBody:
+          contentType: application/json
+          payload:
+            access_token: $inputs.access_token
+        successCriteria:
+          - condition: $statusCode == 200
+        outputs:
+          user_login:
+            description: User whose authorization will be revoked
+            value: $response.body.user.login
+      
+      - stepId: revoke-authorization
+        description: Delete the app authorization (revokes all tokens)
+        operationId: deleteAuthorization
+        parameters:
+          - name: client_id
+            in: path
+            value: $inputs.client_id
+        requestBody:
+          contentType: application/json
+          payload:
+            access_token: $inputs.access_token
+        successCriteria:
+          - condition: $statusCode == 204
+        outputs:
+          authorization_revoked:
+            description: All tokens for this user/app revoked
+            value: true
+    
+    outputs:
+      user_login: $steps.verify-token-before-revoke.outputs.user_login
+      authorization_revoked: $steps.revoke-authorization.outputs.authorization_revoked
+
+  - workflowId: oauth-with-token-refresh
+    summary: OAuth flow with token lifecycle management
+    description: |
+      Complete OAuth flow including periodic token verification and refresh. 
+      Useful for long-running applications that need to maintain valid tokens.
+    inputs:
+      type: object
+      properties:
+        client_id:
+          type: string
+        client_secret:
+          type: string
+        redirect_uri:
+          type: string
+        scope:
+          type: string
+          default: "repo user"
+        state:
+          type: string
+    steps:
+      - stepId: initial-authorization
+        description: Perform initial OAuth flow
+        workflowId: complete-oauth-flow
+        parameters:
+          - name: client_id
+            in: body
+            value: $inputs.client_id
+          - name: client_secret
+            in: body
+            value: $inputs.client_secret
+          - name: redirect_uri
+            in: body
+            value: $inputs.redirect_uri
+          - name: scope
+            in: body
+            value: $inputs.scope
+          - name: state
+            in: body
+            value: $inputs.state
+        successCriteria:
+          - condition: $statusCode == 200
+        outputs:
+          access_token:
+            value: $workflows.complete-oauth-flow.outputs.access_token
+          user_login:
+            value: $workflows.complete-oauth-flow.outputs.user_login
+      
+      - stepId: periodic-token-check
+        description: Verify token is still valid
+        operationId: checkToken
+        parameters:
+          - name: client_id
+            in: path
+            value: $inputs.client_id
+        requestBody:
+          contentType: application/json
+          payload:
+            access_token: $steps.initial-authorization.outputs.access_token
+        successCriteria:
+          - condition: $statusCode == 200
+        onFailure:
+          - name: token-invalid
+            workflowId: complete-oauth-flow
+            type: goto
+        outputs:
+          token_valid:
+            value: true
+      
+      - stepId: reset-token-if-needed
+        description: Reset token to get a fresh one
+        operationId: resetToken
+        parameters:
+          - name: client_id
+            in: path
+            value: $inputs.client_id
+        requestBody:
+          contentType: application/json
+          payload:
+            access_token: $steps.initial-authorization.outputs.access_token
+        successCriteria:
+          - condition: $statusCode == 200
+        outputs:
+          refreshed_token:
+            description: New access token
+            value: $response.body.token
+    
+    outputs:
+      current_access_token: |
+        $steps.reset-token-if-needed.outputs.refreshed_token || 
+        $steps.initial-authorization.outputs.access_token
+      user_login: $steps.initial-authorization.outputs.user_login
+
+components:
+  parameters:
+    client_id:
+      name: client_id
+      in: path
+      value: $inputs.client_id
+    
+    access_token_body:
+      name: access_token
+      in: body
+      value: $inputs.access_token

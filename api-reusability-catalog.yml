@@ -1,0 +1,82 @@
+aid: api-reusability
+type: Capability
+visibility: Public  
+
+name: Define, Report, and Incentivize API Reusability
+description: This is an aggregate capability to help define, communicate, and incentivize API reusability.
+
+tags:
+
+  - APIs
+  - Reusability
+  - Catalogs
+  - Communication
+  - IDE
+
+created: '2026-02-12'
+modified: '2026-02-12'
+url: http://example.com/apis.json
+specificationVersion: '0.18'
+
+apis:
+
+  - aid: api-reusability:amazon-api-gateway-resources
+    name: Amazon API Gateway Resources
+    description: Pulls API resources from Amazon API Gateway.
+    humanURL: http://127.0.0.1
+    baseURL: http://127.0.0.1
+    tags:
+      - Amazon Web Services
+      - API Gateway
+      - Resources
+    properties:
+      - type: OpenApi
+        url: 'openapi/api-reusability-amazon-api-gateway-retrieve-api-resources.yml'  
+      - type: brunoCollection
+        url: '/bruno/amazon-api-gateway-retrieve-api-models/bruno.json'   
+      - type: brunoEnvironment
+        url: '/bruno/amazon-api-gateway-retrieve-api-models/amazon-api-gateway.bru'    
+
+  - aid: api-reusability:amazon-api-gateway-schema
+    name: Amazon API Gateway Schema
+    description: Pulls API schema from Amazon API Gateway.
+    humanURL: http://127.0.0.1
+    baseURL: http://127.0.0.1
+    tags:
+      - Amazon Web Services
+      - API Gateway
+      - Schema
+    properties:
+      - type: OpenAPI
+        url: 'agent2agent/api-reusability-agent.yml'        
+      - type: brunoCollection
+        url: '/bruno/amazon-api-gateway-retrieve-api-resources/bruno.json'      
+      - type: brunoEnvironment
+        url: '/bruno/amazon-api-gateway-retrieve-api-resources/amazon-api-gateway.bru'                  
+
+  - aid: api-reusability:github-repositories-openapi-content
+    name: GitHub Repositories OpenAPI Content
+    description: Pulls OpenAPI artifacts from repository using GitHub API.
+    humanURL: http://127.0.0.1
+    baseURL: http://127.0.0.1
+    tags:
+      - GitHub
+      - Repositories
+      - OpenAPI
+    properties:
+      - type: OpenAPI
+        url: 'openapi/api-reusability-github-repository-openapi-contents.yml'  
+      - type: brunoCollection
+        url: '/bruno/github-retrieve-repository-openapi-content/bruno.json' 
+      - type: brunoEnvironment
+        url: '/bruno/github-retrieve-repository-openapi-content/github.bru'                
+
+include:
+
+  - name: API Reusability
+    url: apis.yml       
+
+maintainers:
+
+  - FN: Kin Lane
+    email: info@apievangelist.com

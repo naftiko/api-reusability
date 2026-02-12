@@ -1,0 +1,353 @@
+openapi: 3.1.0
+info:
+  title: New Relic Trace API
+  description: |
+    The New Relic Trace API allows you to send distributed tracing data to New Relic.
+    This specification covers the `newrelic` format for trace data submission.
+    
+    For Zipkin-format data, refer to the separate Zipkin endpoint documentation.
+  version: "1.0.0"
+  contact:
+    name: New Relic
+    url: https://newrelic.com
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+
+servers:
+  - url: https://trace-api.newrelic.com
+    description: US datacenter endpoint
+  - url: https://trace-api.eu.newrelic.com
+    description: EU datacenter endpoint
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /trace/v1:
+    post:
+      operationId: sendTraces
+      summary: Send trace data to New Relic
+      description: |
+        Submit distributed tracing data in the New Relic format. Each request can contain
+        multiple traces, and each trace can contain multiple spans.
+        
+        Traces may take up to one minute to be processed by the Trace API.
+        
+        **Tip:** If you're sending more than one POST, change the `trace.id` to a unique value.
+        Sending the same payload or span id multiple times for the same `trace.id` may result
+        in fragmented traces in the UI.
+      tags:
+        - Traces
+      parameters:
+        - name: Data-Format
+          in: header
+          required: true
+          description: Specifies the format of the trace data
+          schema:
+            type: string
+            enum:
+              - newrelic
+            default: newrelic
+        - name: Data-Format-Version
+          in: header
+          required: true
+          description: Version of the data format
+          schema:
+            type: string
+            enum:
+              - "1"
+            default: "1"
+      requestBody:
+        required: true
+        description: Array of trace objects containing spans and optional common attributes
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TracePayload'
+            examples:
+              simpleTrace:
+                summary: Simple trace with two spans
+                value:
+                  - common:
+                      attributes:
+                        service.name: "Test Service A"
+                        host: "host123.example.com"
+                    spans:
+                      - trace.id: "123456"
+                        id: "ABC"
+                        attributes:
+                          duration.ms: 12.53
+                          name: "/home"
+                      - trace.id: "123456"
+                        id: "DEF"
+                        attributes:
+                          error.message: "Invalid credentials"
+                          service.name: "Test Service A"
+                          host: "host456.example.com"
+                          duration.ms: 2.97
+                          name: "/auth"
+                          parent.id: "ABC"
+              traceWithTimestamps:
+                summary: Trace with explicit timestamps
+                value:
+                  - common:
+                      attributes:
+                        host: "host123.example.com"
+                    spans:
+                      - trace.id: "12345"
+                        id: "abc"
+                        timestamp: 1603336834823
+                        attributes:
+                          user.email: "bob@newr.com"
+                          service.name: "my-service"
+                          duration.ms: 750
+                          name: "my-span"
+                      - trace.id: "12345"
+                        id: "def"
+                        timestamp: 1603336834899
+                        attributes:
+                          parent.id: "abc"
+                          service.name: "second-service"
+                          duration.ms: 750
+                          name: "second-span"
+      responses:
+        '202':
+          description: Accepted - Trace data has been accepted for processing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcceptedResponse'
+        '400':
+          description: Bad Request - Invalid payload format or missing required fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - API key does not have permission to send trace data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '408':
+          description: Request Timeout - The request took too long to process
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '413':
+          description: Payload Too Large - The request payload exceeds the maximum size
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Too Many Requests - Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: Api-Key
+      description: Your New Relic license key
+
+  schemas:
+    TracePayload:
+      type: array
+      description: Array of trace objects. Each object represents a single trace containing one or more spans.
+      minItems: 1
+      items:
+        $ref: '#/components/schemas/TraceObject'
+
+    TraceObject:
+      type: object
+      description: |
+        A trace object containing spans and optional common attributes.
+        Any keys on a span have precedence over the same key in the common block.
+      required:
+        - spans
+      properties:
+        common:
+          $ref: '#/components/schemas/CommonBlock'
+        spans:
+          type: array
+          description: Array of span objects that make up this trace
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/Span'
+
+    CommonBlock:
+      type: object
+      description: |
+        Optional block to share information across multiple spans in the trace object.
+        Attributes defined here apply to all spans unless overridden at the span level.
+      properties:
+        attributes:
+          $ref: '#/components/schemas/CommonAttributes'
+
+    CommonAttributes:
+      type: object
+      description: Key-value pairs that add common details about spans in the payload
+      properties:
+        service.name:
+          type: string
+          description: |
+            The name of the entity that created these spans. If no value or an empty string
+            is provided, spans are assigned to an "UNKNOWN" entity.
+          example: "my-service"
+        host:
+          type: string
+          description: The hostname where the service is running
+          example: "host123.example.com"
+        duration.ms:
+          type: number
+          format: float
+          description: Default duration for spans in milliseconds
+          example: 12.53
+        name:
+          type: string
+          description: Default name for spans
+          example: "default-operation"
+        parent.id:
+          type: string
+          description: Default parent span ID
+          example: "abc123"
+      additionalProperties: true
+
+    Span:
+      type: object
+      description: |
+        Represents a single span within a trace. A span represents a unit of work or operation.
+        Traces without a root span (a span with no parent.id) will not be displayed in the UI.
+      required:
+        - id
+        - trace.id
+        - attributes
+      properties:
+        id:
+          type: string
+          description: Unique identifier for this span
+          example: "ABC"
+        trace.id:
+          type: string
+          description: Unique identifier shared by all spans within a single trace
+          example: "123456"
+        timestamp:
+          type: integer
+          format: int64
+          description: |
+            Span start time in milliseconds since the Unix epoch.
+            Defaults to current time in UTC if not provided.
+          example: 1603336834823
+        attributes:
+          $ref: '#/components/schemas/SpanAttributes'
+
+    SpanAttributes:
+      type: object
+      description: |
+        Key-value pairs that add details about the span.
+        The `duration.ms` attribute is required. The `name` and `parent.id` attributes
+        are strongly recommended.
+      required:
+        - duration.ms
+      properties:
+        duration.ms:
+          type: number
+          format: float
+          description: Duration of this span in milliseconds (required)
+          example: 12.53
+        name:
+          type: string
+          description: The name of this span (strongly recommended)
+          example: "/api/users"
+        parent.id:
+          type: string
+          description: |
+            The id of the caller of this span. Value is null or omitted if this is the root span.
+            Traces without a root span will not be displayed.
+          example: "ABC"
+        service.name:
+          type: string
+          description: |
+            The name of the entity that created this span. Overrides the common block value.
+            If no value or empty string is provided, the span is assigned to an "UNKNOWN" entity.
+          example: "my-service"
+        error.message:
+          type: string
+          description: Error message if this span represents a failed operation
+          example: "Invalid credentials"
+        host:
+          type: string
+          description: The hostname where this operation was executed
+          example: "host123.example.com"
+      additionalProperties: true
+      x-patternProperties:
+        # Allow any custom attributes
+        "^[a-zA-Z][a-zA-Z0-9._-]*$":
+          description: Custom attributes can be added with any key-value pairs
+
+    # Reserved attributes (documented for reference, not recommended for use)
+    ReservedAttributes:
+      type: object
+      description: |
+        These attributes are reserved for internal New Relic usage.
+        While not explicitly blocked, it is recommended not to use them.
+      properties:
+        entity.name:
+          type: string
+          description: Derived from the service.name attribute
+        entity.type:
+          type: string
+          description: The entity type, assumed to be "service"
+          default: "service"
+        entity.guid:
+          type: string
+          description: A derived value that uniquely identifies the entity in New Relic's backend
+
+    AcceptedResponse:
+      type: object
+      description: Response returned when trace data is successfully accepted
+      properties:
+        requestId:
+          type: string
+          description: Unique identifier for this request
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+
+    ErrorResponse:
+      type: object
+      description: Error response returned when the request fails
+      properties:
+        error:
+          type: string
+          description: Error type or code
+          example: "InvalidPayload"
+        message:
+          type: string
+          description: Human-readable error message
+          example: "Missing required field: trace.id"
+        requestId:
+          type: string
+          description: Unique identifier for this request (useful for troubleshooting)
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+
+tags:
+  - name: Traces
+    description: Operations for sending trace data to New Relic

@@ -1,0 +1,270 @@
+---
+# Splunk Observability Cloud Pricing Plans
+- id: splunk-observability-infrastructure
+  name: Splunk Observability Cloud - Infrastructure
+  description: |
+    Monitor all of your infrastructure & cloud services no matter where they run.
+    Includes Infrastructure Monitoring, Log Observer Connect, Network Explorer, 
+    and Synthetic Uptime Monitoring.
+  entries:
+    - label: Infrastructure tier base
+      description: Per host monthly charge for Infrastructure monitoring tier
+      metric: hosts
+      limit: 999999
+      timeFrame: monthly
+      geo: global
+      unit: 1
+      price: "$15.00"
+  elements:
+    - name: infrastructure-monitoring
+    - name: log-observer-connect
+    - name: network-explorer
+    - name: synthetic-uptime-monitoring
+    - name: billed-annually
+
+- id: splunk-observability-app-infra
+  name: Splunk Observability Cloud - App & Infra
+  description: |
+    Complete application and infrastructure monitoring with APM capabilities.
+    Includes all Infrastructure features plus APM (with Always On Profiling) 
+    and Synthetic API Monitoring.
+  entries:
+    - label: App & Infra tier base
+      description: Per host monthly charge for App & Infrastructure monitoring tier
+      metric: hosts
+      limit: 999999
+      timeFrame: monthly
+      geo: global
+      unit: 1
+      price: "$60.00"
+  elements:
+    - name: infrastructure-monitoring
+    - name: log-observer-connect
+    - name: network-explorer
+    - name: synthetic-uptime-monitoring
+    - name: apm
+    - name: always-on-profiling
+    - name: synthetic-api-monitoring
+    - name: billed-annually
+
+- id: splunk-observability-end-to-end
+  name: Splunk Observability Cloud - End-to-End
+  description: |
+    Complete end-to-end observability solution with full digital experience monitoring.
+    Includes all App & Infra features plus Real User Monitoring and Synthetic 
+    Browser Monitoring for comprehensive visibility.
+  entries:
+    - label: End-to-End tier base
+      description: Per host monthly charge for End-to-End monitoring tier
+      metric: hosts
+      limit: 999999
+      timeFrame: monthly
+      geo: global
+      unit: 1
+      price: "$75.00"
+  elements:
+    - name: infrastructure-monitoring
+    - name: log-observer-connect
+    - name: network-explorer
+    - name: synthetic-uptime-monitoring
+    - name: apm
+    - name: always-on-profiling
+    - name: synthetic-api-monitoring
+    - name: real-user-monitoring
+    - name: synthetic-browser-monitoring
+    - name: billed-annually
+
+- id: splunk-appdynamics
+  name: Splunk AppDynamics
+  description: |
+    Optimize hybrid and on-prem business application performance linked to business 
+    outcomes. Includes network, infrastructure, and database performance monitoring, 
+    SAP environment optimization, application security, and digital experience monitoring.
+  entries:
+    - label: AppDynamics base
+      description: Per CPU core monthly charge for AppDynamics monitoring
+      metric: cpu-cores
+      limit: 999999
+      timeFrame: monthly
+      geo: global
+      unit: 1
+      price: "$6.00"
+  elements:
+    - name: application-performance
+    - name: business-outcomes
+    - name: network-monitoring
+    - name: infrastructure-monitoring
+    - name: database-monitoring
+    - name: sap-environments
+    - name: application-security
+    - name: digital-experience-monitoring
+    - name: billed-annually
+
+- id: splunk-infrastructure-monitoring-standalone
+  name: Splunk Infrastructure Monitoring (Standalone)
+  description: |
+    Real-time hybrid cloud monitoring with streaming analytics architecture.
+    Includes 200+ integrations, OpenTelemetry ingestion, AI-driven alerts, 
+    Kubernetes Navigator, and Service Bureau for usage visibility.
+  entries:
+    - label: Infrastructure Monitoring standalone
+      description: Per host monthly charge for standalone Infrastructure Monitoring
+      metric: hosts
+      limit: 999999
+      timeFrame: monthly
+      geo: global
+      unit: 1
+      price: "$15.00"
+  elements:
+    - name: streaming-analytics
+    - name: 200-plus-integrations
+    - name: opentelemetry-ingestion
+    - name: auto-discovery
+    - name: instant-visualization
+    - name: customizable-dashboards
+    - name: network-explorer
+    - name: ai-driven-alerts
+    - name: high-cardinality-analytics
+    - name: service-bureau
+    - name: kubernetes-navigator
+    - name: billed-annually
+
+- id: splunk-apm-standalone
+  name: Splunk APM (Standalone)
+  description: |
+    Simpler and faster application troubleshooting with NoSample full-fidelity 
+    trace ingest. Includes streaming analytics, dependency-aware service maps, 
+    Business Workflows, and AlwaysOn continuous code profiling.
+  entries:
+    - label: APM standalone
+      description: Per host monthly charge for standalone APM
+      metric: hosts
+      limit: 999999
+      timeFrame: monthly
+      geo: global
+      unit: 1
+      price: "$55.00"
+  elements:
+    - name: nosample-full-fidelity
+    - name: streaming-analytics
+    - name: dependency-service-map
+    - name: business-workflows
+    - name: correlation-with-infrastructure
+    - name: ai-driven-analytics
+    - name: opentelemetry-ingestion
+    - name: alwayson-profiling
+    - name: billed-annually
+
+- id: splunk-rum-standalone
+  name: Splunk Real User Monitoring (Standalone)
+  description: |
+    Real-time, front-end user monitoring and troubleshooting with NoSample 
+    full-fidelity trace ingest. Includes core web vitals, W3C standards, 
+    high cardinality, and correlation with Splunk APM.
+  entries:
+    - label: RUM base charge
+      description: Per 10,000 sessions charge for Real User Monitoring
+      metric: sessions
+      limit: 999999999
+      timeFrame: monthly
+      geo: global
+      unit: 10000
+      price: "$14.00"
+  elements:
+    - name: nosample-full-fidelity
+    - name: opentelemetry-collection
+    - name: high-cardinality
+    - name: core-web-vitals
+    - name: w3c-standards
+    - name: opentelemetry-standardization
+    - name: apm-correlation
+
+- id: splunk-synthetic-monitoring-uptime
+  name: Splunk Synthetic Monitoring - Uptime
+  description: |
+    Full-featured synthetic monitoring and web optimization with browser tests, 
+    API tests, and uptime tests. Includes Lighthouse scores, core web vitals, 
+    50+ performance metrics, private locations, and CI/CD integration.
+  entries:
+    - label: Uptime requests
+      description: Per 10,000 uptime requests charge for Synthetic Monitoring
+      metric: uptime-requests
+      limit: 999999999
+      timeFrame: monthly
+      geo: global
+      unit: 10000
+      price: "$1.00"
+  elements:
+    - name: browser-tests
+    - name: api-tests
+    - name: uptime-tests
+    - name: lighthouse-scores
+    - name: core-web-vitals
+    - name: 50-plus-metrics
+    - name: private-locations
+    - name: optimization-engine
+    - name: cicd-integration
+    - name: page-load-breakdown
+    - name: waterfall-charts
+    - name: 3rd-party-dependencies
+    - name: industry-benchmarks
+
+- id: splunk-on-call
+  name: Splunk On-Call
+  description: |
+    Automated incident response with streamlined on-call incident management.
+    Mobile-first incident response with fast time-to-value, all integrations 
+    included, cross-team collaboration, and bi-directional ITSM integrations.
+  entries:
+    - label: On-Call base (up to 10 seats)
+      description: Per user monthly charge for On-Call incident response (up to 10 seats)
+      metric: users
+      limit: 10
+      timeFrame: monthly
+      geo: global
+      unit: 1
+      price: "$5.00"
+  elements:
+    - name: incident-management
+    - name: mobile-first-response
+    - name: all-integrations-included
+    - name: cross-team-collaboration
+    - name: itsm-integrations
+    - name: billed-annually
+
+- id: splunk-support-standard
+  name: Splunk Observability Cloud - Standard Support
+  description: |
+    Standard support plan included with all Splunk Observability Cloud tiers.
+    Provides base-level support for Infrastructure, App & Infra, and End-to-End plans.
+  entries:
+    - label: Standard Support
+      description: Standard support included with base plans
+      metric: support-level
+      limit: 1
+      timeFrame: monthly
+      geo: global
+      unit: 1
+      price: "$0.00"
+  elements:
+    - name: standard-support
+    - name: included
+
+- id: splunk-support-premium
+  name: Splunk Observability Cloud - Premium Support
+  description: |
+    Premium support upgrade available for Infrastructure, App & Infra, and 
+    End-to-End plans. Provides enhanced support capabilities and faster response times.
+  entries:
+    - label: Premium Support Upgrade
+      description: Optional premium support upgrade for enhanced support capabilities
+      metric: support-level
+      limit: 1
+      timeFrame: monthly
+      geo: global
+      unit: 1
+      price: "Contact Sales"
+  elements:
+    - name: premium-support
+    - name: optional-upgrade
+    - name: enhanced-response-times

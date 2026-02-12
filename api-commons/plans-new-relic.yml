@@ -1,0 +1,350 @@
+# ============================================
+# Free Tier
+# ============================================
+
+- id: newrelic-free
+  name: Free
+  description: >-
+    Perpetual free tier for getting started with observability. 
+    Includes 100 GB/month of data ingest, one free full platform 
+    user, unlimited basic users, and access to 50+ capabilities. 
+    No credit card required.
+  entries:
+    - label: Data Ingest Allowance
+      description: Free monthly data ingest included with the plan
+      metric: data-ingest-gb
+      limit: 100
+      timeFrame: month
+      geo: global
+      unit: 1
+      price: "0.00"
+    - label: Full Platform Users
+      description: Full platform users included at no cost
+      metric: full-platform-user
+      limit: 1
+      timeFrame: month
+      geo: global
+      unit: 1
+      price: "0.00"
+    - label: Basic Users
+      description: Unlimited basic users at no additional cost
+      metric: basic-user
+      limit: 0
+      timeFrame: month
+      geo: global
+      unit: 1
+      price: "0.00"
+  elements:
+    - name: 100 GB data ingest included
+    - name: Automatic logs obfuscation
+    - name: Unlimited basic users
+    - name: One free full platform user
+    - name: Access to 50+ capabilities
+    - name: Access to 750+ integrations
+    - name: Unlimited hosts at no additional cost
+    - name: Standard data retention
+
+# ============================================
+# Standard Edition
+# ============================================
+
+- id: newrelic-standard
+  name: Standard
+  description: >-
+    For small teams looking to get started with observability. 
+    Limited to 5 full platform users with ticketed support 
+    availability and 2 business days support response SLA. 
+    Includes SAML single sign-on.
+  entries:
+    - label: Data Ingest Allowance
+      description: Free monthly data ingest included with the plan
+      metric: data-ingest-gb
+      limit: 100
+      timeFrame: month
+      geo: global
+      unit: 1
+      price: "0.00"
+    - label: Original Data Ingest Overage
+      description: Cost per GB beyond free 100 GB limit (Original data option)
+      metric: data-ingest-gb
+      limit: 0
+      timeFrame: month
+      geo: global
+      unit: 1
+      price: "0.40"
+    - label: Data Plus Ingest Overage
+      description: Cost per GB beyond free 100 GB limit (Data Plus option)
+      metric: data-ingest-gb-dataplus
+      limit: 0
+      timeFrame: month
+      geo: global
+      unit: 1
+      price: "0.60"
+    - label: Basic Users
+      description: Unlimited basic users at no additional cost
+      metric: basic-user
+      limit: 0
+      timeFrame: month
+      geo: global
+      unit: 1
+      price: "0.00"
+    - label: Core Users
+      description: Cost per core user per month
+      metric: core-user
+      limit: 0
+      timeFrame: month
+      geo: global
+      unit: 1
+      price: "49.00"
+    - label: First Full Platform User
+      description: Cost for the first full platform user
+      metric: full-platform-user-first
+      limit: 1
+      timeFrame: month
+      geo: global
+      unit: 1
+      price: "10.00"
+    - label: Additional Full Platform Users
+      description: Cost per additional full platform user (maximum 5 total)
+      metric: full-platform-user-additional
+      limit: 4
+      timeFrame: month
+      geo: global
+      unit: 1
+      price: "99.00"
+  elements:
+    - name: 100 GB data ingest included
+    - name: Automatic logs obfuscation
+    - name: Unlimited basic users
+    - name: Limited to 5 full platform users
+    - name: Access to 50+ capabilities
+    - name: Access to 750+ integrations
+    - name: Unlimited hosts at no additional cost
+    - name: Ticketed support availability
+    - name: 2 business days support response SLA
+    - name: SAML single sign-on
+    - name: Standard data retention
+    - name: Data Plus eligibility
+
+# ============================================
+# Pro Edition
+# ============================================
+
+- id: newrelic-pro
+  name: Pro
+  description: >-
+    For teams with more than five engineers and complex workloads. 
+    Unlimited full platform users with commitment options available. 
+    Includes 2-hour critical initial support response SLA and 
+    Data Plus eligibility. Optional full consumption pricing 
+    with no user licenses available.
+  entries:
+    - label: Data Ingest Allowance
+      description: Free monthly data ingest included with the plan
+      metric: data-ingest-gb
+      limit: 100
+      timeFrame: month
+      geo: global
+      unit: 1
+      price: "0.00"
+    - label: Original Data Ingest Overage
+      description: Cost per GB beyond free 100 GB limit (Original data option)
+      metric: data-ingest-gb
+      limit: 0
+      timeFrame: month
+      geo: global
+      unit: 1
+      price: "0.40"
+    - label: Data Plus Ingest Overage
+      description: Cost per GB beyond free 100 GB limit (Data Plus option)
+      metric: data-ingest-gb-dataplus
+      limit: 0
+      timeFrame: month
+      geo: global
+      unit: 1
+      price: "0.60"
+    - label: Basic Users
+      description: Unlimited basic users at no additional cost
+      metric: basic-user
+      limit: 0
+      timeFrame: month
+      geo: global
+      unit: 1
+      price: "0.00"
+    - label: Core Users
+      description: Cost per core user per month
+      metric: core-user
+      limit: 0
+      timeFrame: month
+      geo: global
+      unit: 1
+      price: "49.00"
+    - label: Full Platform Users (Annual)
+      description: Cost per full platform user with annual commitment
+      metric: full-platform-user-annual
+      limit: 0
+      timeFrame: month
+      geo: global
+      unit: 1
+      price: "349.00"
+    - label: Full Platform Users (Monthly PAYG)
+      description: Cost per full platform user with monthly pay as you go
+      metric: full-platform-user-monthly
+      limit: 0
+      timeFrame: month
+      geo: global
+      unit: 1
+      price: "418.80"
+    - label: Compute Capacity Units
+      description: Advanced compute pricing based on CCU tiers
+      metric: compute-capacity-unit
+      limit: 0
+      timeFrame: month
+      geo: global
+      unit: 1
+      price: "contact-sales"
+  elements:
+    - name: 100 GB data ingest included
+    - name: Automatic logs obfuscation
+    - name: Unlimited basic users
+    - name: Unlimited full platform users
+    - name: Access to 50+ capabilities
+    - name: Access to 750+ integrations
+    - name: Unlimited hosts at no additional cost
+    - name: Commitment options available
+    - name: 2-hour critical initial support response SLA
+    - name: Data Plus eligibility
+    - name: Standard data retention
+    - name: "Optional: Full consumption pricing with no user licenses"
+    - name: New Relic AI access
+    - name: Live Archives access
+    - name: Feature Control Manager
+
+# ============================================
+# Enterprise Edition
+# ============================================
+
+- id: newrelic-enterprise
+  name: Enterprise
+  description: >-
+    For at-scale organizations with advanced security and support needs. 
+    Everything in Pro plus FedRAMP Moderate and HIPAA eligibility with 
+    Data Plus, priority ticket routing, and 1-hour critical initial 
+    support response SLA. Optional full consumption pricing with no 
+    user licenses available.
+  entries:
+    - label: Data Ingest Allowance
+      description: Free monthly data ingest included with the plan
+      metric: data-ingest-gb
+      limit: 100
+      timeFrame: month
+      geo: global
+      unit: 1
+      price: "0.00"
+    - label: Original Data Ingest Overage
+      description: Cost per GB beyond free 100 GB limit (Original data option)
+      metric: data-ingest-gb
+      limit: 0
+      timeFrame: month
+      geo: global
+      unit: 1
+      price: "contact-sales"
+    - label: Data Plus Ingest Overage
+      description: Cost per GB beyond free 100 GB limit with FedRAMP/HIPAA eligibility
+      metric: data-ingest-gb-dataplus
+      limit: 0
+      timeFrame: month
+      geo: global
+      unit: 1
+      price: "contact-sales"
+    - label: Basic Users
+      description: Unlimited basic users at no additional cost
+      metric: basic-user
+      limit: 0
+      timeFrame: month
+      geo: global
+      unit: 1
+      price: "0.00"
+    - label: Core Users
+      description: Cost per core user per month
+      metric: core-user
+      limit: 0
+      timeFrame: month
+      geo: global
+      unit: 1
+      price: "49.00"
+    - label: Full Platform Users
+      description: Custom pricing for full platform users
+      metric: full-platform-user
+      limit: 0
+      timeFrame: month
+      geo: global
+      unit: 1
+      price: "contact-sales"
+    - label: Compute Capacity Units
+      description: Advanced compute pricing based on CCU tiers
+      metric: compute-capacity-unit
+      limit: 0
+      timeFrame: month
+      geo: global
+      unit: 1
+      price: "contact-sales"
+  elements:
+    - name: 100 GB data ingest included
+    - name: Automatic logs obfuscation
+    - name: Unlimited basic users
+    - name: Unlimited full platform users
+    - name: Access to 50+ capabilities
+    - name: Access to 750+ integrations
+    - name: Unlimited hosts at no additional cost
+    - name: Commitment options available
+    - name: 1-hour critical initial support response SLA
+    - name: Priority ticket routing
+    - name: Data Plus eligibility
+    - name: FedRAMP Moderate eligibility (with Data Plus)
+    - name: HIPAA eligibility (with Data Plus)
+    - name: Advanced data retention options
+    - name: "Optional: Full consumption pricing with no user licenses"
+    - name: New Relic AI access
+    - name: Live Archives access
+    - name: Feature Control Manager
+    - name: Advanced security controls
+
+# ============================================
+# New Relic Compute (Add-on)
+# ============================================
+
+- id: newrelic-compute
+  name: New Relic Compute
+  description: >-
+    Pay only for the compute you use with no user fees. Access 
+    New Relic's latest Intelligent Observability capabilities 
+    including New Relic AI and Live Archives. Use Feature Control 
+    Manager to toggle capabilities ON or OFF and control exactly 
+    what you spend.
+  entries:
+    - label: Compute Capacity Units (Standard)
+      description: Standard compute capacity unit pricing
+      metric: compute-capacity-unit-standard
+      limit: 0
+      timeFrame: month
+      geo: global
+      unit: 1
+      price: "contact-sales"
+    - label: Compute Capacity Units (Advanced)
+      description: Advanced compute capacity unit pricing for AI and premium features
+      metric: compute-capacity-unit-advanced
+      limit: 0
+      timeFrame: month
+      geo: global
+      unit: 1
+      price: "contact-sales"
+  elements:
+    - name: No user fees
+    - name: Pay only for compute used
+    - name: New Relic AI capabilities
+    - name: Live Archives
+    - name: Feature Control Manager
+    - name: Toggle capabilities ON/OFF
+    - name: Intelligent Observability features
+    - name: Usage-based pricing model

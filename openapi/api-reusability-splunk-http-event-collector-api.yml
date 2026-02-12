@@ -1,0 +1,395 @@
+openapi: 3.1.0
+info:
+  title: Splunk HTTP Event Collector API
+  description: |
+    Send events to the Splunk HTTP Event Collector for indexing and searching.
+  version: 1.0.0
+  contact:
+    name: Splunk Support
+    url: https://www.splunk.com/support
+
+servers:
+  - url: https://{host}:{port}/services
+    description: Splunk HTTP Event Collector endpoint
+    variables:
+      host:
+        default: localhost
+        description: Splunk server hostname
+      port:
+        default: "8088"
+        description: HTTP Event Collector port (default 8088)
+
+security:
+  - splunk_token: []
+  - basic_auth: []
+
+tags:
+  - name: Event Collector
+    description: Send events to HTTP Event Collector
+
+paths:
+  /collector:
+    post:
+      summary: Send events to HTTP Event Collector
+      description: |
+        Send one or more events to the Splunk HTTP Event Collector for indexing.
+      operationId: sendEvents
+      tags:
+        - Event Collector
+      parameters:
+        - name: channel
+          in: query
+          required: false
+          description: |
+            Required if useAck is enabled. Channel GUID as a string parameter. 
+            Can also be passed using the "x-splunk-request-channel" header.
+          schema:
+            type: string
+            format: uuid
+          example: FE0ECFAD-13D5-401B-847D-77833BD77131
+        
+        - name: host
+          in: query
+          required: false
+          description: Default host name for all events in the request. Can be overridden per event.
+          schema:
+            type: string
+          example: webserver01
+        
+        - name: index
+          in: query
+          required: false
+          description: Default index name for all events in the request. Can be overridden per event.
+          schema:
+            type: string
+          example: main
+        
+        - name: source
+          in: query
+          required: false
+          description: Default user-defined event source for all events in the request. Can be overridden per event.
+          schema:
+            type: string
+          example: /var/log/access.log
+        
+        - name: sourcetype
+          in: query
+          required: false
+          description: Default user-defined event sourcetype for all events in the request. Can be overridden per event.
+          schema:
+            type: string
+          example: access_combined
+        
+        - name: time
+          in: query
+          required: false
+          description: |
+            Default epoch-formatted time for all events in the request. Can be overridden per event.
+            Accepts epoch time in seconds or milliseconds.
+          schema:
+            oneOf:
+              - type: string
+              - type: integer
+          example: 1643234829
+        
+        - name: x-splunk-request-channel
+          in: header
+          required: false
+          description: Channel GUID. Alternative to passing channel as query parameter.
+          schema:
+            type: string
+            format: uuid
+          example: FE0ECFAD-13D5-401B-847D-77833BD77131
+
+      requestBody:
+        required: true
+        description: |
+          Event data to be indexed. Can be a single event or multiple events.
+          
+          **Single Event Formats:**
+          - JSON object with event key
+          - Plain string (when using basic auth)
+          
+          **Multiple Events:**
+          - Newline-delimited JSON objects (no comma separation)
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/SingleEvent'
+                - $ref: '#/components/schemas/MultipleEvents'
+            examples:
+            
+              event_with_metadata:
+                summary: Event with all metadata fields
+                value:
+                  time: 1643234829
+                  host: webserver01
+                  source: /var/log/app.log
+                  sourcetype: application
+                  index: main
+                  event:
+                    level: ERROR
+                    message: Application error occurred
+                    user_id: 12345
+          
+          text/plain:
+            schema:
+              type: string
+            example: Hello World
+
+      responses:
+        '200':
+          description: Success - Event(s) accepted for indexing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              examples:
+                success:
+                  summary: Successful event submission
+                  value:
+                    text: Success
+                    code: 0
+                
+                success_with_ack:
+                  summary: Success with acknowledgement ID
+                  value:
+                    text: Success
+                    code: 0
+                    ackId: 12345
+        
+        '400':
+          description: Bad Request - Invalid event data or parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                incorrect_format:
+                  summary: Incorrect data format
+                  value:
+                    text: Incorrect data format
+                    code: 5
+                    invalid-event-number: 0
+                
+                invalid_json:
+                  summary: Invalid JSON
+                  value:
+                    text: Invalid data format
+                    code: 6
+                    invalid-event-number: 0
+        
+        '401':
+          description: Unauthorized - Invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                text: Invalid authorization
+                code: 2
+        
+        '403':
+          description: Forbidden - Token disabled or insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                text: Token is disabled
+                code: 4
+        
+        '404':
+          description: Not Found - Invalid endpoint or channel
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                text: Data channel is missing
+                code: 10
+        
+        '500':
+          description: Internal Server Error - Server processing error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                text: Internal server error
+                code: 8
+        
+        '503':
+          description: Service Unavailable - Server busy or maintenance
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                text: Server is busy
+                code: 9
+
+components:
+  securitySchemes:
+    splunk_token:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: |
+        Splunk HTTP Event Collector token. Format: `Splunk <token>`
+        
+        Example: `Authorization: Splunk 3DEA16E1-413A-46C2-A74F-E79DC3DF3CA2`
+    
+    basic_auth:
+      type: http
+      scheme: basic
+      description: |
+        Basic authentication using token as password. Username is ignored (use 'x').
+        
+        Example: `curl -u x:46931F1C-352C-4DF6-820C-F2689CF88494`
+
+  schemas:
+    SingleEvent:
+      type: object
+      description: Single event object for indexing
+      properties:
+        event:
+          description: |
+            Required. Event payload data. Can be a string or JSON object.
+          oneOf:
+            - type: string
+            - type: object
+          examples:
+            - Access log test message
+            - message: Access log test message
+              user: john_doe
+        time:
+          description: |
+            Epoch-formatted time (seconds or milliseconds). Overrides default time parameter.
+          oneOf:
+            - type: string
+            - type: integer
+          example: 1643234829
+        host:
+          type: string
+          description: Host name. Overrides default host parameter.
+          example: webserver01
+        source:
+          type: string
+          description: User-defined event source. Overrides default source parameter.
+          example: /var/log/access.log
+        sourcetype:
+          type: string
+          description: User-defined event sourcetype. Overrides default sourcetype parameter.
+          example: access_combined
+        index:
+          type: string
+          description: Index name. Overrides default index parameter.
+          example: main
+        fields:
+          type: object
+          description: |
+            Additional fields for indexing that do not occur in the event payload itself.
+            Use for metadata needed for indexing and searching but not part of event data.
+          additionalProperties:
+            oneOf:
+              - type: string
+              - type: number
+              - type: boolean
+              - type: array
+                items:
+                  type: string
+          example:
+            severity: INFO
+            category:
+              - foo
+              - bar
+      required:
+        - event
+    
+    MultipleEvents:
+      type: string
+      description: |
+        Multiple events as newline-delimited JSON objects. Each line is a separate 
+        SingleEvent JSON object. Events are NOT comma-separated.
+      example: |
+        {"event": "First event"}
+        {"event": "Second event", "sourcetype": "custom"}
+        {"event": {"message": "Third event"}, "fields": {"env": "prod"}}
+    
+    SuccessResponse:
+      type: object
+      description: Successful event submission response
+      properties:
+        text:
+          type: string
+          description: Human-readable status message
+          example: Success
+        code:
+          type: integer
+          description: Machine-format status code (0 = success)
+          example: 0
+        ackId:
+          type: integer
+          description: |
+            Acknowledgement ID for checking indexer acknowledgement (only if useAck is enabled)
+          example: 12345
+      required:
+        - text
+        - code
+    
+    ErrorResponse:
+      type: object
+      description: Error response when event submission fails
+      properties:
+        text:
+          type: string
+          description: Human-readable error message
+          example: Incorrect data format
+        code:
+          type: integer
+          description: Machine-format error code
+          example: 5
+        invalid-event-number:
+          type: integer
+          description: |
+            Zero-based index of the first invalid event in a sequence.
+            Events before this index were successfully processed; events at and after are dropped.
+          example: 0
+      required:
+        - text
+        - code
+
+  examples:
+    SimpleStringEvent:
+      summary: Simple string event
+      value:
+        event: Hello World
+    
+    JSONObjectEvent:
+      summary: JSON object event
+      value:
+        event:
+          message: User login successful
+          user_id: 12345
+          ip_address: 192.168.1.100
+    
+    EventWithAllMetadata:
+      summary: Event with all metadata
+      value:
+        time: 1643234829
+        host: webserver01
+        source: /var/log/app.log
+        sourcetype: application
+        index: main
+        event:
+          level: ERROR
+          message: Database connection failed
+          error_code: DB_CONN_001
+        fields:
+          environment: production
+          severity: HIGH
+          team:
+            - backend
+            - devops

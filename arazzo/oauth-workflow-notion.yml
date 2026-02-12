@@ -1,0 +1,485 @@
+arazzo: 1.0.0
+info:
+  title: Notion OAuth Authorization Flow
+  summary: Complete OAuth 2.0 authorization flow for Notion public integrations
+  description: |
+    This workflow demonstrates the complete OAuth flow for authorizing a Notion public 
+    integration and obtaining an access token to make API requests.
+    
+    The workflow includes:
+    1. Redirecting users to Notion for authorization
+    2. Receiving the authorization callback with code
+    3. Exchanging the code for an access token
+    4. Using the token to make authenticated API requests
+    5. Updating a Notion page using the access token
+    
+    **Key Points:**
+    - Authorization codes expire after 10 minutes
+    - Access tokens do not expire
+    - Tokens are workspace-specific
+    - bot_id should be used as primary key for storing integration data
+  version: 1.0.0
+
+sourceDescriptions:
+  - name: notion-oauth-api
+    type: openapi
+    url: ./notion-oauth-api-spec.yaml
+  - name: notion-api
+    type: openapi
+    url: ./notion-update-page-api-spec.yaml
+
+workflows:
+  - workflowId: complete-oauth-flow
+    summary: Complete Notion OAuth authorization flow
+    description: |
+      Execute the full OAuth flow from authorization to making authenticated API calls.
+      This is the standard OAuth 2.0 Authorization Code Grant flow for Notion.
+    inputs:
+      type: object
+      properties:
+        client_id:
+          type: string
+          description: Your Notion integration's OAuth client ID
+        client_secret:
+          type: string
+          description: Your Notion integration's OAuth client secret
+        redirect_uri:
+          type: string
+          description: The callback URL registered with your integration
+        state:
+          type: string
+          description: Random state string for CSRF protection
+          default: random_csrf_token_12345
+    steps:
+      - stepId: initiate-authorization
+        description: Redirect user to Notion authorization page
+        operationId: authorizeIntegration
+        parameters:
+          - name: client_id
+            in: query
+            value: $inputs.client_id
+          - name: redirect_uri
+            in: query
+            value: $inputs.redirect_uri
+          - name: response_type
+            in: query
+            value: code
+          - name: owner
+            in: query
+            value: user
+          - name: state
+            in: query
+            value: $inputs.state
+        successCriteria:
+          - condition: $statusCode == 302
+        outputs:
+          authorization_url:
+            description: The URL where the user authorizes the integration
+            value: $url
+      
+      - stepId: receive-authorization-callback
+        description: User approves integration and Notion redirects back with code
+        operationPath: $sourceDescriptions.notion-oauth-api
+        operationId: authorizeIntegration
+        successCriteria:
+          - condition: $statusCode == 302
+        outputs:
+          authorization_code:
+            description: Temporary authorization code from callback (expires in 10 minutes)
+            value: $response.query.code
+          returned_state:
+            description: State parameter returned for CSRF validation
+            value: $response.query.state
+      
+      - stepId: validate-state
+        description: Validate state parameter to prevent CSRF attacks
+        operationPath: $sourceDescriptions.notion-oauth-api
+        successCriteria:
+          - condition: $steps.receive-authorization-callback.outputs.returned_state == $inputs.state
+            type: simple
+      
+      - stepId: exchange-for-access-token
+        description: Exchange authorization code for access token
+        operationId: exchangeToken
+        requestBody:
+          contentType: application/x-www-form-urlencoded
+          payload:
+            grant_type: authorization_code
+            code: $steps.receive-authorization-callback.outputs.authorization_code
+            redirect_uri: $inputs.redirect_uri
+        successCriteria:
+          - condition: $statusCode == 200
+          - condition: $response.body.access_token
+            type: simple
+        outputs:
+          access_token:
+            description: OAuth access token (does not expire)
+            value: $response.body.access_token
+          bot_id:
+            description: Bot ID - use as primary key for storage
+            value: $response.body.bot_id
+          workspace_id:
+            description: Workspace ID where integration was authorized
+            value: $response.body.workspace_id
+          workspace_name:
+            description: Name of the workspace
+            value: $response.body.workspace_name
+          token_info:
+            description: Complete token response
+            value: $response.body
+    
+    outputs:
+      access_token: $steps.exchange-for-access-token.outputs.access_token
+      bot_id: $steps.exchange-for-access-token.outputs.bot_id
+      workspace_id: $steps.exchange-for-access-token.outputs.workspace_id
+      workspace_name: $steps.exchange-for-access-token.outputs.workspace_name
+
+  - workflowId: oauth-and-update-page
+    summary: OAuth flow with page update
+    description: |
+      Complete OAuth flow followed by updating a Notion page to demonstrate 
+      using the access token for API requests.
+    inputs:
+      type: object
+      properties:
+        client_id:
+          type: string
+          description: OAuth client ID
+        client_secret:
+          type: string
+          description: OAuth client secret
+        redirect_uri:
+          type: string
+          description: Callback URL
+        state:
+          type: string
+          default: random_state_abc123
+        page_id:
+          type: string
+          description: ID of the Notion page to update
+        page_updates:
+          type: object
+          description: Page properties and attributes to update
+    steps:
+      - stepId: authorize-integration
+        description: Run the complete OAuth flow
+        workflowId: complete-oauth-flow
+        parameters:
+          - name: client_id
+            in: body
+            value: $inputs.client_id
+          - name: client_secret
+            in: body
+            value: $inputs.client_secret
+          - name: redirect_uri
+            in: body
+            value: $inputs.redirect_uri
+          - name: state
+            in: body
+            value: $inputs.state
+        successCriteria:
+          - condition: $statusCode == 200
+        outputs:
+          access_token:
+            value: $workflows.complete-oauth-flow.outputs.access_token
+          bot_id:
+            value: $workflows.complete-oauth-flow.outputs.bot_id
+      
+      - stepId: update-notion-page
+        description: Update a Notion page using the access token
+        operationPath: $sourceDescriptions.notion-api
+        operationId: updatePage
+        parameters:
+          - name: page_id
+            in: path
+            value: $inputs.page_id
+          - name: Authorization
+            in: header
+            value: Bearer $steps.authorize-integration.outputs.access_token
+          - name: Notion-Version
+            in: header
+            value: "2025-09-03"
+        requestBody:
+          contentType: application/json
+          payload: $inputs.page_updates
+        successCriteria:
+          - condition: $statusCode == 200
+        outputs:
+          updated_page:
+            description: The updated page object
+            value: $response.body
+          page_url:
+            description: URL of the updated page
+            value: $response.body.url
+    
+    outputs:
+      access_token: $steps.authorize-integration.outputs.access_token
+      bot_id: $steps.authorize-integration.outputs.bot_id
+      page_url: $steps.update-notion-page.outputs.page_url
+      updated_page: $steps.update-notion-page.outputs.updated_page
+
+  - workflowId: multi-workspace-authorization
+    summary: Authorize integration across multiple workspaces
+    description: |
+      Handle authorization for the same integration across multiple Notion workspaces.
+      Stores workspace-specific tokens using bot_id as the primary key.
+    inputs:
+      type: object
+      properties:
+        client_id:
+          type: string
+        client_secret:
+          type: string
+        redirect_uri:
+          type: string
+        workspaces:
+          type: array
+          description: List of workspace names or identifiers
+          items:
+            type: string
+    steps:
+      - stepId: authorize-workspace-1
+        description: Authorize first workspace
+        workflowId: complete-oauth-flow
+        parameters:
+          - name: client_id
+            in: body
+            value: $inputs.client_id
+          - name: client_secret
+            in: body
+            value: $inputs.client_secret
+          - name: redirect_uri
+            in: body
+            value: $inputs.redirect_uri
+          - name: state
+            in: body
+            value: workspace_1_state_token
+        successCriteria:
+          - condition: $statusCode == 200
+        outputs:
+          workspace_1_token:
+            value: $workflows.complete-oauth-flow.outputs.access_token
+          workspace_1_bot_id:
+            value: $workflows.complete-oauth-flow.outputs.bot_id
+          workspace_1_id:
+            value: $workflows.complete-oauth-flow.outputs.workspace_id
+      
+      - stepId: authorize-workspace-2
+        description: Authorize second workspace (if needed)
+        workflowId: complete-oauth-flow
+        parameters:
+          - name: client_id
+            in: body
+            value: $inputs.client_id
+          - name: client_secret
+            in: body
+            value: $inputs.client_secret
+          - name: redirect_uri
+            in: body
+            value: $inputs.redirect_uri
+          - name: state
+            in: body
+            value: workspace_2_state_token
+        successCriteria:
+          - condition: $statusCode == 200
+        outputs:
+          workspace_2_token:
+            value: $workflows.complete-oauth-flow.outputs.access_token
+          workspace_2_bot_id:
+            value: $workflows.complete-oauth-flow.outputs.bot_id
+          workspace_2_id:
+            value: $workflows.complete-oauth-flow.outputs.workspace_id
+    
+    outputs:
+      tokens:
+        description: Map of workspace bot_id to access tokens
+        value: |
+          {
+            "$steps.authorize-workspace-1.outputs.workspace_1_bot_id": "$steps.authorize-workspace-1.outputs.workspace_1_token",
+            "$steps.authorize-workspace-2.outputs.workspace_2_bot_id": "$steps.authorize-workspace-2.outputs.workspace_2_token"
+          }
+
+  - workflowId: oauth-with-error-handling
+    summary: OAuth flow with comprehensive error handling
+    description: |
+      OAuth flow that handles common error scenarios including expired codes,
+      invalid credentials, and redirect URI mismatches.
+    inputs:
+      type: object
+      properties:
+        client_id:
+          type: string
+        client_secret:
+          type: string
+        redirect_uri:
+          type: string
+        state:
+          type: string
+          default: secure_random_state
+    steps:
+      - stepId: start-authorization
+        description: Initiate OAuth flow
+        operationId: authorizeIntegration
+        parameters:
+          - name: client_id
+            in: query
+            value: $inputs.client_id
+          - name: redirect_uri
+            in: query
+            value: $inputs.redirect_uri
+          - name: response_type
+            in: query
+            value: code
+          - name: owner
+            in: query
+            value: user
+          - name: state
+            in: query
+            value: $inputs.state
+        successCriteria:
+          - condition: $statusCode == 302
+        onFailure:
+          - name: invalid-client-id
+            workflowId: complete-oauth-flow
+            type: retry
+        outputs:
+          auth_url:
+            value: $url
+      
+      - stepId: get-authorization-code
+        description: Receive callback with authorization code
+        operationPath: $sourceDescriptions.notion-oauth-api
+        operationId: authorizeIntegration
+        successCriteria:
+          - condition: $statusCode == 302
+          - condition: $response.query.code
+            type: simple
+        outputs:
+          code:
+            value: $response.query.code
+          state:
+            value: $response.query.state
+      
+      - stepId: verify-csrf-token
+        description: Validate state matches
+        operationPath: $sourceDescriptions.notion-oauth-api
+        successCriteria:
+          - condition: $steps.get-authorization-code.outputs.state == $inputs.state
+            type: simple
+        onFailure:
+          - name: csrf-attack-detected
+            workflowId: complete-oauth-flow
+            type: end
+      
+      - stepId: token-exchange
+        description: Exchange code for token with retry logic
+        operationId: exchangeToken
+        requestBody:
+          contentType: application/x-www-form-urlencoded
+          payload:
+            grant_type: authorization_code
+            code: $steps.get-authorization-code.outputs.code
+            redirect_uri: $inputs.redirect_uri
+        successCriteria:
+          - condition: $statusCode == 200
+        onFailure:
+          - name: expired-code
+            type: retry
+            retryAfter: 1
+            retryLimit: 3
+            criteria:
+              - context: $response.body.error
+                condition: == 'invalid_grant'
+                type: simple
+          - name: invalid-client
+            type: end
+            criteria:
+              - context: $response.body.error
+                condition: == 'invalid_client'
+                type: simple
+        outputs:
+          access_token:
+            value: $response.body.access_token
+          bot_id:
+            value: $response.body.bot_id
+          error_if_any:
+            value: $response.body.error
+    
+    outputs:
+      access_token: $steps.token-exchange.outputs.access_token
+      bot_id: $steps.token-exchange.outputs.bot_id
+      success: |
+        $steps.token-exchange.outputs.access_token ? true : false
+
+  - workflowId: store-and-use-token
+    summary: OAuth flow with token storage and usage
+    description: |
+      Complete flow that authorizes, stores the token securely, and demonstrates
+      using it for API requests. Includes best practices for token management.
+    inputs:
+      type: object
+      properties:
+        client_id:
+          type: string
+        client_secret:
+          type: string
+        redirect_uri:
+          type: string
+    steps:
+      - stepId: authorize-and-get-token
+        description: Run OAuth flow to get access token
+        workflowId: complete-oauth-flow
+        parameters:
+          - name: client_id
+            in: body
+            value: $inputs.client_id
+          - name: client_secret
+            in: body
+            value: $inputs.client_secret
+          - name: redirect_uri
+            in: body
+            value: $inputs.redirect_uri
+          - name: state
+            in: body
+            value: crypto_random_state_token
+        successCriteria:
+          - condition: $statusCode == 200
+        outputs:
+          token_data:
+            description: All token response data for storage
+            value: $workflows.complete-oauth-flow.outputs
+      
+      - stepId: store-token-securely
+        description: Store token and workspace information
+        operationPath: $sourceDescriptions.notion-oauth-api
+        successCriteria:
+          - condition: $steps.authorize-and-get-token.outputs.token_data.bot_id
+            type: simple
+        outputs:
+          stored_data:
+            description: Data structure for secure storage
+            value: |
+              {
+                "bot_id": "$steps.authorize-and-get-token.outputs.token_data.bot_id",
+                "access_token": "$steps.authorize-and-get-token.outputs.token_data.access_token",
+                "workspace_id": "$steps.authorize-and-get-token.outputs.token_data.workspace_id",
+                "workspace_name": "$steps.authorize-and-get-token.outputs.token_data.workspace_name",
+                "created_at": "2025-01-01T00:00:00Z",
+                "never_expires": true
+              }
+    
+    outputs:
+      bot_id: $steps.authorize-and-get-token.outputs.token_data.bot_id
+      stored_token_data: $steps.store-token-securely.outputs.stored_data
+
+components:
+  parameters:
+    client_id:
+      name: client_id
+      in: query
+      value: $inputs.client_id
+    
+    access_token_header:
+      name: Authorization
+      in: header
+      value: Bearer $inputs.access_token

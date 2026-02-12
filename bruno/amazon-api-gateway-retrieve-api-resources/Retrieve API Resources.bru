@@ -1,0 +1,25 @@
+meta {
+  name: Retrieve API Resources
+  type: http
+  seq: 2
+}
+
+get {
+  url: https://apigateway.{{aws_region}}.amazonaws.com/restapis/{{aws_api_id}}/resources
+  body: none
+  auth: awsv4
+}
+
+auth:awsv4 {
+  accessKeyId: {{aws_access_key_id}}
+  secretAccessKey: {{aws_secret_access_id}}
+  sessionToken: 
+  service: {{aws_service}}
+  region: {{aws_region}}
+  profileName: 
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

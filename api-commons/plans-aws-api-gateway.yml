@@ -1,0 +1,384 @@
+---
+# AWS API Gateway Pricing Plans
+- id: aws-api-gateway-http-apis
+  name: AWS API Gateway - HTTP APIs
+  description: |
+    Pay only for the API calls you receive and the amount of data transferred out.
+    HTTP APIs are metered in 512 KB increments. Includes 1M free API calls per month
+    for the first 12 months for new AWS customers.
+  entries:
+    - label: First 300 million requests
+      description: API calls received for HTTP APIs in the first pricing tier
+      metric: requests
+      limit: 300000000
+      timeFrame: monthly
+      geo: us-east-2
+      unit: 1000000
+      price: "$1.00"
+    - label: Over 300 million requests
+      description: API calls received for HTTP APIs in the second pricing tier
+      metric: requests
+      limit: 999999999
+      timeFrame: monthly
+      geo: us-east-2
+      unit: 1000000
+      price: "$0.90"
+  elements:
+    - name: data-transfer-out
+    - name: free-tier
+
+- id: aws-api-gateway-rest-apis
+  name: AWS API Gateway - REST APIs
+  description: |
+    Pay only for the API calls you receive and the amount of data transferred out.
+    There are no data transfer out charges for Private APIs. Includes 1M free API 
+    calls per month for the first 12 months for new AWS customers.
+  entries:
+    - label: First 333 million requests
+      description: API calls received for REST APIs in the first pricing tier
+      metric: requests
+      limit: 333000000
+      timeFrame: monthly
+      geo: us-east-2
+      unit: 1000000
+      price: "$3.50"
+    - label: Next 667 million requests
+      description: API calls received for REST APIs in the second pricing tier
+      metric: requests
+      limit: 667000000
+      timeFrame: monthly
+      geo: us-east-2
+      unit: 1000000
+      price: "$2.80"
+    - label: Next 19 billion requests
+      description: API calls received for REST APIs in the third pricing tier
+      metric: requests
+      limit: 19000000000
+      timeFrame: monthly
+      geo: us-east-2
+      unit: 1000000
+      price: "$2.38"
+    - label: Over 20 billion requests
+      description: API calls received for REST APIs in the fourth pricing tier
+      metric: requests
+      limit: 999999999999
+      timeFrame: monthly
+      geo: us-east-2
+      unit: 1000000
+      price: "$1.51"
+  elements:
+    - name: data-transfer-out
+    - name: free-tier
+    - name: caching-optional
+    - name: private-apis
+
+- id: aws-api-gateway-rest-apis-caching-0-5gb
+  name: AWS API Gateway - REST APIs Caching (0.5 GB)
+  description: |
+    Optional dedicated cache for each stage of your APIs for better performance 
+    and faster API execution. This tier provides 0.5 GB of cache memory.
+  entries:
+    - label: 0.5 GB cache
+      description: Hourly rate for 0.5 GB dedicated cache per API stage
+      metric: hours
+      limit: 999999
+      timeFrame: hourly
+      geo: us-east-2
+      unit: 1
+      price: "$0.02"
+  elements:
+    - name: caching
+    - name: performance
+
+- id: aws-api-gateway-rest-apis-caching-1-6gb
+  name: AWS API Gateway - REST APIs Caching (1.6 GB)
+  description: |
+    Optional dedicated cache for each stage of your APIs for better performance 
+    and faster API execution. This tier provides 1.6 GB of cache memory.
+  entries:
+    - label: 1.6 GB cache
+      description: Hourly rate for 1.6 GB dedicated cache per API stage
+      metric: hours
+      limit: 999999
+      timeFrame: hourly
+      geo: us-east-2
+      unit: 1
+      price: "$0.038"
+  elements:
+    - name: caching
+    - name: performance
+
+- id: aws-api-gateway-rest-apis-caching-6-1gb
+  name: AWS API Gateway - REST APIs Caching (6.1 GB)
+  description: |
+    Optional dedicated cache for each stage of your APIs for better performance 
+    and faster API execution. This tier provides 6.1 GB of cache memory.
+  entries:
+    - label: 6.1 GB cache
+      description: Hourly rate for 6.1 GB dedicated cache per API stage
+      metric: hours
+      limit: 999999
+      timeFrame: hourly
+      geo: us-east-2
+      unit: 1
+      price: "$0.20"
+  elements:
+    - name: caching
+    - name: performance
+
+- id: aws-api-gateway-rest-apis-caching-13-5gb
+  name: AWS API Gateway - REST APIs Caching (13.5 GB)
+  description: |
+    Optional dedicated cache for each stage of your APIs for better performance 
+    and faster API execution. This tier provides 13.5 GB of cache memory.
+  entries:
+    - label: 13.5 GB cache
+      description: Hourly rate for 13.5 GB dedicated cache per API stage
+      metric: hours
+      limit: 999999
+      timeFrame: hourly
+      geo: us-east-2
+      unit: 1
+      price: "$0.25"
+  elements:
+    - name: caching
+    - name: performance
+
+- id: aws-api-gateway-rest-apis-caching-28-4gb
+  name: AWS API Gateway - REST APIs Caching (28.4 GB)
+  description: |
+    Optional dedicated cache for each stage of your APIs for better performance 
+    and faster API execution. This tier provides 28.4 GB of cache memory.
+  entries:
+    - label: 28.4 GB cache
+      description: Hourly rate for 28.4 GB dedicated cache per API stage
+      metric: hours
+      limit: 999999
+      timeFrame: hourly
+      geo: us-east-2
+      unit: 1
+      price: "$0.50"
+  elements:
+    - name: caching
+    - name: performance
+
+- id: aws-api-gateway-rest-apis-caching-58-2gb
+  name: AWS API Gateway - REST APIs Caching (58.2 GB)
+  description: |
+    Optional dedicated cache for each stage of your APIs for better performance 
+    and faster API execution. This tier provides 58.2 GB of cache memory.
+  entries:
+    - label: 58.2 GB cache
+      description: Hourly rate for 58.2 GB dedicated cache per API stage
+      metric: hours
+      limit: 999999
+      timeFrame: hourly
+      geo: us-east-2
+      unit: 1
+      price: "$1.00"
+  elements:
+    - name: caching
+    - name: performance
+
+- id: aws-api-gateway-rest-apis-caching-118gb
+  name: AWS API Gateway - REST APIs Caching (118.0 GB)
+  description: |
+    Optional dedicated cache for each stage of your APIs for better performance 
+    and faster API execution. This tier provides 118.0 GB of cache memory.
+  entries:
+    - label: 118.0 GB cache
+      description: Hourly rate for 118.0 GB dedicated cache per API stage
+      metric: hours
+      limit: 999999
+      timeFrame: hourly
+      geo: us-east-2
+      unit: 1
+      price: "$1.90"
+  elements:
+    - name: caching
+    - name: performance
+
+- id: aws-api-gateway-rest-apis-caching-237gb
+  name: AWS API Gateway - REST APIs Caching (237.0 GB)
+  description: |
+    Optional dedicated cache for each stage of your APIs for better performance 
+    and faster API execution. This tier provides 237.0 GB of cache memory.
+  entries:
+    - label: 237.0 GB cache
+      description: Hourly rate for 237.0 GB dedicated cache per API stage
+      metric: hours
+      limit: 999999
+      timeFrame: hourly
+      geo: us-east-2
+      unit: 1
+      price: "$3.80"
+  elements:
+    - name: caching
+    - name: performance
+
+- id: aws-api-gateway-websocket-apis
+  name: AWS API Gateway - WebSocket APIs
+  description: |
+    Pay only for messages sent and received and the total number of connection minutes.
+    Messages up to 128 KB are metered in 32 KB increments. Includes 1M messages and 
+    750,000 connection minutes free per month for the first 12 months for new AWS customers.
+  entries:
+    - label: First 1 billion messages
+      description: Message transfers for WebSocket APIs in the first pricing tier
+      metric: messages
+      limit: 1000000000
+      timeFrame: monthly
+      geo: us-east-2
+      unit: 1000000
+      price: "$1.00"
+    - label: Over 1 billion messages
+      description: Message transfers for WebSocket APIs in the second pricing tier
+      metric: messages
+      limit: 999999999999
+      timeFrame: monthly
+      geo: us-east-2
+      unit: 1000000
+      price: "$0.80"
+    - label: Connection minutes
+      description: Total number of connection minutes for WebSocket APIs
+      metric: connection-minutes
+      limit: 999999999999
+      timeFrame: monthly
+      geo: us-east-2
+      unit: 1000000
+      price: "$0.25"
+  elements:
+    - name: messages
+    - name: connection-minutes
+    - name: free-tier
+
+- id: aws-api-gateway-portals-base
+  name: AWS API Gateway - Portals (Base)
+  description: |
+    Each Portal's monthly charge includes 10 PortalProducts with 40 ProductRestEndpoints 
+    each. Monthly charges are prorated based on usage within that month.
+  entries:
+    - label: Portal base charge
+      description: Monthly charge for one Portal including 10 PortalProducts
+      metric: portals
+      limit: 1
+      timeFrame: monthly
+      geo: us-east-2
+      unit: 1
+      price: "$125.00"
+  elements:
+    - name: portals
+    - name: portal-products-included
+
+- id: aws-api-gateway-portals-additional-products
+  name: AWS API Gateway - Portals (Additional Products)
+  description: |
+    Additional PortalProducts beyond the 10 included with each Portal base charge.
+    Each additional PortalProduct includes up to 40 ProductRestEndpoints.
+  entries:
+    - label: Additional Portal Product
+      description: Monthly charge per additional PortalProduct beyond the included 10
+      metric: portal-products
+      limit: 999999
+      timeFrame: monthly
+      geo: us-east-2
+      unit: 1
+      price: "$12.50"
+  elements:
+    - name: portal-products
+
+- id: aws-api-gateway-free-tier
+  name: AWS API Gateway - Free Tier
+  description: |
+    Available to new AWS customers for 12 months following AWS sign-up date. 
+    Starting July 15, 2025, new customers receive up to $200 in credits.
+  entries:
+    - label: REST API calls
+      description: Free REST API calls received per month for 12 months
+      metric: requests
+      limit: 1000000
+      timeFrame: monthly
+      geo: global
+      unit: 1
+      price: "$0.00"
+    - label: HTTP API calls
+      description: Free HTTP API calls received per month for 12 months
+      metric: requests
+      limit: 1000000
+      timeFrame: monthly
+      geo: global
+      unit: 1
+      price: "$0.00"
+    - label: WebSocket messages
+      description: Free WebSocket messages per month for 12 months
+      metric: messages
+      limit: 1000000
+      timeFrame: monthly
+      geo: global
+      unit: 1
+      price: "$0.00"
+    - label: WebSocket connection minutes
+      description: Free WebSocket connection minutes per month for 12 months
+      metric: connection-minutes
+      limit: 750000
+      timeFrame: monthly
+      geo: global
+      unit: 1
+      price: "$0.00"
+    - label: AWS Free Tier credits
+      description: Credits available to new AWS customers starting July 15, 2025
+      metric: credits
+      limit: 1
+      timeFrame: one-time
+      geo: global
+      unit: 1
+      price: "$200.00"
+  elements:
+    - name: free-tier
+    - name: new-customers-only
+    - name: 12-month-limit
+
+- id: aws-api-gateway-data-transfer
+  name: AWS API Gateway - Data Transfer Out
+  description: |
+    Data transfer out charges apply to HTTP and REST APIs. No data transfer 
+    charges for Private APIs. Charges follow EC2 data transfer rates.
+  entries:
+    - label: Data transfer out
+      description: Data transferred out from API Gateway at EC2 rates
+      metric: gigabytes
+      limit: 999999999
+      timeFrame: monthly
+      geo: us-east-2
+      unit: 1
+      price: "$0.09"
+  elements:
+    - name: data-transfer
+    - name: ec2-rates
+
+- id: aws-api-gateway-privatelink
+  name: AWS API Gateway - PrivateLink (VPC Endpoint)
+  description: |
+    Charges for using Private APIs with AWS PrivateLink. Includes hourly charges 
+    per Availability Zone and data processing charges.
+  entries:
+    - label: VPC Endpoint hourly charge
+      description: Hourly charge per VPC endpoint per Availability Zone
+      metric: hours
+      limit: 999999
+      timeFrame: hourly
+      geo: us-east-2
+      unit: 1
+      price: "$0.01"
+    - label: VPC Endpoint data processing
+      description: Data processing charge per GB for VPC endpoints
+      metric: gigabytes
+      limit: 999999999
+      timeFrame: monthly
+      geo: us-east-2
+      unit: 1
+      price: "$0.01"
+  elements:
+    - name: privatelink
+    - name: vpc-endpoint
+    - name: private-apis

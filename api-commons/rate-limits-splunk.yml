@@ -1,0 +1,196 @@
+---
+# Splunk API Rate Limits
+
+# Splunk Observability Cloud - REST API Limits
+- name: Metadata API REST Calls (Standard)
+  type: throttle
+  limit: 100000
+  metric: requests
+  domains:
+    - splunk-observability-cloud
+    - metadata-api
+  timeframe: per-minute
+  description: |
+    Maximum REST API calls per endpoint per minute for the metadata API in Splunk 
+    Observability Cloud. Exceeding this limit returns HTTP 429 Too Many Requests error.
+  userMultiplied: false
+
+- name: Metadata API GET Calls
+  type: throttle
+  limit: 1000000
+  metric: requests
+  domains:
+    - splunk-observability-cloud
+    - metadata-api
+  timeframe: per-minute
+  description: |
+    Maximum GET calls to the metadata API per minute. The limit for GET calls is 10 times 
+    the rate for other call types (10x the 100,000 standard rate). Returns HTTP 429 when exceeded.
+  userMultiplied: false
+
+- name: SignalFlow Jobs
+  type: throttle
+  limit: 5000
+  metric: jobs
+  domains:
+    - splunk-observability-cloud
+    - signalflow
+  timeframe: per-minute
+  description: |
+    Maximum number of SignalFlow jobs that can be started per minute across an organization 
+    in Splunk Observability Cloud. Returns HTTP 429 when exceeded.
+  userMultiplied: false
+
+- name: Splunk APM API Requests
+  type: throttle
+  limit: 100
+  metric: requests
+  domains:
+    - splunk-observability-cloud
+    - splunk-apm
+  timeframe: per-minute
+  description: |
+    Maximum APM API requests per minute in Splunk Observability Cloud. 
+    Returns HTTP 429 Too Many Requests when limit is exceeded.
+  userMultiplied: false
+
+- name: Data Retrieval API Data Points
+  type: size-limit
+  limit: 1000000
+  metric: data-points
+  domains:
+    - splunk-observability-cloud
+    - data-retrieval-api
+  timeframe: per-request
+  description: |
+    Maximum number of data points that can be returned in a single data retrieval API call. 
+    This limit applies to the amount of data returned in one request.
+  userMultiplied: false
+
+# Splunk Cloud Platform - Search API Limits
+- name: Search Results Maximum Events (Default)
+  type: size-limit
+  limit: 50000
+  metric: events
+  domains:
+    - splunk-cloud-platform
+    - search-api
+  timeframe: per-request
+  description: |
+    Default maximum number of events returned by search endpoints from the REST API. 
+    Configured in limits.conf file. Best practice is to use pagination (offset and count 
+    parameters) rather than increasing this limit. Returns HTTP 429 when exceeded.
+  userMultiplied: false
+
+- name: Concurrent Requests (Best Practice)
+  type: throttle
+  limit: null
+  metric: concurrent-requests
+  domains:
+    - splunk-cloud-platform
+    - splunk-enterprise
+  timeframe: concurrent
+  description: |
+    While not a strict rate limit, managing concurrent requests is a best practice to 
+    prevent system overload. The actual limit varies by deployment and should be configured 
+    based on system resources. Contact Splunk Support for custom limits.
+  userMultiplied: false
+
+# Metric Time Series Limits
+- name: Metric Time Series (MTS) Processing
+  type: size-limit
+  limit: null
+  metric: metric-time-series
+  domains:
+    - splunk-observability-cloud
+    - infrastructure-monitoring
+  timeframe: per-signal
+  description: |
+    Maximum number of metric time series (MTS) that can be processed in a signal. 
+    Limits vary based on subscription plan and product. Consult Splunk Documentation 
+    for specific limits on your subscription.
+  userMultiplied: false
+
+- name: Data Points per Minute (DPM)
+  type: throttle
+  limit: null
+  metric: data-points
+  domains:
+    - splunk-observability-cloud
+    - infrastructure-monitoring
+  timeframe: per-minute
+  description: |
+    Data points per minute limits vary based on Infrastructure Monitoring subscription 
+    plan. This is a key metric for billing and usage tracking. Contact Splunk Support 
+    for specific limits on your plan.
+  userMultiplied: false
+
+# General Configuration Limits
+- name: Search Pagination Offset
+  type: size-limit
+  limit: null
+  metric: offset-value
+  domains:
+    - splunk-cloud-platform
+    - search-api
+  timeframe: per-request
+  description: |
+    Pagination offset parameter for retrieving large result sets in manageable chunks. 
+    Should be used in combination with count parameter. Specific limits depend on 
+    limits.conf configuration.
+  userMultiplied: false
+
+- name: Search Pagination Count
+  type: size-limit
+  limit: null
+  metric: count-value
+  domains:
+    - splunk-cloud-platform
+    - search-api
+  timeframe: per-request
+  description: |
+    Pagination count parameter for retrieving large result sets in manageable chunks. 
+    Should be used in combination with offset parameter. Specific limits depend on 
+    limits.conf configuration.
+  userMultiplied: false
+
+# Admin Config Service (ACS) API Limits
+- name: ACS API Configuration Changes
+  type: throttle
+  limit: null
+  metric: requests
+  domains:
+    - splunk-cloud-platform
+    - admin-config-service
+  timeframe: per-hour
+  description: |
+    Rate limits for Admin Config Service (ACS) API used to manage limits.conf 
+    configurations in Splunk Cloud Platform. Specific limits may vary. 
+    Returns HTTP 429 when exceeded.
+  userMultiplied: false
+
+# IP Allow List and Access Control
+- name: IP Allow List Management
+  type: configuration
+  limit: null
+  metric: ip-addresses
+  domains:
+    - splunk-cloud-platform
+  timeframe: per-organization
+  description: |
+    Splunk Cloud Platform users may need to contact Splunk Support to configure 
+    IP allow lists for API access. Limits on the number of IPs vary by deployment.
+  userMultiplied: false
+
+# Token and Authentication Limits
+- name: Organization Tokens
+  type: configuration
+  limit: null
+  metric: tokens
+  domains:
+    - splunk-observability-cloud
+  timeframe: per-organization
+  description: |
+    Limits on the number of organization tokens that can be created for API access 
+    in Splunk Observability Cloud. Specific limits depend on organization configuration.
+  userMultiplied: false

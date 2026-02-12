@@ -1,0 +1,315 @@
+---
+# GitHub REST API Rate Limits
+
+# Primary Rate Limits - Unauthenticated
+- name: Unauthenticated Requests
+  type: throttle
+  limit: 60
+  metric: requests
+  domains:
+    - github-rest-api
+  timeframe: per-hour
+  description: |
+    Primary rate limit for unauthenticated requests fetching public data. 
+    Unauthenticated requests are associated with the originating IP address.
+  userMultiplied: false
+
+# Primary Rate Limits - Authenticated Users
+- name: Authenticated Users (Personal Access Token)
+  type: throttle
+  limit: 5000
+  metric: requests
+  domains:
+    - github-rest-api
+  timeframe: per-hour
+  description: |
+    Primary rate limit for authenticated users using personal access tokens, 
+    OAuth apps, or GitHub Apps. Includes all requests made on behalf of the user.
+  userMultiplied: true
+
+- name: Authenticated Users (GitHub Enterprise Cloud)
+  type: throttle
+  limit: 15000
+  metric: requests
+  domains:
+    - github-rest-api
+  timeframe: per-hour
+  description: |
+    Primary rate limit for authenticated users when requests are made by a GitHub App 
+    or OAuth app owned by or approved by a GitHub Enterprise Cloud organization, and 
+    the user is a member of that organization.
+  userMultiplied: true
+
+# Git LFS Rate Limits
+- name: Git LFS Unauthenticated
+  type: throttle
+  limit: 300
+  metric: requests
+  domains:
+    - github-git-lfs
+  timeframe: per-minute
+  description: |
+    Rate limit for unauthenticated Git LFS API requests when uploading or downloading 
+    Git LFS content. Uses batch API processing 100 objects per request (30,000 objects/min).
+  userMultiplied: false
+
+- name: Git LFS Authenticated
+  type: throttle
+  limit: 3000
+  metric: requests
+  domains:
+    - github-git-lfs
+  timeframe: per-minute
+  description: |
+    Rate limit for authenticated Git LFS API requests when uploading or downloading 
+    Git LFS content. Uses batch API processing 100 objects per request (300,000 objects/min).
+  userMultiplied: true
+
+# GitHub App Installation Limits
+- name: GitHub App Installation (Minimum)
+  type: throttle
+  limit: 5000
+  metric: requests
+  domains:
+    - github-rest-api
+  timeframe: per-hour
+  description: |
+    Minimum rate limit for GitHub Apps authenticating with an installation access token. 
+    This is the base rate for installations not on GitHub Enterprise Cloud.
+  userMultiplied: false
+
+- name: GitHub App Installation (Enterprise Cloud)
+  type: throttle
+  limit: 15000
+  metric: requests
+  domains:
+    - github-rest-api
+  timeframe: per-hour
+  description: |
+    Rate limit for GitHub App installations on a GitHub Enterprise Cloud organization.
+  userMultiplied: false
+
+- name: GitHub App Installation (Maximum)
+  type: throttle
+  limit: 12500
+  metric: requests
+  domains:
+    - github-rest-api
+  timeframe: per-hour
+  description: |
+    Maximum rate limit for GitHub App installations. The rate limit scales with the 
+    number of repositories (50 req/hr per repo after 20 repos) and users (50 req/hr 
+    per user after 20 users) but cannot exceed 12,500 requests per hour.
+  userMultiplied: false
+
+- name: GitHub App Installation Repository Scaling
+  type: throttle
+  limit: 50
+  metric: requests
+  domains:
+    - github-rest-api
+  timeframe: per-hour
+  description: |
+    Additional rate limit per repository for installations with more than 20 repositories. 
+    Each repository over 20 adds 50 requests per hour to the installation's rate limit.
+  userMultiplied: false
+
+- name: GitHub App Installation User Scaling
+  type: throttle
+  limit: 50
+  metric: requests
+  domains:
+    - github-rest-api
+  timeframe: per-hour
+  description: |
+    Additional rate limit per user for installations on organizations with more than 20 users. 
+    Each user over 20 adds 50 requests per hour to the installation's rate limit.
+  userMultiplied: false
+
+# OAuth App Limits
+- name: OAuth App (Client Credentials)
+  type: throttle
+  limit: 5000
+  metric: requests
+  domains:
+    - github-rest-api
+  timeframe: per-hour
+  description: |
+    Rate limit for OAuth apps using client ID and client secret to fetch public data. 
+    This is per OAuth app.
+  userMultiplied: false
+
+- name: OAuth App (Client Credentials - Enterprise Cloud)
+  type: throttle
+  limit: 15000
+  metric: requests
+  domains:
+    - github-rest-api
+  timeframe: per-hour
+  description: |
+    Rate limit for OAuth apps owned by a GitHub Enterprise Cloud organization using 
+    client ID and client secret to fetch public data.
+  userMultiplied: false
+
+# GitHub Actions GITHUB_TOKEN Limits
+- name: GITHUB_TOKEN (Standard)
+  type: throttle
+  limit: 1000
+  metric: requests
+  domains:
+    - github-rest-api
+  timeframe: per-hour
+  description: |
+    Rate limit for GITHUB_TOKEN in GitHub Actions workflows per repository. 
+    Applies to standard GitHub accounts.
+  userMultiplied: false
+
+- name: GITHUB_TOKEN (Enterprise Cloud)
+  type: throttle
+  limit: 15000
+  metric: requests
+  domains:
+    - github-rest-api
+  timeframe: per-hour
+  description: |
+    Rate limit for GITHUB_TOKEN in GitHub Actions workflows per repository for 
+    resources that belong to a GitHub Enterprise Cloud account.
+  userMultiplied: false
+
+# Secondary Rate Limits
+- name: Concurrent Requests
+  type: throttle
+  limit: 100
+  metric: concurrent-requests
+  domains:
+    - github-rest-api
+    - github-graphql-api
+  timeframe: concurrent
+  description: |
+    Maximum number of concurrent requests allowed. This limit is shared across 
+    the REST API and GraphQL API.
+  userMultiplied: false
+
+- name: REST API Endpoint Points
+  type: throttle
+  limit: 900
+  metric: points
+  domains:
+    - github-rest-api
+  timeframe: per-minute
+  description: |
+    Maximum points per minute for REST API endpoints. Points are calculated based 
+    on request type: GET/HEAD/OPTIONS = 1 point, POST/PATCH/PUT/DELETE = 5 points.
+  userMultiplied: false
+
+- name: GraphQL API Endpoint Points
+  type: throttle
+  limit: 2000
+  metric: points
+  domains:
+    - github-graphql-api
+  timeframe: per-minute
+  description: |
+    Maximum points per minute for GraphQL API endpoints. Points are calculated based 
+    on request type: queries without mutations = 1 point, queries with mutations = 5 points.
+  userMultiplied: false
+
+- name: CPU Time Limit (Total)
+  type: throttle
+  limit: 90
+  metric: cpu-seconds
+  domains:
+    - github-rest-api
+    - github-graphql-api
+  timeframe: per-minute
+  description: |
+    Maximum CPU time (in seconds) allowed per 60 seconds of real time across all API requests. 
+    Can be roughly estimated by measuring total response time for API requests.
+  userMultiplied: false
+
+- name: CPU Time Limit (GraphQL)
+  type: throttle
+  limit: 60
+  metric: cpu-seconds
+  domains:
+    - github-graphql-api
+  timeframe: per-minute
+  description: |
+    Maximum CPU time (in seconds) allowed for GraphQL API requests within the total 
+    90-second CPU time limit per minute.
+  userMultiplied: false
+
+- name: Content Creation (Per Minute)
+  type: throttle
+  limit: 80
+  metric: content-requests
+  domains:
+    - github-rest-api
+    - github-graphql-api
+    - github-web-interface
+  timeframe: per-minute
+  description: |
+    Maximum number of content-generating requests per minute. Includes actions taken 
+    via REST API, GraphQL API, and web interface. Some endpoints have lower limits.
+  userMultiplied: false
+
+- name: Content Creation (Per Hour)
+  type: throttle
+  limit: 500
+  metric: content-requests
+  domains:
+    - github-rest-api
+    - github-graphql-api
+    - github-web-interface
+  timeframe: per-hour
+  description: |
+    Maximum number of content-generating requests per hour. Includes actions taken 
+    via REST API, GraphQL API, and web interface. Some endpoints have lower limits.
+  userMultiplied: false
+
+# Point Values for Secondary Rate Limits
+- name: GraphQL Request Without Mutations (Points)
+  type: point-cost
+  limit: 1
+  metric: points
+  domains:
+    - github-graphql-api
+  timeframe: per-request
+  description: |
+    Point cost for GraphQL requests without mutations, used in secondary rate limit calculations.
+  userMultiplied: false
+
+- name: GraphQL Request With Mutations (Points)
+  type: point-cost
+  limit: 5
+  metric: points
+  domains:
+    - github-graphql-api
+  timeframe: per-request
+  description: |
+    Point cost for GraphQL requests with mutations, used in secondary rate limit calculations.
+  userMultiplied: false
+
+- name: REST API GET/HEAD/OPTIONS (Points)
+  type: point-cost
+  limit: 1
+  metric: points
+  domains:
+    - github-rest-api
+  timeframe: per-request
+  description: |
+    Point cost for most REST API GET, HEAD, and OPTIONS requests, used in secondary 
+    rate limit calculations.
+  userMultiplied: false
+
+- name: REST API POST/PATCH/PUT/DELETE (Points)
+  type: point-cost
+  limit: 5
+  metric: points
+  domains:
+    - github-rest-api
+  timeframe: per-request
+  description: |
+    Point cost for most REST API POST, PATCH, PUT, and DELETE requests, used in 
+    secondary rate limit calculations.
+  userMultiplied: false
