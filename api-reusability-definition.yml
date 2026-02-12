@@ -1,129 +1,46 @@
-# This is a capabaility for defining wht is API reusability across the API catalog.
-# There are 
+aid: api-reusability-communicate
+type: Capability
+visibility: Public  
 
-naftiko:
+name: API Reusability - Calculation
+description: This is a capability for calculating what API reusability is across a catalog of APIs.
 
-  schema:  'https://github.com/naftiko/schema/blob/main/core/capability/capabiity-schema.yml'
+notes:
 
-info:
+  - date: 2025-11-18T00:00:00Z 
+    note: This doesn't have any adapters--still trying to figure out how we calculate definition.
 
-  name: API Reusability - Definition
-  description: This is an capability for defining what API reusability means and evaluates it against the domain API catalog.
-  icon: https://example.com/icon.jpg
+tags:
 
-  notes:
+  - Events
 
-    - date: 2025-11-18T00:00:00Z 
-      note: This doesn't have any adapters--still trying to figure out how we calculate definition.
+created: '2026-02-12'
+modified: '2026-02-12'
+url: https://github.com/naftiko/api-reusability/blob/main/api-reusability-definition.yml
+specificationVersion: '0.18'
 
-  tags:
+apis:
 
-    - Events
+  - aid: api-reusability:calculation
+    name: API Reusability Calculation
+    description: Calculating what API reusability means.
+    humanURL: http://127.0.0.1
+    baseURL: http://127.0.0.1
+    tags:
+      - Reusability
+      - Calculation
+    properties:
+      - type: OpenApi
+        url: '/bruno/capability-api-reusability-definition/bruno.json'   
+      - type: brunoCollection
+        url: '/bruno/capability-api-reusability-definition/capability-api-reusability-definition.bru'    
 
-  jsonLd: >
+include:
 
-    {
-      "@context": "https://schema.org",
-      "@type": "WebAPI"
-    }  
+  - name: API Reusability
+    url: apis.yml       
 
-  pinned: true
-  featured: true      
-
-ports:
-
-  source:
-
-    - adapter: HTTP API
-      aid: capability-api-reusability-catalog
-      title: API Reusability - Catalog
-      description: This is just using the catalog interface produce by capbility to generate definition.
-
-      brunoCollection:
-
-        - $ref: '/bruno/capability-api-reusability-definition/bruno.json'   
-
-      brunoEnvironment:
-
-        - $ref: '/bruno/capability-api-reusability-definition/capability-api-reusability-definition.bru'         
-
-useCase:
-
-  - $ref: 'https://github.com/naftiko/schema/blob/main/secondary/use-case/examples/use-case-example-api-reusability.yml' 
-
-stakeholders:
+maintainers:
 
   - FN: Kin Lane
-    ROLE: Chief Community Officer (CCO)
-    EMAIL: kinlane@naftiko.io
-    SOCIALPROFILE: https://www.linkedin.com/in/kinlane/
-
-events:
-
-  - specversion: '1.0'
-    type: com.github.definition.calculated
-    source: https://github.com/cloudevents/spec
-    datacontenttype: application/json
-    dataschema: https://github.com/cloudevents/spec/schemas/pr.json
-
-metrics:
-
-  weavingScore: 50
-  maturityScore: 25
-  rating: 8
-  numberOfDownloads: 100
-  forks: 25
-  watches: 25
-  likes: 25
-
-change:
-
-  state: New
-  
-  schemaVersion: 0.1.0
-  capabilityVersion: 0.1.0
-
-  updated: 2025-11-24T00:00:00Z
-  created: 2025-11-18T00:00:00Z  
-
-source:
-
-  httpUrl: https://github.com/naftiko-capabilities/api-reusability
-  sshUrl: git@github.com:-capabilities/api-reusability.git
-  dockertHub: https://hub.docker.com/u/capability
-
-support:
-
-  issues: https://github.com/naftiko-capabilities/api-reusability/issues
-  discussions: https://github.com/naftiko-capabilities/api-reusability/discussions
-  slack: https://example.slack.com/archives/C09EAC4RXNW
-
-license:
-
-  data:
-
-    type: https://creativecommons.org/licenses/by/4.0/
-    attribution: CC BY
-    instance: http://example.com/location-of-license
-
-  code:
-
-    type: https://opensource.org/license/apache-2-0
-    attribution: Apache 2.0
-    instance: http://example.com/location-of-license
-
-  api:
-
-    type: https://creativecommons.org/licenses/by/4.0/
-    attribution: CC BY
-    instance: http://example.com/location-of-license 
-
-standards:
-
-  - name: Naftiko Capabilities
-    description: This uses a exploratory schema to help inform and shape capabilities.
-    docUrl: https://naftiko.github.io/technology/docs/capabilities/
-
-observability: 
-
-    visibility: Public  
+    email: kinlane@naftiko.io

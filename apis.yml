@@ -15,7 +15,7 @@ tags:
 
 created: '2026-02-12'
 modified: '2026-02-12'
-url: http://example.com/apis.json
+url: https://github.com/naftiko/api-reusability/blob/main/apis.yml
 specificationVersion: '0.18'
 
 apis:

@@ -1,225 +1,63 @@
-# This is a capability to communicate API resuability to leadership and other teams.
-# This capability will push API reusability results into a Splunk dashboard.
-# This capability will push API resuability results into a Notion page.
+aid: api-reusability-communicate
+type: Capability
+visibility: Public  
 
-naftiko:
+name: API Reusability - Communicate
+description: This is an capability for communicated API resuability results where leadership and other teams can learn more about current state of API reusability.
+icon: https://example.com/icon.jpg
 
-  schema:  'https://github.com/naftiko/schema/blob/main/core/capability/capabiity-schema.yml'
+tags:
 
-info:
+  - APIs
+  - Reusability
+  - Communication
+  - Dashboards
 
-  name: name: API Reusability - Communicate
-  description: This is an capability for communicated API resuability results where leadership and other teams can learn more about current state of API reusability.
-  icon: https://example.com/icon.jpg
+created: '2026-02-12'
+modified: '2026-02-12'
+url: https://github.com/naftiko/api-reusability/blob/main/api-reusability-communicate.yml
+specificationVersion: '0.18'
 
-  tags:
+apis:
 
-    - APIs
-    - Reusability
-    - Communication
-    - Dashboards
+  - aid: api-reusability:publish-splunk-collector
+    name: Publish Splunk Collector Event
+    description: Publish API resuability results to Splunk Collector
+    humanURL: http://127.0.0.1
+    baseURL: http://127.0.0.1
+    tags:
+      - Observability
+      - Dashboard
+      - Reporting
+      - Splunk
+    properties:
+      - type: OpenApi
+        url: 'openapi/api-reusability-splunk-http-event-collector-api.yml'  
+      - type: brunoCollection
+        url: '/bruno/api-reusability-cvent-exhibitors/bruno.json'    
 
-  jsonLd: >
+  - aid: api-reusability:publish-notion-page
+    name:  Publish Notion Page
+    description: Publishes API reusability results to Notion page.
+    humanURL: http://127.0.0.1
+    baseURL: http://127.0.0.1
+    tags:
+      - Observability
+      - Pages
+      - Reporting
+      - Notion
+    properties:
+      - type: OpenAPI
+        url: 'openapi/api-reusability-notion-page.yml'     
+      - type: brunoCollection
+        url: '/bruno/api-reusability-linkedin-organization/bruno.json'                  
 
-    {
-      "@context": "https://schema.org",
-      "@type": "WebAPI"
-    }  
+include:
 
-  pinned: true
-  featured: true
+  - name: API Reusability
+    url: apis.yml       
 
-ports:
-
-  source:
-
-    - adapter: HTTP API
-      title: Publish Splunk Collector Event
-      openApi:
-
-        - $ref: 'openapi/api-reusability-splunk-http-event-collector-api.yml'  
-
-      brunoCollection:
-
-        - $ref: '/bruno/api-reusability-cvent-exhibitors/bruno.json'   
-
-
-    - adapter: HTTP API
-      title: Publish Notion Page
-      openApi:
-
-        - $ref: 'openapi/api-reusability-notion-page.yml'  
-
-      brunoCollection:
-
-        - $ref: '/bruno/api-reusability-linkedin-organization/bruno.json'                         
-
-useCase:
-
-  - $ref: 'https://github.com/naftiko/schema/blob/main/secondary/use-case/examples/use-case-example-api-reusability.yml' 
-
-stakeholders:
+maintainers:
 
   - FN: Kin Lane
-    ROLE: Chief Community Officer (CCO)
-    EMAIL: kinlane@naftiko.io
-    SOCIALPROFILE: https://www.linkedin.com/in/kinlane/  
-
-events:
-
-  - specversion: '1.0'
-    type: com.splunk.results.published
-    source: https://github.com/cloudevents/spec
-    datacontenttype: application/json
-    dataschema: https://github.com/cloudevents/spec/schemas/pr.json
-
-  - specversion: '1.0'
-    type: com.notion.page.published
-    source: https://github.com/cloudevents/spec
-    datacontenttype: application/json
-    dataschema: https://github.com/cloudevents/spec/schemas/pr.json    
-
-metrics:
-
-  weavingScore: 50
-  maturityScore: 25
-  rating: 8
-  numberOfDownloads: 100
-  forks: 25
-  watches: 25
-  likes: 25
-
-change:
-
-  state: New
-  
-  schemaVersion: 0.1.0
-  capabilityVersion: 0.1.0
-
-  updated: 2025-12-18T00:00:00Z
-  created: 2025-12-18T00:00:00Z  
-
-source:
-
-  httpUrl: https://github.com/naftiko-capabilities/api-reusability
-  sshUrl: git@github.com:-capabilities/api-reusability.git
-  dockertHub: https://hub.docker.com/u/capability
-
-support:
-
-  issues: https://github.com/naftiko-capabilities/api-reusability/issues
-  discussions: https://github.com/naftiko-capabilities/api-reusability/discussions
-  slack: https://example.slack.com/archives/C09EAC4RXNW
-
-license:
-
-  data:
-
-    type: https://creativecommons.org/licenses/by/4.0/
-    attribution: CC BY
-    instance: http://example.com/location-of-license
-
-  code:
-
-    type: https://opensource.org/license/apache-2-0
-    attribution: Apache 2.0
-    instance: http://example.com/location-of-license
-
-  api:
-
-    type: https://creativecommons.org/licenses/by/4.0/
-    attribution: CC BY
-    instance: http://example.com/location-of-license 
-
-standards:
-
-  - name: Naftiko Capabilities
-    description: This uses a exploratory schema to help inform and shape capabilities.
-    docUrl: https://naftiko.github.io/technology/docs/capabilities/
-
-  - name: OpenAPI
-    description: This uses OpenAPI to define access to all HTTP APIs.
-    docUrl: https://naftiko.github.io/technology/docs/standards/openapi/
-
-  - name: Arazzo
-    description: This uses Arazzo to define workflows used to support this capability.
-    docUrl: https://naftiko.github.io/technology/docs/standards/arazzo/
-
-  - name: JSON Schema
-    description: This uses JSON Schema to define and validate all entities used.
-    docUrl: https://naftiko.github.io/technology/docs/standards/json-schema/    
-
-  - name: Spectral
-    description: This uses Spectral rules to define and enforce policies across entities.
-    docUrl: https://naftiko.github.io/technology/docs/standards/spectral/     
-
-  - name: Bruno Collections
-    description: This uses Bruno Collections to define each executable HTTP API integration.
-    docUrl: https://naftiko.github.io/technology/docs/standards/bruno-collections/        
-
-  - name: Bruno Environments
-    description: This uses Bruno Environments to store keys for each API to use in automation.
-    docUrl: https://naftiko.github.io/technology/docs/standards/bruno-environments/  
-
-  - name: API Commons
-    description: This uses an API Commons schema to define the plans and rate limits.
-    docUrl: https://naftiko.github.io/technology/docs/standards/api-commons/      
-
-security:
-
-  openAPI:
-
-    - $ref: 'openapi/api-reusability-notion-oauth.yml'  
-    - $ref: 'openapi/api-reusability-splunk-authentication-token-api.yml'  
-
-  arazzo:
-
-    - $ref: 'arazzo/oauth-workflow-notion.yml'
-
-services:
-
-  - aid: aws-api-gateway
-    name: AWS API Gateway
-    description: Amazon API Gateway is a fully managed service that makes it easy for developers to create, publish, maintain, monitor, and secure APIs at any scale.
-    docUrl: https://naftiko.github.io/technology/docs/services/aws/
-    apisJson: https://raw.githubusercontent.com/api-evangelist/aws/refs/heads/main/apis.yml
-    loginUrl: https://console.aws.amazon.com/console/home/
-    signUpUrl: https://portal.aws.amazon.com/gp/aws/developer/registration/index.html
-    termsOfServiceUrl: https://aws.amazon.com/terms/?nc1=f_pr
-    privacyPolicyUrl: https://aws.amazon.com/privacy/?nc1=f_pr
-    plans:
-      - $ref: 'api-commons/plans-aws-api-gateway.yml'    
-    rateLimits:
-      - $ref: 'api-commons/rate-limits-aws-api-gateway.yml'   
-
-  - aid: splunk
-    name: Splunk
-    description: Splunk is a powerful software platform for searching, monitoring, and analyzing machine-generated data (logs, metrics, events) in real-time.
-    docUrl: https://naftiko.github.io/technology/docs/services/splunk/
-    apisJson: https://raw.githubusercontent.com/api-evangelist/splunk/refs/heads/main/apis.yml
-    loginUrl: https://login.splunk.com/
-    signUpUrl: https://www.splunk.com/en_us/form/sign-up.html
-    termsOfServiceUrl: https://www.splunk.com/en_us/legal/splunk-general-terms.html
-    privacyPolicyUrl: https://www.splunk.com/en_us/about-splunk/splunk-data-security-and-privacy/data-privacy-at-splunk.html
-    plans:
-      - $ref: 'api-commons/plans-splunk.yml'    
-    rateLimits:
-      - $ref: 'api-commons/rate-limits-splunk.yml'   
-
-  - aid: notion
-    name: Notion
-    description: Notion is an all-in-one workspace and productivity platform that combines notes, documents, databases, wikis, project management, and collaboration tools into a single application.
-    docUrl: https://naftiko.github.io/technology/docs/services/notion/
-    apisJson: https://raw.githubusercontent.com/api-evangelist/notion/refs/heads/main/apis.yml
-    loginUrl: https://www.notion.so/login
-    signUpUrl: https://www.notion.so/signup
-    termsOfServiceUrl: https://www.notion.so/terms
-    privacyPolicyUrl: https://privacycenter.notion.so/policies
-    plans:
-      - $ref: 'api-commons/plans-notion.yml'    
-    rateLimits:
-      - $ref: 'api-commons/rate-limits-notion.yml'         
-
-observability: 
-
-    visibility: Public  
+    email: kinlane@naftiko.io

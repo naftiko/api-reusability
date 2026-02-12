@@ -1,21 +1,21 @@
-aid: api-reusability
+aid: api-reusability-catalog
 type: Capability
 visibility: Public  
 
-name: Define, Report, and Incentivize API Reusability
-description: This is an aggregate capability to help define, communicate, and incentivize API reusability.
+name: API Reusability - Catalog
+description: This is an capability for pulling the API catalog to be used to quantify reusability for a specific domain.
 
 tags:
 
   - APIs
-  - Reusability
   - Catalogs
-  - Communication
-  - IDE
+  - Discovery
+  - Gateway
+  - OpenAPI
 
 created: '2026-02-12'
 modified: '2026-02-12'
-url: http://example.com/apis.json
+url: https://github.com/naftiko/api-reusability/blob/main/api-reusability-catalog.yml
 specificationVersion: '0.18'
 
 apis:
@@ -79,4 +79,4 @@ include:
 maintainers:
 
   - FN: Kin Lane
-    email: info@apievangelist.com
+    email: kinlane@naftiko.io
