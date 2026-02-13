@@ -23,8 +23,8 @@ apis:
   - aid: api-reusability:composite
     name: API Resuability HTTP
     description: Provides a composite HTTP API.
-    humanURL: http://127.0.0.1
-    baseURL: http://127.0.0.1
+    humanURL: http://example.com/agent
+    baseURL: http://apis.example.com/agent
     tags:
       - Reusability
       - Composite
@@ -32,12 +32,16 @@ apis:
     properties:
       - type: OpenAPI
         url: 'openapi/api-reusability.yml'  
+      - type: brunoCollection
+        url: '/bruno/capability-api-reusability-definition/bruno.json'   
+      - type: brunoEnvironment
+        url: '/bruno/capability-api-reusability-definition/environments/GitHub.bru'          
 
   - aid: api-reusability:mcp
     name: API Resuability MCP
     description: Provides a composite MCP Server
-    humanURL: http://127.0.0.1
-    baseURL: http://127.0.0.1
+    humanURL: http://example.com/agent
+    baseURL: http://apis.example.com/agent
     tags:
       - Reusability
       - Composite
@@ -50,15 +54,52 @@ apis:
   - aid: api-reusability:a2a
     name: API Resuability MCP
     description: Provides a composite A2A Server
-    humanURL: http://127.0.0.1
-    baseURL: http://127.0.0.1
+    humanURL: http://example.com/agent
+    baseURL: http://apis.example.com/agent
     tags:
       - Reusability
       - Composite
       - A2A
     properties:
       - type: OpenAPI
-        url: 'agent2agent/api-reusability-agent.yml'      
+        url: 'agent2agent/api-reusability-agent.yml'    
+
+  
+  - aid: api-reusability:vault
+    name: API Resuability Vault
+    description: Provides vcault using Hashicorp
+    humanURL: http://example.com/vault
+    baseURL: http://apis.example.com/ttp://example.com/vaul
+    tags:
+      - Vault
+      - Hashicorp
+    properties:
+      - type: OpenAPI
+        url: 'openapi/manage-events-hashicorp-vault.yml' 
+
+  - aid: api-reusability:logs
+    name: API Resuability Logs
+    description: Provides logging using New Relic
+    humanURL: http://example.com/logging
+    baseURL: http://apis.example.com/logging
+    tags:
+      - Logging
+      - New Relic
+    properties:
+      - type: OpenAPI
+        url: 'openapi/manage-events-new-relic-logs.yml'  
+
+  - aid: api-reusability:tracing
+    name: API Resuability Tracing
+    description: Provides tracing using New Relic
+    humanURL: http://example.com/tracing
+    baseURL: http://apis.example.com/tracing
+    tags:
+      - Tracing
+      - New Relic
+    properties:
+      - type: OpenAPI
+        url: 'openapi/manage-events-new-relic-trace.yml'                      
 
 common:
 
@@ -119,6 +160,12 @@ common:
       discussions: https://github.com/naftiko-capabilities/api-reusability/discussions
       slack: https://example.slack.com/archives/C09EAC4RXNW
 
+  - type: Backstage
+    data: 
+
+      name: Backstage Distribution for API Reusability
+      issues: backstage/api-reusability.yml
+
   - type: License
     data: 
 
@@ -143,45 +190,45 @@ common:
   - type: Standards
     data: 
 
-      - name: Naftiko Capabilities
-        description: This uses a exploratory schema to help inform and shape capabilities.
-        docUrl: https://naftiko.github.io/technology/docs/capabilities/
+      - name: APIs.json
+        description: This uses the APIs.json
+        docUrl: http://apisjson.org/
 
       - name: OpenAPI
         description: This uses OpenAPI to define access to all HTTP APIs.
-        docUrl: https://naftiko.github.io/technology/docs/standards/openapi/
+        docUrl: https://spec.openapis.org/oas/latest.html
 
       - name: Arazzo
         description: This uses Arazzo to define workflows used to support this capability.
-        docUrl: https://naftiko.github.io/technology/docs/standards/arazzo/
+        docUrl: https://spec.openapis.org/arazzo/latest.html
 
       - name: JSON Schema
         description: This uses JSON Schema to define and validate all entities used.
-        docUrl: https://naftiko.github.io/technology/docs/standards/json-schema/    
+        docUrl: https://json-schema.org/specification
 
       - name: Spectral
         description: This uses Spectral rules to define and enforce policies across entities.
-        docUrl: https://naftiko.github.io/technology/docs/standards/spectral/     
+        docUrl: https://docs.stoplight.io/docs/spectral/
 
       - name: Model Context Protocol
         description: This uses MCP expresed as JSON schema to define each MCP server.
-        docUrl: https://naftiko.github.io/technology/docs/standards/model-context-protocol/
+        docUrl: https://modelcontextprotocol.io/
 
       - name: Bruno Collections
         description: This uses Bruno Collections to define each executable HTTP API integration.
-        docUrl: https://naftiko.github.io/technology/docs/standards/bruno-collections/        
+        docUrl: https://docs.usebruno.com/
 
       - name: Bruno Environments
         description: This uses Bruno Environments to store keys for each API to use in automation.
-        docUrl: https://naftiko.github.io/technology/docs/standards/bruno-environments/  
+        docUrl: https://docs.usebruno.com/secrets-management/overview
 
       - name: API Commons
         description: This uses an API Commons schema to define the plans and rate limits.
-        docUrl: https://naftiko.github.io/technology/docs/standards/api-commons/      
+        docUrl: https://apicommons.org/
 
       - name: OAuth 2.0
         description: This uses a exploratory schema to help inform and shape capabilities.
-        docUrl: https://naftiko.github.io/technology/docs/standards/oauth-20/           
+        docUrl: https://oauth.net/2/       
 
   - type: Services
     data: 

@@ -21,8 +21,8 @@ apis:
   - aid: api-reusability:calculation
     name: API Reusability MCP server
     description: Provides an MCP server of paths and models for reuse while working in Visual Studio Code.
-    humanURL: http://127.0.0.1
-    baseURL: http://127.0.0.1
+    humanURL: http://example.com/mcp
+    baseURL: http://apis.example.com/mcp
     tags:
       - Reusability
       - Calculation

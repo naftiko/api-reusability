@@ -1,0 +1,309 @@
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: API Resuability
+  description: This is for defining and incentivizing API reusability.
+  tags:
+    - APIs
+    - Reusability
+  links:
+    - title: Repository
+      icon: code
+      url: https://github.com/naftiko/api-reusability/issues
+spec:
+  type: capability
+  lifecycle: experimental
+  owner: team-c
+  definition: |
+
+    aid: api-reusability
+    type: Capability
+    visibility: Public  
+
+    name: Define, Report, and Incentivize API Reusability
+    description: This is an aggregate capability to help define, communicate, and incentivize API reusability.
+
+    tags:
+
+      - APIs
+      - Reusability
+      - Catalogs
+      - Communication
+      - IDE
+
+    created: '2026-02-12'
+    modified: '2026-02-12'
+    url: https://github.com/naftiko/api-reusability/blob/main/apis.yml
+    specificationVersion: '0.18'
+
+    apis:
+
+      - aid: api-reusability:composite
+        name: API Resuability HTTP
+        description: Provides a composite HTTP API.
+        humanURL: http://127.0.0.1
+        baseURL: http://127.0.0.1
+        tags:
+          - Reusability
+          - Composite
+          - API
+        properties:
+          - type: OpenAPI
+            url: 'openapi/api-reusability.yml'  
+
+      - aid: api-reusability:mcp
+        name: API Resuability MCP
+        description: Provides a composite MCP Server
+        humanURL: http://127.0.0.1
+        baseURL: http://127.0.0.1
+        tags:
+          - Reusability
+          - Composite
+          - MCP
+        properties:
+          - type: OpenAPI
+            url: 'model-context-protocol/api-reusability-mcp.yml' 
+
+
+      - aid: api-reusability:a2a
+        name: API Resuability MCP
+        description: Provides a composite A2A Server
+        humanURL: http://127.0.0.1
+        baseURL: http://127.0.0.1
+        tags:
+          - Reusability
+          - Composite
+          - A2A
+        properties:
+          - type: OpenAPI
+            url: 'agent2agent/api-reusability-agent.yml'      
+
+    common:
+
+      - type: Stakeholders
+        data:
+
+          - FN: Kin Lane
+            ROLE: Chief Community Officer (CCO)
+            EMAIL: kinlane@naftiko.io
+            SOCIALPROFILE: https://www.linkedin.com/in/kinlane/
+
+          - FN: Persona
+            ROLE: Architect
+            EMAIL: persona@example.com
+            SOCIALPROFILE: https://www.linkedin.com/in/persona/
+
+          - FN: Persona
+            ROLE: Integration Engineer
+            SOCIALPROFILE: https://www.linkedin.com/in/persona/    
+
+          - FN: Persona
+            ROLE: API Engineer
+            EMAIL: persona@example.com
+            SOCIALPROFILE: https://www.linkedin.com/in/persona/   
+
+      - type: Events
+        data:     
+
+        - specversion: '1.0'
+          type: com.github.catalog.pulled
+          source: https://github.com/cloudevents/spec
+          datacontenttype: application/json
+          dataschema: https://github.com/cloudevents/spec/schemas/pr.json
+
+        - specversion: '1.0'
+          type: com.github.api.reuse.calculated
+          source: https://github.com/cloudevents/spec
+          datacontenttype: application/json
+          dataschema: https://github.com/cloudevents/spec/schemas/pr.json    
+
+        - specversion: '1.0'
+          type: com.github.api.reuse.communicated
+          source: https://github.com/cloudevents/spec
+          datacontenttype: application/json
+          dataschema: https://github.com/cloudevents/spec/schemas/pr.json       
+
+      - type: Source
+        data: 
+
+          httpUrl: https://github.com/naftiko-capabilities/api-reusability
+          sshUrl: git@github.com:-capabilities/api-reusability.git
+          dockertHub: https://hub.docker.com/u/api-reusability           
+
+      - type: Support
+        data: 
+
+          issues: https://github.com/naftiko-capabilities/api-reusability/issues
+          discussions: https://github.com/naftiko-capabilities/api-reusability/discussions
+          slack: https://example.slack.com/archives/C09EAC4RXNW
+
+      - type: License
+        data: 
+
+          data:
+
+            type: https://creativecommons.org/licenses/by/4.0/
+            attribution: CC BY
+            instance: http://example.com/location-of-license
+
+          code:
+
+            type: https://opensource.org/license/apache-2-0
+            attribution: Apache 2.0
+            instance: http://example.com/location-of-license
+
+          api:
+
+            type: https://creativecommons.org/licenses/by/4.0/
+            attribution: CC BY
+            instance: http://example.com/location-of-license     
+
+      - type: Standards
+        data: 
+
+          - name: Naftiko Capabilities
+            description: This uses a exploratory schema to help inform and shape capabilities.
+            docUrl: https://naftiko.github.io/technology/docs/capabilities/
+
+          - name: OpenAPI
+            description: This uses OpenAPI to define access to all HTTP APIs.
+            docUrl: https://naftiko.github.io/technology/docs/standards/openapi/
+
+          - name: Arazzo
+            description: This uses Arazzo to define workflows used to support this capability.
+            docUrl: https://naftiko.github.io/technology/docs/standards/arazzo/
+
+          - name: JSON Schema
+            description: This uses JSON Schema to define and validate all entities used.
+            docUrl: https://naftiko.github.io/technology/docs/standards/json-schema/    
+
+          - name: Spectral
+            description: This uses Spectral rules to define and enforce policies across entities.
+            docUrl: https://naftiko.github.io/technology/docs/standards/spectral/     
+
+          - name: Model Context Protocol
+            description: This uses MCP expresed as JSON schema to define each MCP server.
+            docUrl: https://naftiko.github.io/technology/docs/standards/model-context-protocol/
+
+          - name: Bruno Collections
+            description: This uses Bruno Collections to define each executable HTTP API integration.
+            docUrl: https://naftiko.github.io/technology/docs/standards/bruno-collections/        
+
+          - name: Bruno Environments
+            description: This uses Bruno Environments to store keys for each API to use in automation.
+            docUrl: https://naftiko.github.io/technology/docs/standards/bruno-environments/  
+
+          - name: API Commons
+            description: This uses an API Commons schema to define the plans and rate limits.
+            docUrl: https://naftiko.github.io/technology/docs/standards/api-commons/      
+
+          - name: OAuth 2.0
+            description: This uses a exploratory schema to help inform and shape capabilities.
+            docUrl: https://naftiko.github.io/technology/docs/standards/oauth-20/           
+
+      - type: Services
+        data: 
+
+        - aid: aws-api-gateway
+          name: AWS API Gateway
+          description: Amazon API Gateway is a fully managed service that makes it easy for developers to create, publish, maintain, monitor, and secure APIs at any scale.
+          docUrl: https://naftiko.github.io/technology/docs/services/aws/
+          apisJson: https://raw.githubusercontent.com/api-evangelist/aws/refs/heads/main/apis.yml
+          loginUrl: https://console.aws.amazon.com/console/home/
+          signUpUrl: https://portal.aws.amazon.com/gp/aws/developer/registration/index.html
+          termsOfServiceUrl: https://aws.amazon.com/terms/?nc1=f_pr
+          privacyPolicyUrl: https://aws.amazon.com/privacy/?nc1=f_pr
+          plans:
+            - $ref: 'api-commons/plans-aws-api-gateway.yml'    
+          rateLimits:
+            - $ref: 'api-commons/rate-limits-aws-api-gateway.yml'   
+
+        - aid: github
+          name: GitHub
+          description: GitHub is a web-based platform for hosting and collaborating on software projects. It’s built around Git, a version control system that tracks changes to files over time.
+          docUrl: https://naftiko.github.io/technology/docs/services/github/
+          apisJson: https://raw.githubusercontent.com/api-evangelist/github/refs/heads/main/apis.yml
+          loginUrl: https://github.com/login
+          signUpUrl: https://github.com/signup
+          termsOfServiceUrl: https://docs.github.com/site-policy/github-terms/github-terms-of-service
+          privacyPolicyUrl: https://docs.github.com/site-policy/privacy-policies/github-privacy-statement
+          plans:
+            - $ref: 'api-commons/plans-github.yml'    
+          rateLimits:
+            - $ref: 'api-commons/plans-github.yml'    
+
+        - aid: splunk
+          name: Splunk
+          description: Splunk is a powerful software platform for searching, monitoring, and analyzing machine-generated data (logs, metrics, events) in real-time.
+          docUrl: https://naftiko.github.io/technology/docs/services/splunk/
+          apisJson: https://raw.githubusercontent.com/api-evangelist/splunk/refs/heads/main/apis.yml
+          loginUrl: https://login.splunk.com/
+          signUpUrl: https://www.splunk.com/en_us/form/sign-up.html
+          termsOfServiceUrl: https://www.splunk.com/en_us/legal/splunk-general-terms.html
+          privacyPolicyUrl: https://www.splunk.com/en_us/about-splunk/splunk-data-security-and-privacy/data-privacy-at-splunk.html
+          plans:
+            - $ref: 'api-commons/plans-splunk.yml'    
+          rateLimits:
+            - $ref: 'api-commons/rate-limits-splunk.yml'   
+
+        - aid: notion
+          name: Notion
+          description: Notion is an all-in-one workspace and productivity platform that combines notes, documents, databases, wikis, project management, and collaboration tools into a single application.
+          docUrl: https://naftiko.github.io/technology/docs/services/notion/
+          apisJson: https://raw.githubusercontent.com/api-evangelist/notion/refs/heads/main/apis.yml
+          loginUrl: https://www.notion.so/login
+          signUpUrl: https://www.notion.so/signup
+          termsOfServiceUrl: https://www.notion.so/terms
+          privacyPolicyUrl: https://privacycenter.notion.so/policies
+          plans:
+            - $ref: 'api-commons/plans-notion.yml'    
+          rateLimits:
+            - $ref: 'api-commons/rate-limits-notion.yml'   
+
+        - aid: hashicorp
+          name: Hashicorp
+          description: HashiCorp is a software company that builds infrastructure automation tools for cloud computing, including Vault (secrets management), Terraform (infrastructure as code), Consul (service networking), and Nomad (workload orchestration).
+          docUrl: https://naftiko.github.io/technology/docs/services/hashicorp/
+          apisJson: https://raw.githubusercontent.com/api-evangelist/hashicorp/refs/heads/main/apis.yml
+          loginUrl: https://portal.cloud.hashicorp.com/sign-in
+          signUpUrl: https://flow.idp.hashicorp.com/signup
+          termsOfServiceUrl: https://www.hashicorp.com/en/terms-of-service
+          privacyPolicyUrl: https://www.hashicorp.com/en/trust/privacy
+          plans:
+            - $ref: 'api-commons/plans-hashicorp-vault.yml'    
+          rateLimits:
+            - $ref: 'api-commons/rate-limits-hashicorp-vault.yml'         
+
+
+        - aid: new-relic
+          name: New Relic
+          description: HashiCorp is a software company that builds infrastructure automation tools for cloud computing, including Vault (secrets management), Terraform (infrastructure as code), Consul (service networking), and Nomad (workload orchestration).
+          docUrl: https://naftiko.github.io/technology/docs/services/new-relic/
+          apisJson: https://raw.githubusercontent.com/api-evangelist/new-relic/refs/heads/main/apis.yml
+          loginUrl: https://login.newrelic.com/
+          signUpUrl: https://newrelic.com/signup
+          termsOfServiceUrl: https://newrelic.com/termsandconditions/terms
+          privacyPolicyUrl: https://newrelic.com/termsandconditions/privacy
+          plans:
+            - $ref: 'api-commons/plans-new-relic.yml'    
+          rateLimits:
+            - $ref: 'api-commons/rate-limits-new-relic.yml'    
+
+    include:
+
+      - name: API Reusability Catalog
+        url: api-reusability-catalog.yml
+
+      - name: API Reusability Communicate
+        url: api-reusability-communicate.yml
+
+      - name: API Reusability Definition
+        url: api-reusability-definition.yml
+
+      - name: API Reusability Incentivize
+        url: api-reusability-incentivize.yml            
+
+    maintainers:
+
+      - FN: Kin Lane
+        email: info@apievangelist.com

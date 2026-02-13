@@ -24,8 +24,8 @@ apis:
   - aid: api-reusability:calculation
     name: API Reusability Calculation
     description: Calculating what API reusability means.
-    humanURL: http://127.0.0.1
-    baseURL: http://127.0.0.1
+    humanURL: http://example.com/calculation
+    baseURL: http://apis.example.com/calculation
     tags:
       - Reusability
       - Calculation

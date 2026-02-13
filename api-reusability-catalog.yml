@@ -23,8 +23,8 @@ apis:
   - aid: api-reusability:amazon-api-gateway-resources
     name: Amazon API Gateway Resources
     description: Pulls API resources from Amazon API Gateway.
-    humanURL: http://127.0.0.1
-    baseURL: http://127.0.0.1
+    humanURL: http://example.com/resources
+    baseURL: http://apis.example.com/resources
     tags:
       - Amazon Web Services
       - API Gateway
@@ -40,8 +40,8 @@ apis:
   - aid: api-reusability:amazon-api-gateway-schema
     name: Amazon API Gateway Schema
     description: Pulls API schema from Amazon API Gateway.
-    humanURL: http://127.0.0.1
-    baseURL: http://127.0.0.1
+    humanURL: http://example.com/schema
+    baseURL: http://apis.example.com/schema
     tags:
       - Amazon Web Services
       - API Gateway
@@ -57,8 +57,8 @@ apis:
   - aid: api-reusability:github-repositories-openapi-content
     name: GitHub Repositories OpenAPI Content
     description: Pulls OpenAPI artifacts from repository using GitHub API.
-    humanURL: http://127.0.0.1
-    baseURL: http://127.0.0.1
+    humanURL: http://example.com/github/openapi
+    baseURL: http://apis.example.com/github/openapi
     tags:
       - GitHub
       - Repositories
@@ -66,6 +66,8 @@ apis:
     properties:
       - type: OpenAPI
         url: 'openapi/api-reusability-github-repository-openapi-contents.yml'  
+      - type: Arazzo
+        url: 'arazzo/oauth-workflow-github.yml'          
       - type: brunoCollection
         url: '/bruno/github-retrieve-repository-openapi-content/bruno.json' 
       - type: brunoEnvironment

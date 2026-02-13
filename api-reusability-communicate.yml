@@ -23,8 +23,8 @@ apis:
   - aid: api-reusability:publish-splunk-collector
     name: Publish Splunk Collector Event
     description: Publish API resuability results to Splunk Collector
-    humanURL: http://127.0.0.1
-    baseURL: http://127.0.0.1
+    humanURL: http://example.com/collector
+    baseURL: http://apis.example.com/collector
     tags:
       - Observability
       - Dashboard
@@ -39,8 +39,8 @@ apis:
   - aid: api-reusability:publish-notion-page
     name:  Publish Notion Page
     description: Publishes API reusability results to Notion page.
-    humanURL: http://127.0.0.1
-    baseURL: http://127.0.0.1
+    humanURL: http://example.com/page
+    baseURL: http://apis.example.com/page
     tags:
       - Observability
       - Pages
@@ -48,7 +48,9 @@ apis:
       - Notion
     properties:
       - type: OpenAPI
-        url: 'openapi/api-reusability-notion-page.yml'     
+        url: 'openapi/api-reusability-notion-page.yml'   
+      - type: Arazzo
+        url: 'arazzo/oauth-workflow-notion.yml'             
       - type: brunoCollection
         url: '/bruno/api-reusability-linkedin-organization/bruno.json'                  
 
