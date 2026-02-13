@@ -236,7 +236,7 @@ common:
     - aid: aws-api-gateway
       name: AWS API Gateway
       description: Amazon API Gateway is a fully managed service that makes it easy for developers to create, publish, maintain, monitor, and secure APIs at any scale.
-      docUrl: https://naftiko.github.io/technology/docs/services/aws/
+      docUrl: https://docs.aws.amazon.com/apigateway/
       apisJson: https://raw.githubusercontent.com/api-evangelist/aws/refs/heads/main/apis.yml
       loginUrl: https://console.aws.amazon.com/console/home/
       signUpUrl: https://portal.aws.amazon.com/gp/aws/developer/registration/index.html
@@ -250,7 +250,7 @@ common:
     - aid: github
       name: GitHub
       description: GitHub is a web-based platform for hosting and collaborating on software projects. It’s built around Git, a version control system that tracks changes to files over time.
-      docUrl: https://naftiko.github.io/technology/docs/services/github/
+      docUrl: https://docs.github.com/
       apisJson: https://raw.githubusercontent.com/api-evangelist/github/refs/heads/main/apis.yml
       loginUrl: https://github.com/login
       signUpUrl: https://github.com/signup
@@ -264,7 +264,7 @@ common:
     - aid: splunk
       name: Splunk
       description: Splunk is a powerful software platform for searching, monitoring, and analyzing machine-generated data (logs, metrics, events) in real-time.
-      docUrl: https://naftiko.github.io/technology/docs/services/splunk/
+      docUrl: https://docs.splunk.com/
       apisJson: https://raw.githubusercontent.com/api-evangelist/splunk/refs/heads/main/apis.yml
       loginUrl: https://login.splunk.com/
       signUpUrl: https://www.splunk.com/en_us/form/sign-up.html
@@ -278,7 +278,7 @@ common:
     - aid: notion
       name: Notion
       description: Notion is an all-in-one workspace and productivity platform that combines notes, documents, databases, wikis, project management, and collaboration tools into a single application.
-      docUrl: https://naftiko.github.io/technology/docs/services/notion/
+      docUrl: https://developers.notion.com/
       apisJson: https://raw.githubusercontent.com/api-evangelist/notion/refs/heads/main/apis.yml
       loginUrl: https://www.notion.so/login
       signUpUrl: https://www.notion.so/signup
@@ -292,7 +292,7 @@ common:
     - aid: hashicorp
       name: Hashicorp
       description: HashiCorp is a software company that builds infrastructure automation tools for cloud computing, including Vault (secrets management), Terraform (infrastructure as code), Consul (service networking), and Nomad (workload orchestration).
-      docUrl: https://naftiko.github.io/technology/docs/services/hashicorp/
+      docUrl: https://developer.hashicorp.com/
       apisJson: https://raw.githubusercontent.com/api-evangelist/hashicorp/refs/heads/main/apis.yml
       loginUrl: https://portal.cloud.hashicorp.com/sign-in
       signUpUrl: https://flow.idp.hashicorp.com/signup
@@ -307,7 +307,7 @@ common:
     - aid: new-relic
       name: New Relic
       description: HashiCorp is a software company that builds infrastructure automation tools for cloud computing, including Vault (secrets management), Terraform (infrastructure as code), Consul (service networking), and Nomad (workload orchestration).
-      docUrl: https://naftiko.github.io/technology/docs/services/new-relic/
+      docUrl: https://docs.newrelic.com/
       apisJson: https://raw.githubusercontent.com/api-evangelist/new-relic/refs/heads/main/apis.yml
       loginUrl: https://login.newrelic.com/
       signUpUrl: https://newrelic.com/signup
@@ -317,7 +317,7 @@ common:
         - $ref: 'api-commons/plans-new-relic.yml'    
       rateLimits:
         - $ref: 'api-commons/rate-limits-new-relic.yml'    
-
+        
 include:
 
   - name: API Reusability Catalog

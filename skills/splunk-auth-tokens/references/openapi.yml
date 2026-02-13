@@ -1,0 +1,505 @@
+openapi: 3.1.0
+info:
+  title: Splunk Authentication Token API
+  description: |
+    Create and manage authentication tokens (JWT) for accessing Splunk REST APIs.
+    
+    **Important:** Splunk REST APIs do not support OAuth authentication. Instead, Splunk 
+    uses authentication tokens (JSON Web Tokens) for API access.
+    
+    **Authentication Methods:**
+    - Authentication Tokens (JWT) - Primary method for API access
+    - Basic Authentication - Username and password
+    - Session Keys - For authenticated sessions
+    
+    **Token Types:**
+    - **Static tokens** - Long-lived tokens with configurable expiration
+    - **Ephemeral tokens** - Short-lived tokens
+    - **Interactive tokens** - Used by web browsers, exchanged for session cookies
+    
+    **Requirements:**
+    - Token authentication must be enabled on the Splunk instance
+    - User must have `edit_tokens_own` capability (to create tokens for self)
+    - User must have `edit_tokens_all` capability (to create tokens for others)
+    
+    **Use Cases:**
+    - REST API access
+    - Splunk CLI authentication
+    - Service account authentication
+  version: 9.4.0
+  contact:
+    name: Splunk Support
+    url: https://www.splunk.com/support
+
+servers:
+  - url: https://{host}:{port}/services
+    description: Splunk Enterprise instance
+    variables:
+      host:
+        default: localhost
+        description: Splunk server hostname
+      port:
+        default: "8089"
+        description: Splunk management port
+
+security:
+  - basic_auth: []
+  - bearer_token: []
+
+tags:
+  - name: Authentication Tokens
+    description: Create and manage JWT authentication tokens
+
+paths:
+  /authorization/tokens:
+    get:
+      summary: List authentication tokens
+      description: |
+        Lists all authentication tokens that the authenticated user has permission to view.
+        
+        **Permissions:**
+        - User can list their own tokens with `edit_tokens_own` capability
+        - Admin can list all tokens with `edit_tokens_all` capability
+      operationId: listTokens
+      tags:
+        - Authentication Tokens
+      parameters:
+        - name: output_mode
+          in: query
+          required: false
+          description: Response format
+          schema:
+            type: string
+            enum:
+              - json
+              - xml
+            default: xml
+          example: json
+        
+        - name: count
+          in: query
+          required: false
+          description: Maximum number of entries to return (0 = unlimited)
+          schema:
+            type: integer
+            default: 30
+          example: 100
+        
+        - name: offset
+          in: query
+          required: false
+          description: Starting offset for pagination
+          schema:
+            type: integer
+            default: 0
+          example: 0
+
+      responses:
+        '200':
+          description: List of authentication tokens
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenListResponse'
+              example:
+                links:
+                  create: /services/authorization/tokens/_new
+                origin: https://mysplunk.com:8089/services/authorization/tokens
+                updated: "2019-03-07T22:55:46+00:00"
+                generator:
+                  build: 85dd8eb9bcda
+                  version: 7.3.0
+                entry:
+                  - name: tokens
+                    id: https://mysplunk.com:8089/services/authorization/tokens/tokens
+                    updated: "1970-01-01T00:00:00+00:00"
+                    content:
+                      id: ca08a6842d3ec21b4d18549754e8e8d77a392d7e17de28cfdc71b78005a16e78
+                      token: eyJraWQiOiJzcGx1bmsuc2VjcmV0IiwiYWxnIjoiSFM1MTIi...
+                      audience: Users
+                      claims:
+                        exp: 1646092800
+                        iat: 1643414400
+                        sub: jdoe
+        
+        '401':
+          description: Unauthorized - Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        
+        '403':
+          description: Forbidden - Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      summary: Create authentication token
+      description: |
+        Creates a new authentication token for a Splunk user.
+        
+        **Important:**
+        - Token authentication must be enabled on the instance
+        - Tokens are credentials and must be kept secure
+        - Store the token value immediately - it cannot be retrieved later
+        
+        **Permissions:**
+        - `edit_tokens_own` - Create tokens for yourself
+        - `edit_tokens_all` - Create tokens for any user
+      operationId: createToken
+      tags:
+        - Authentication Tokens
+      parameters:
+        - name: output_mode
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - json
+              - xml
+            default: xml
+          example: json
+
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: |
+                    The Splunk user for whom to create the token.
+                    Must be a valid Splunk user.
+                  example: jdoe
+                audience:
+                  type: string
+                  description: |
+                    Short description of the token purpose.
+                    Helps identify the token's intended use.
+                  example: REST API Access
+                expires_on:
+                  type: string
+                  description: |
+                    Token expiration time. Can be:
+                    - Absolute time: YYYY-MM-DDTHH:MM:SS format
+                    - Relative time: +<number><unit> (e.g., +30d, +1h, +60m)
+                    - Empty for default expiration (based on instance settings)
+                  example: +30d
+                not_before:
+                  type: string
+                  description: |
+                    Time before which the token is not valid.
+                    Format: YYYY-MM-DDTHH:MM:SS
+                  example: "2025-01-01T00:00:00"
+              required:
+                - name
+                - audience
+            examples:
+              simple_token:
+                summary: Simple 30-day token
+                value:
+                  name: jdoe
+                  audience: Users
+                  expires_on: +30d
+              
+              absolute_expiration:
+                summary: Token with absolute expiration
+                value:
+                  name: sallyjane
+                  audience: Managers
+                  expires_on: "2025-12-31T23:59:59"
+              
+              delayed_activation:
+                summary: Token that activates in the future
+                value:
+                  name: bobd
+                  audience: Accountants
+                  not_before: "2025-03-01T00:00:00"
+                  expires_on: +60d
+
+      responses:
+        '201':
+          description: Token created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenCreateResponse'
+              example:
+                entry:
+                  - name: tokens
+                    id: https://mysplunk.com:8089/services/authorization/tokens/tokens
+                    content:
+                      id: a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0
+                      token: eyJraWQiOiJzcGx1bmsuc2VjcmV0IiwiYWxnIjoiSFM1MTIiLCJ2ZXIiOiJ2MiIsInR0eXAiOiJzdGF0aWMifQ.eyJpc3MiOiJqZG9lIGZyb20gU3BsdW5rIiwic3ViIjoiamRvZSIsImF1ZCI6IlVzZXJzIiwiaWRwIjoiU3BsdW5rIiwianRpIjoiYTFiMmMzZDRlNWY2ZzdoOGk5ajBrMWwybTNuNG81cDZxN3I4czl0MCIsImlhdCI6MTY0MzQxNDQwMCwiZXhwIjoxNjQ2MDA2NDAwLCJuYmYiOjE2NDM0MTQ0MDB9.abc123def456ghi789jkl012mno345pqr678stu901vwx234yz
+                      audience: Users
+                      expiresOn: "2025-02-28T00:00:00"
+                      claims:
+                        exp: 1646006400
+                        iat: 1643414400
+                        nbf: 1643414400
+                        sub: jdoe
+                        aud: Users
+        
+        '400':
+          description: Bad Request - Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                invalid_user:
+                  summary: Invalid username
+                  value:
+                    messages:
+                      - type: ERROR
+                        text: "User 'invalid_user' does not exist"
+                
+                token_auth_disabled:
+                  summary: Token authentication not enabled
+                  value:
+                    messages:
+                      - type: ERROR
+                        text: "Token authentication is not enabled"
+        
+        '401':
+          description: Unauthorized - Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        
+        '403':
+          description: Forbidden - Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                messages:
+                  - type: ERROR
+                    text: "User does not have permission to create tokens"
+
+  /authorization/tokens/{token_id}:
+    get:
+      summary: Get token details
+      description: Retrieve details about a specific authentication token
+      operationId: getToken
+      tags:
+        - Authentication Tokens
+      parameters:
+        - name: token_id
+          in: path
+          required: true
+          description: The token identifier
+          schema:
+            type: string
+          example: a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0
+        
+        - name: output_mode
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - json
+              - xml
+            default: xml
+          example: json
+
+      responses:
+        '200':
+          description: Token details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        
+        '404':
+          description: Token not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      summary: Delete authentication token
+      description: |
+        Deletes (revokes) an authentication token.
+        
+        **Important:**
+        - Once deleted, the token cannot be recovered
+        - Any applications using the token will lose access
+        - Use caution when deleting tokens
+      operationId: deleteToken
+      tags:
+        - Authentication Tokens
+      parameters:
+        - name: token_id
+          in: path
+          required: true
+          description: The token identifier to delete
+          schema:
+            type: string
+          example: a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0
+
+      responses:
+        '200':
+          description: Token deleted successfully
+          content:
+            application/json:
+              example:
+                messages:
+                  - type: INFO
+                    text: Token deleted successfully
+        
+        '404':
+          description: Token not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    basic_auth:
+      type: http
+      scheme: basic
+      description: HTTP Basic Authentication with Splunk username and password
+    
+    bearer_token:
+      type: http
+      scheme: bearer
+      description: |
+        Authentication token (JWT) in the format: `Bearer <token>`
+        
+        Example: `Authorization: Bearer eyJraWQiOiJzcGx1bmsuc2VjcmV0...`
+
+  schemas:
+    TokenListResponse:
+      type: object
+      properties:
+        links:
+          type: object
+          properties:
+            create:
+              type: string
+        origin:
+          type: string
+        updated:
+          type: string
+          format: date-time
+        generator:
+          type: object
+          properties:
+            build:
+              type: string
+            version:
+              type: string
+        entry:
+          type: array
+          items:
+            $ref: '#/components/schemas/TokenEntry'
+    
+    TokenEntry:
+      type: object
+      properties:
+        name:
+          type: string
+        id:
+          type: string
+        updated:
+          type: string
+          format: date-time
+        content:
+          $ref: '#/components/schemas/TokenContent'
+    
+    TokenContent:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique token identifier (SHA-256 hash)
+        token:
+          type: string
+          description: The JWT token value (only visible at creation time)
+        audience:
+          type: string
+          description: Token purpose description
+        expiresOn:
+          type: string
+          format: date-time
+          description: When the token expires
+        claims:
+          type: object
+          description: JWT claims
+          properties:
+            exp:
+              type: integer
+              description: Expiration time (Unix timestamp)
+            iat:
+              type: integer
+              description: Issued at time (Unix timestamp)
+            nbf:
+              type: integer
+              description: Not before time (Unix timestamp)
+            sub:
+              type: string
+              description: Subject (username)
+            aud:
+              type: string
+              description: Audience (token purpose)
+            iss:
+              type: string
+              description: Issuer
+            idp:
+              type: string
+              description: Identity provider
+            jti:
+              type: string
+              description: JWT ID
+    
+    TokenCreateResponse:
+      type: object
+      properties:
+        entry:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              id:
+                type: string
+              content:
+                $ref: '#/components/schemas/TokenContent'
+    
+    TokenResponse:
+      type: object
+      properties:
+        entry:
+          type: array
+          items:
+            $ref: '#/components/schemas/TokenEntry'
+    
+    Error:
+      type: object
+      properties:
+        messages:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                enum:
+                  - ERROR
+                  - WARN
+                  - INFO
+              text:
+                type: string

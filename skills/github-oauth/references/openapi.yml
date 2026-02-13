@@ -1,0 +1,614 @@
+openapi: 3.1.0
+info:
+  title: GitHub OAuth APIs
+  description: |
+    GitHub OAuth APIs for authorizing OAuth apps and managing OAuth tokens.
+    
+    **OAuth Flow:**
+    1. Redirect users to GitHub for authorization
+    2. GitHub redirects back with authorization code
+    3. Exchange code for access token
+    4. Use access token to make API requests
+    
+    **Token Management:**
+    - Check token validity
+    - Reset tokens
+    - Revoke tokens and grants
+    
+    Tokens for OAuth apps have the prefix `gho_`, while OAuth tokens for GitHub Apps 
+    have the prefix `ghu_`.
+  version: 2022-11-28
+  contact:
+    name: GitHub Support
+    url: https://support.github.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://github.com
+    description: GitHub OAuth Authorization Server
+  - url: https://api.github.com
+    description: GitHub API for token management
+
+tags:
+  - name: OAuth Authorization
+    description: OAuth web application flow endpoints
+  - name: Token Management
+    description: OAuth token validation and management
+
+paths:
+  /login/oauth/authorize:
+    get:
+      summary: Authorize OAuth app
+      description: |
+        Users are redirected to this endpoint to request their GitHub identity and authorize 
+        the OAuth app. This is step 1 of the web application flow.
+        
+        After authorization, GitHub redirects back to your site with a temporary code in a 
+        code parameter and the state you provided in a state parameter. The temporary code 
+        will expire after 10 minutes.
+      operationId: authorizeOAuthApp
+      tags:
+        - OAuth Authorization
+      servers:
+        - url: https://github.com
+      parameters:
+        - name: client_id
+          in: query
+          required: true
+          description: The client ID you received from GitHub when you registered your OAuth app
+          schema:
+            type: string
+          example: Iv1.8a61f9b3a7aba766
+        
+        - name: redirect_uri
+          in: query
+          required: false
+          description: The URL in your application where users will be sent after authorization
+          schema:
+            type: string
+            format: uri
+          example: https://example.com/oauth/callback
+        
+        - name: login
+          in: query
+          required: false
+          description: Suggests a specific account to use for signing in and authorizing the app
+          schema:
+            type: string
+          example: octocat
+        
+        - name: scope
+          in: query
+          required: false
+          description: Space-delimited list of scopes. If not provided, defaults to no scopes for users that have not authorized any scopes
+          schema:
+            type: string
+          example: "repo user"
+        
+        - name: state
+          in: query
+          required: false
+          description: An unguessable random string used to protect against cross-site request forgery attacks
+          schema:
+            type: string
+          example: random_state_string_abc123
+        
+        - name: allow_signup
+          in: query
+          required: false
+          description: Whether unauthenticated users will be offered an option to sign up for GitHub during OAuth flow
+          schema:
+            type: boolean
+            default: true
+
+      responses:
+        '302':
+          description: Redirect to authorization callback with code and state parameters
+          headers:
+            Location:
+              schema:
+                type: string
+                format: uri
+              description: Redirect URI with code and state query parameters
+              example: https://example.com/oauth/callback?code=abc123def456&state=random_state_string_abc123
+
+  /login/oauth/access_token:
+    post:
+      summary: Exchange code for access token
+      description: |
+        Exchange the authorization code for an access token. This is step 2 of the web 
+        application flow.
+        
+        By default, the response takes the form of URL-encoded parameters. You can request 
+        JSON format by setting the Accept header to application/json.
+      operationId: exchangeCodeForToken
+      tags:
+        - OAuth Authorization
+      servers:
+        - url: https://github.com
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                client_id:
+                  type: string
+                  description: The client ID you received from GitHub
+                client_secret:
+                  type: string
+                  description: The client secret you received from GitHub
+                code:
+                  type: string
+                  description: The authorization code received from the authorization callback
+                redirect_uri:
+                  type: string
+                  format: uri
+                  description: The URL in your application where users are sent after authorization
+              required:
+                - client_id
+                - client_secret
+                - code
+            example:
+              client_id: Iv1.8a61f9b3a7aba766
+              client_secret: abcdef1234567890abcdef1234567890abcdef12
+              code: abc123def456
+              redirect_uri: https://example.com/oauth/callback
+
+      responses:
+        '200':
+          description: Access token response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    description: The OAuth access token (prefix gho_ for OAuth apps, ghu_ for GitHub Apps)
+                  token_type:
+                    type: string
+                    enum:
+                      - bearer
+                  scope:
+                    type: string
+                    description: Comma-separated list of scopes the token has
+                  refresh_token:
+                    type: string
+                    description: Refresh token (only for GitHub Apps with token expiration enabled)
+                  refresh_token_expires_in:
+                    type: integer
+                    description: Number of seconds until refresh token expires
+                  expires_in:
+                    type: integer
+                    description: Number of seconds until access token expires
+                required:
+                  - access_token
+                  - token_type
+                  - scope
+              example:
+                access_token: gho_16C7e42F292c6912E7710c838347Ae178B4a
+                token_type: bearer
+                scope: repo,gist
+            
+            application/x-www-form-urlencoded:
+              schema:
+                type: string
+              example: access_token=gho_16C7e42F292c6912E7710c838347Ae178B4a&scope=repo,gist&token_type=bearer
+
+  /applications/{client_id}/token:
+    post:
+      summary: Check a token
+      description: |
+        OAuth applications and GitHub applications with OAuth authorizations can use this 
+        API method for checking OAuth token validity without exceeding the normal rate limits 
+        for failed login attempts. Authentication works differently with this particular endpoint.
+        
+        Invalid tokens will return 404 NOT FOUND.
+      operationId: checkToken
+      tags:
+        - Token Management
+      servers:
+        - url: https://api.github.com
+      security:
+        - basic_auth: []
+      parameters:
+        - name: client_id
+          in: path
+          required: true
+          description: The client ID of your OAuth app
+          schema:
+            type: string
+          example: Iv1.8a61f9b3a7aba766
+        
+        - $ref: '#/components/parameters/AcceptHeader'
+        - $ref: '#/components/parameters/ApiVersionHeader'
+      
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                access_token:
+                  type: string
+                  description: The OAuth token to check
+              required:
+                - access_token
+            example:
+              access_token: e72e16c7e42f292c6912e7710c838347ae178b4a
+
+      responses:
+        '200':
+          description: Token is valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Authorization'
+        
+        '404':
+          description: Token is invalid or not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    patch:
+      summary: Reset a token
+      description: |
+        OAuth applications and GitHub applications with OAuth authorizations can use this 
+        API method to reset a valid OAuth token without end-user involvement. Applications 
+        must save the "token" property in the response because changes take effect immediately.
+        
+        Invalid tokens will return 404 NOT FOUND.
+      operationId: resetToken
+      tags:
+        - Token Management
+      servers:
+        - url: https://api.github.com
+      security:
+        - basic_auth: []
+      parameters:
+        - name: client_id
+          in: path
+          required: true
+          description: The client ID of your OAuth app
+          schema:
+            type: string
+          example: Iv1.8a61f9b3a7aba766
+        
+        - $ref: '#/components/parameters/AcceptHeader'
+        - $ref: '#/components/parameters/ApiVersionHeader'
+      
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                access_token:
+                  type: string
+                  description: The OAuth token to reset
+              required:
+                - access_token
+            example:
+              access_token: e72e16c7e42f292c6912e7710c838347ae178b4a
+
+      responses:
+        '200':
+          description: Token reset successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Authorization'
+        
+        '404':
+          description: Token is invalid or not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      summary: Delete a token
+      description: |
+        OAuth or GitHub application owners can revoke a single token for an OAuth application 
+        or a GitHub application with an OAuth authorization.
+      operationId: deleteToken
+      tags:
+        - Token Management
+      servers:
+        - url: https://api.github.com
+      security:
+        - basic_auth: []
+      parameters:
+        - name: client_id
+          in: path
+          required: true
+          description: The client ID of your OAuth app
+          schema:
+            type: string
+          example: Iv1.8a61f9b3a7aba766
+        
+        - $ref: '#/components/parameters/AcceptHeader'
+        - $ref: '#/components/parameters/ApiVersionHeader'
+      
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                access_token:
+                  type: string
+                  description: The OAuth token to delete
+              required:
+                - access_token
+            example:
+              access_token: e72e16c7e42f292c6912e7710c838347ae178b4a
+
+      responses:
+        '204':
+          description: Token deleted successfully
+        
+        '404':
+          description: Token not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /applications/{client_id}/grant:
+    delete:
+      summary: Delete an app authorization
+      description: |
+        OAuth and GitHub application owners can revoke a grant for their application and a 
+        specific user. You must provide a valid OAuth access_token as an input parameter and 
+        the grant for the token's owner will be deleted.
+        
+        Deleting an application's grant will also delete all OAuth tokens associated with the 
+        application for the user. Once deleted, the application will have no access to the 
+        user's account and will no longer be listed on the application authorizations settings 
+        screen within GitHub.
+      operationId: deleteAuthorization
+      tags:
+        - Token Management
+      servers:
+        - url: https://api.github.com
+      security:
+        - basic_auth: []
+      parameters:
+        - name: client_id
+          in: path
+          required: true
+          description: The client ID of your OAuth app
+          schema:
+            type: string
+          example: Iv1.8a61f9b3a7aba766
+        
+        - $ref: '#/components/parameters/AcceptHeader'
+        - $ref: '#/components/parameters/ApiVersionHeader'
+      
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                access_token:
+                  type: string
+                  description: The OAuth token to use for identifying the grant
+              required:
+                - access_token
+            example:
+              access_token: e72e16c7e42f292c6912e7710c838347ae178b4a
+
+      responses:
+        '204':
+          description: Grant deleted successfully
+        
+        '404':
+          description: Grant not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    basic_auth:
+      type: http
+      scheme: basic
+      description: Use the OAuth app's client_id as username and client_secret as password
+
+  parameters:
+    AcceptHeader:
+      name: Accept
+      in: header
+      required: false
+      description: Setting to application/vnd.github+json is recommended
+      schema:
+        type: string
+        default: application/vnd.github+json
+    
+    ApiVersionHeader:
+      name: X-GitHub-Api-Version
+      in: header
+      required: false
+      description: GitHub API version
+      schema:
+        type: string
+        default: "2022-11-28"
+
+  schemas:
+    Authorization:
+      type: object
+      description: OAuth authorization/token information
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the authorization
+        url:
+          type: string
+          format: uri
+          description: API URL for this authorization
+        scopes:
+          type: array
+          items:
+            type: string
+          description: List of scopes the token has access to
+        token:
+          type: string
+          description: The OAuth access token
+        token_last_eight:
+          type: string
+          description: Last eight characters of the token
+        hashed_token:
+          type: string
+          description: SHA-256 hash of the token
+        app:
+          type: object
+          properties:
+            url:
+              type: string
+              format: uri
+            name:
+              type: string
+            client_id:
+              type: string
+        note:
+          type: string
+          nullable: true
+          description: Optional note for the token
+        note_url:
+          type: string
+          format: uri
+          nullable: true
+          description: Optional URL for the note
+        updated_at:
+          type: string
+          format: date-time
+          description: When the authorization was last updated
+        created_at:
+          type: string
+          format: date-time
+          description: When the authorization was created
+        fingerprint:
+          type: string
+          nullable: true
+          description: Unique string to distinguish this authorization
+        expires_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the token expires
+        user:
+          $ref: '#/components/schemas/User'
+      required:
+        - id
+        - url
+        - scopes
+        - token
+        - token_last_eight
+        - hashed_token
+        - app
+        - created_at
+        - updated_at
+      example:
+        id: 1
+        url: https://api.github.com/authorizations/1
+        scopes:
+          - public_repo
+          - user
+        token: ghu_16C7e42F292c6912E7710c838347Ae178B4a
+        token_last_eight: Ae178B4a
+        hashed_token: 25f94a2a5c7fbaf499c665bc73d67c1c87e496da8985131633ee0a95819db2e8
+        app:
+          url: http://my-github-app.com
+          name: my github app
+          client_id: Iv1.8a61f9b3a7aba766
+        note: optional note
+        note_url: http://optional/note/url
+        updated_at: "2011-09-06T20:39:23Z"
+        created_at: "2011-09-06T17:26:27Z"
+        fingerprint: jklmnop12345678
+        expires_at: "2011-09-08T17:26:27Z"
+        user:
+          login: octocat
+          id: 1
+          node_id: MDQ6VXNlcjE=
+          avatar_url: https://github.com/images/error/octocat_happy.gif
+          gravatar_id: ""
+          url: https://api.github.com/users/octocat
+          html_url: https://github.com/octocat
+          type: User
+          site_admin: false
+
+    User:
+      type: object
+      description: GitHub user information
+      properties:
+        login:
+          type: string
+        id:
+          type: integer
+        node_id:
+          type: string
+        avatar_url:
+          type: string
+          format: uri
+        gravatar_id:
+          type: string
+        url:
+          type: string
+          format: uri
+        html_url:
+          type: string
+          format: uri
+        followers_url:
+          type: string
+          format: uri
+        following_url:
+          type: string
+        gists_url:
+          type: string
+        starred_url:
+          type: string
+        subscriptions_url:
+          type: string
+          format: uri
+        organizations_url:
+          type: string
+          format: uri
+        repos_url:
+          type: string
+          format: uri
+        events_url:
+          type: string
+        received_events_url:
+          type: string
+          format: uri
+        type:
+          type: string
+        site_admin:
+          type: boolean
+    
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Error message
+        documentation_url:
+          type: string
+          format: uri
+          description: URL to relevant documentation
+      required:
+        - message

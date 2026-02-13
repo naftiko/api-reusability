@@ -22,6 +22,7 @@ This is an image of this aggregate events AI context capability to try and captu
 ## Folders
 This repository is currently broken down into the following folders that help support references made within the index, providing different layers using existing standards that our customers are using.
 
+- **skills** - Using Agent Skills for any of the individual agents.
 - **agent-2-agent** - Using A2A cards for any of the individual agents.
 - **api-commons** - Using two API commons schema for plans and rate limits.
 - **arazzo** - Using Arazzo for the oauth workflows and eventually events.
@@ -65,4 +66,4 @@ This capability possesses the common artifacts that other open-source tooling al
 This capability will eventually run using the Naftiko Framework, but also simulatneoulsy work across these open-source tools.
 
 ## Contributions
-I need your feedback. Please leave via [issues](https://github.com/naftiko-capabilities/api-reusability/issues) or in [Slack](https://naftiko.slack.com/archives/C09LLFZDLL9), but also don't hesitate submitting pull requests to fix any problems encountered and leave feedback to help contribute to this work as it happening.
+I need your feedback. Please leave via [issues](https://github.com/naftiko-capabilities/api-reusability/issues) or email me at kinlane@naftiko.io, but also don't hesitate submitting pull requests to fix any problems encountered and leave feedback to help contribute to this work as it happening.
