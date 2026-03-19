@@ -1,0 +1,76 @@
+# yaml-language-server: $schema=../../capabilities/naftiko-schema.json
+---
+naftiko: "0.5"
+
+info:
+  label: "Discover APIs from AWS API Gateway"
+  description: "Queries the AWS API Gateway management API to inventory all REST APIs, resources, methods, models, and stages, extracting paths, operations, parameters, and schemas for reuse analysis."
+  tags:
+    - api-reusability
+    - discovery
+    - aws
+    - api-gateway
+  created: "2026-03-19"
+  modified: "2026-03-19"
+
+capability:
+  exposes:
+    - type: "mcp"
+      namespace: "api-reusability"
+      tools:
+        - name: "discover-aws-apis"
+          description: "Query AWS API Gateway to inventory all REST APIs, resources, methods, models, and stages for reuse analysis."
+          inputParameters:
+            - name: region
+              in: body
+              type: string
+              description: "AWS region to scan (e.g. us-east-1)"
+          steps:
+            - name: list-apis
+              type: call
+              call: "aws-apigw.list-rest-apis"
+
+            - name: list-resources
+              type: call
+              call: "aws-apigw.list-resources"
+              forEach: "{{list-apis.items}}"
+              with:
+                api_id: "{{item.id}}"
+                embed: "methods"
+
+            - name: list-models
+              type: call
+              call: "aws-apigw.list-models"
+              forEach: "{{list-apis.items}}"
+              with:
+                api_id: "{{item.id}}"
+
+            - name: list-stages
+              type: call
+              call: "aws-apigw.list-stages"
+              forEach: "{{list-apis.items}}"
+              with:
+                api_id: "{{item.id}}"
+
+            - name: build-inventory
+              type: transform
+              description: "Correlate APIs, resources, methods, models, and stages into a normalized inventory with paths, operations, parameters, schemas, and deployment info."
+              outputParameters:
+                - name: "apis"
+                  type: "array"
+                  description: "Normalized list of API entries with paths, methods, auth type, models, and stages"
+
+    - type: "http"
+      path: "/discover/aws"
+      method: "POST"
+      description: "REST endpoint to trigger AWS API Gateway discovery"
+
+    - type: "agent-skill"
+      namespace: "api-reusability"
+      skill:
+        name: "discover-aws-apis"
+        description: "Discover and inventory APIs from AWS API Gateway"
+
+  consumes:
+    - import: "shared/consumes-aws-apigateway.yml"
+      as: "aws-apigw"

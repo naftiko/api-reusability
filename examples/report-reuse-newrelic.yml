@@ -1,0 +1,67 @@
+# yaml-language-server: $schema=../../capabilities/naftiko-schema.json
+---
+naftiko: "0.5"
+
+info:
+  label: "Report API Reuse to New Relic"
+  description: "Takes a normalized API inventory from discovery capabilities and publishes reuse metrics to New Relic via deployment markers and custom events for dashboard visualization."
+  tags:
+    - api-reusability
+    - reporting
+    - newrelic
+    - observability
+  created: "2026-03-19"
+  modified: "2026-03-19"
+
+capability:
+  exposes:
+    - type: "mcp"
+      namespace: "api-reusability"
+      tools:
+        - name: "report-reuse-newrelic"
+          description: "Analyze an API inventory for reuse patterns and publish metrics to New Relic — deployment markers for scan events, custom attributes for path overlap, schema duplication, and parameter patterns."
+          inputParameters:
+            - name: inventory
+              in: body
+              type: object
+              description: "Normalized API inventory from a discovery capability"
+            - name: application_id
+              in: body
+              type: string
+              description: "New Relic APM application ID to associate metrics with"
+          steps:
+            - name: analyze-reuse
+              type: transform
+              description: "Compute reuse metrics: path overlap rate, duplicated schemas, shared parameters, common headers."
+              outputParameters:
+                - name: "metrics"
+                  type: "object"
+
+            - name: create-scan-marker
+              type: call
+              call: "newrelic.create-deployment-marker"
+              with:
+                application_id: "{{application_id}}"
+                revision: "reuse-scan-{{timestamp}}"
+                description: "API Reuse Scan — {{metrics.total_apis}} APIs, {{metrics.path_overlap_rate}}% path overlap, {{metrics.duplicate_schemas}} duplicate schemas"
+
+            - name: check-violations
+              type: call
+              call: "newrelic.list-violations"
+              with:
+                only_open: true
+
+    - type: "http"
+      path: "/report/newrelic"
+      method: "POST"
+      description: "REST endpoint to trigger New Relic reuse reporting"
+
+    - type: "agent-skill"
+      namespace: "api-reusability"
+      skill:
+        name: "report-reuse-newrelic"
+        description: "Publish API reuse metrics to New Relic"
+
+  consumes:
+    - import: "shared/consumes-newrelic.yml"
+      as: "newrelic"

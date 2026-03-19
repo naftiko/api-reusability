@@ -1,0 +1,79 @@
+# yaml-language-server: $schema=../../capabilities/naftiko-schema.json
+---
+naftiko: "0.5"
+
+info:
+  label: "Report API Reuse to Notion"
+  description: "Takes a normalized API inventory from discovery capabilities and creates or updates a Notion page with a structured reuse report — tables of path overlaps, schema duplication, parameter patterns, and recommendations."
+  tags:
+    - api-reusability
+    - reporting
+    - notion
+    - documentation
+  created: "2026-03-19"
+  modified: "2026-03-19"
+
+capability:
+  exposes:
+    - type: "mcp"
+      namespace: "api-reusability"
+      tools:
+        - name: "report-reuse-notion"
+          description: "Analyze an API inventory for reuse patterns and create a structured Notion page with tables showing path overlaps, duplicated schemas, shared parameters, and consolidation recommendations."
+          inputParameters:
+            - name: inventory
+              in: body
+              type: object
+              description: "Normalized API inventory from a discovery capability"
+            - name: database_id
+              in: body
+              type: string
+              description: "Notion database ID where the report page will be created"
+            - name: report_title
+              in: body
+              type: string
+              description: "Title for the Notion report page"
+          steps:
+            - name: analyze-reuse
+              type: transform
+              description: "Compute reuse metrics: path overlap, schema duplication, parameter commonality, and header reuse. Format as Notion block children (headings, tables, callouts)."
+              outputParameters:
+                - name: "blocks"
+                  type: "array"
+                - name: "properties"
+                  type: "object"
+
+            - name: check-existing
+              type: call
+              call: "notion.query-database"
+              with:
+                database_id: "{{database_id}}"
+                filter:
+                  property: "Name"
+                  title:
+                    equals: "{{report_title}}"
+                page_size: 1
+
+            - name: update-or-create
+              type: call
+              call: "notion.create-page"
+              with:
+                parent:
+                  database_id: "{{database_id}}"
+                properties: "{{analyze-reuse.properties}}"
+                children: "{{analyze-reuse.blocks}}"
+
+    - type: "http"
+      path: "/report/notion"
+      method: "POST"
+      description: "REST endpoint to trigger Notion reuse reporting"
+
+    - type: "agent-skill"
+      namespace: "api-reusability"
+      skill:
+        name: "report-reuse-notion"
+        description: "Publish API reuse report to Notion"
+
+  consumes:
+    - import: "shared/consumes-notion.yml"
+      as: "notion"

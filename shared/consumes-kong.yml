@@ -1,0 +1,149 @@
+# yaml-language-server: $schema=../../capabilities/naftiko-schema.json
+---
+naftiko: "0.5"
+
+info:
+  label: "Kong Admin API"
+  description: "Shared consumes adapter for the Kong Gateway Admin API. Covers service, route, and plugin discovery — the operations needed to inventory APIs managed by Kong."
+  tags:
+    - kong
+    - shared
+    - api-gateway
+  created: "2026-03-19"
+  modified: "2026-03-19"
+
+consumes:
+  - namespace: "kong"
+    type: "http"
+    baseUri: "{{kong_admin_url}}"
+    authentication:
+      type: "apikey"
+      key: "Kong-Admin-Token"
+      value: "{{kong_admin_token}}"
+      placement: "header"
+    inputParameters:
+      - name: "kong_admin_url"
+        in: "environment"
+      - name: "kong_admin_token"
+        in: "environment"
+      - name: "Content-Type"
+        in: "header"
+        value: "application/json"
+    resources:
+      - name: "services"
+        label: "Services"
+        description: "List and retrieve Kong services (upstream API targets)"
+        path: "/services"
+        operations:
+          - name: "list-services"
+            method: "GET"
+            label: "List Services"
+            description: "List all services registered in Kong, with optional pagination"
+            inputParameters:
+              - name: "offset"
+                in: "query"
+              - name: "size"
+                in: "query"
+            outputParameters:
+              - name: "data"
+                type: "array"
+                value: "$.data"
+              - name: "next"
+                type: "string"
+                value: "$.next"
+
+      - name: "service-by-id"
+        label: "Service by ID"
+        description: "Retrieve a specific Kong service"
+        path: "/services/{{service_id}}"
+        inputParameters:
+          - name: "service_id"
+            in: "path"
+        operations:
+          - name: "get-service"
+            method: "GET"
+            label: "Get Service"
+            description: "Retrieve a specific service by ID or name, including host, port, path, and protocol"
+            outputParameters:
+              - name: "id"
+                type: "string"
+                value: "$.id"
+              - name: "name"
+                type: "string"
+                value: "$.name"
+              - name: "host"
+                type: "string"
+                value: "$.host"
+              - name: "port"
+                type: "number"
+                value: "$.port"
+              - name: "path"
+                type: "string"
+                value: "$.path"
+              - name: "protocol"
+                type: "string"
+                value: "$.protocol"
+
+      - name: "routes"
+        label: "Routes"
+        description: "List and retrieve Kong routes (public-facing API paths)"
+        path: "/routes"
+        operations:
+          - name: "list-routes"
+            method: "GET"
+            label: "List Routes"
+            description: "List all routes registered in Kong with their paths, methods, and headers"
+            inputParameters:
+              - name: "offset"
+                in: "query"
+              - name: "size"
+                in: "query"
+            outputParameters:
+              - name: "data"
+                type: "array"
+                value: "$.data"
+              - name: "next"
+                type: "string"
+                value: "$.next"
+
+      - name: "service-routes"
+        label: "Service Routes"
+        description: "List routes associated with a specific service"
+        path: "/services/{{service_id}}/routes"
+        inputParameters:
+          - name: "service_id"
+            in: "path"
+        operations:
+          - name: "list-service-routes"
+            method: "GET"
+            label: "List Service Routes"
+            description: "List all routes bound to a specific Kong service"
+            inputParameters:
+              - name: "offset"
+                in: "query"
+            outputParameters:
+              - name: "data"
+                type: "array"
+                value: "$.data"
+
+      - name: "plugins"
+        label: "Plugins"
+        description: "List plugins (authentication, rate-limiting, transformations) applied to services and routes"
+        path: "/plugins"
+        operations:
+          - name: "list-plugins"
+            method: "GET"
+            label: "List Plugins"
+            description: "List all plugins with their configuration, scope, and enabled status"
+            inputParameters:
+              - name: "offset"
+                in: "query"
+              - name: "size"
+                in: "query"
+            outputParameters:
+              - name: "data"
+                type: "array"
+                value: "$.data"
+              - name: "next"
+                type: "string"
+                value: "$.next"

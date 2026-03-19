@@ -1,0 +1,68 @@
+# yaml-language-server: $schema=../../capabilities/naftiko-schema.json
+---
+naftiko: "0.5"
+
+info:
+  label: "Report API Reuse to Splunk"
+  description: "Takes a normalized API inventory from discovery capabilities and publishes reuse analysis to Splunk via search jobs and saved searches for dashboard visualization."
+  tags:
+    - api-reusability
+    - reporting
+    - splunk
+    - observability
+  created: "2026-03-19"
+  modified: "2026-03-19"
+
+capability:
+  exposes:
+    - type: "mcp"
+      namespace: "api-reusability"
+      tools:
+        - name: "report-reuse-splunk"
+          description: "Analyze an API inventory for reuse patterns and publish structured events to Splunk — path overlap, schema duplication, parameter patterns, and header reuse indexed for dashboard queries."
+          inputParameters:
+            - name: inventory
+              in: body
+              type: object
+              description: "Normalized API inventory from a discovery capability"
+            - name: index
+              in: body
+              type: string
+              description: "Splunk index to write reuse events to (default: api_reusability)"
+          steps:
+            - name: analyze-reuse
+              type: transform
+              description: "Compute reuse metrics and format as Splunk-ingestible events with source=naftiko, sourcetype=api_reuse_scan."
+              outputParameters:
+                - name: "events"
+                  type: "array"
+
+            - name: create-search
+              type: call
+              call: "splunk.create-search"
+              with:
+                search: "search index={{index}} sourcetype=api_reuse_scan | stats count by path_pattern, reuse_count | sort -reuse_count"
+                earliest_time: "-24h"
+                latest_time: "now"
+
+            - name: get-results
+              type: call
+              call: "splunk.get-results"
+              with:
+                sid: "{{create-search.sid}}"
+                count: 100
+
+    - type: "http"
+      path: "/report/splunk"
+      method: "POST"
+      description: "REST endpoint to trigger Splunk reuse reporting"
+
+    - type: "agent-skill"
+      namespace: "api-reusability"
+      skill:
+        name: "report-reuse-splunk"
+        description: "Publish API reuse metrics to Splunk"
+
+  consumes:
+    - import: "shared/consumes-splunk.yml"
+      as: "splunk"

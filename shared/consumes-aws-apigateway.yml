@@ -1,0 +1,172 @@
+# yaml-language-server: $schema=../../capabilities/naftiko-schema.json
+---
+naftiko: "0.5"
+
+info:
+  label: "AWS API Gateway REST API"
+  description: "Shared consumes adapter for the AWS API Gateway management API. Covers REST API, resource, method, and stage discovery — the operations needed to inventory APIs managed by AWS API Gateway."
+  tags:
+    - aws
+    - api-gateway
+    - shared
+  created: "2026-03-19"
+  modified: "2026-03-19"
+
+consumes:
+  - namespace: "aws-apigw"
+    type: "http"
+    baseUri: "https://apigateway.{{aws_region}}.amazonaws.com"
+    authentication:
+      type: "awsSigV4"
+      region: "{{aws_region}}"
+      service: "apigateway"
+    inputParameters:
+      - name: "aws_region"
+        in: "environment"
+      - name: "AWS_ACCESS_KEY_ID"
+        in: "environment"
+      - name: "AWS_SECRET_ACCESS_KEY"
+        in: "environment"
+      - name: "Content-Type"
+        in: "header"
+        value: "application/json"
+    resources:
+      - name: "rest-apis"
+        label: "REST APIs"
+        description: "List all REST APIs in the account"
+        path: "/restapis"
+        operations:
+          - name: "list-rest-apis"
+            method: "GET"
+            label: "List REST APIs"
+            description: "List all REST APIs with their names, descriptions, and endpoint configurations"
+            inputParameters:
+              - name: "limit"
+                in: "query"
+              - name: "position"
+                in: "query"
+            outputParameters:
+              - name: "items"
+                type: "array"
+                value: "$.items"
+              - name: "position"
+                type: "string"
+                value: "$.position"
+
+      - name: "resources"
+        label: "API Resources"
+        description: "List all resources (paths) for a specific REST API"
+        path: "/restapis/{{api_id}}/resources"
+        inputParameters:
+          - name: "api_id"
+            in: "path"
+        operations:
+          - name: "list-resources"
+            method: "GET"
+            label: "List Resources"
+            description: "List all resources (paths) for a REST API, including their methods"
+            inputParameters:
+              - name: "limit"
+                in: "query"
+              - name: "position"
+                in: "query"
+              - name: "embed"
+                in: "query"
+            outputParameters:
+              - name: "items"
+                type: "array"
+                value: "$.items"
+
+      - name: "method"
+        label: "Resource Method"
+        description: "Retrieve details of a specific HTTP method on a resource"
+        path: "/restapis/{{api_id}}/resources/{{resource_id}}/methods/{{http_method}}"
+        inputParameters:
+          - name: "api_id"
+            in: "path"
+          - name: "resource_id"
+            in: "path"
+          - name: "http_method"
+            in: "path"
+        operations:
+          - name: "get-method"
+            method: "GET"
+            label: "Get Method"
+            description: "Retrieve method details including authorization, request parameters, and request models"
+            outputParameters:
+              - name: "httpMethod"
+                type: "string"
+                value: "$.httpMethod"
+              - name: "authorizationType"
+                type: "string"
+                value: "$.authorizationType"
+              - name: "requestParameters"
+                type: "object"
+                value: "$.requestParameters"
+              - name: "requestModels"
+                type: "object"
+                value: "$.requestModels"
+              - name: "methodResponses"
+                type: "object"
+                value: "$.methodResponses"
+
+      - name: "stages"
+        label: "Stages"
+        description: "List deployment stages for a REST API"
+        path: "/restapis/{{api_id}}/stages"
+        inputParameters:
+          - name: "api_id"
+            in: "path"
+        operations:
+          - name: "list-stages"
+            method: "GET"
+            label: "List Stages"
+            description: "List all deployment stages for a REST API with their invoke URLs and settings"
+            outputParameters:
+              - name: "items"
+                type: "array"
+                value: "$.item"
+
+      - name: "models"
+        label: "Models"
+        description: "List API models (request/response schemas)"
+        path: "/restapis/{{api_id}}/models"
+        inputParameters:
+          - name: "api_id"
+            in: "path"
+        operations:
+          - name: "list-models"
+            method: "GET"
+            label: "List Models"
+            description: "List all models (JSON Schema definitions) for a REST API"
+            inputParameters:
+              - name: "limit"
+                in: "query"
+            outputParameters:
+              - name: "items"
+                type: "array"
+                value: "$.items"
+
+      - name: "export"
+        label: "API Export"
+        description: "Export a REST API as OpenAPI / Swagger"
+        path: "/restapis/{{api_id}}/stages/{{stage_name}}/exports/{{export_type}}"
+        inputParameters:
+          - name: "api_id"
+            in: "path"
+          - name: "stage_name"
+            in: "path"
+          - name: "export_type"
+            in: "path"
+        operations:
+          - name: "export-api"
+            method: "GET"
+            label: "Export API"
+            description: "Export the REST API definition as OpenAPI 3.0 (oas30) or Swagger (swagger) with optional extensions"
+            inputParameters:
+              - name: "Accept"
+                in: "header"
+            outputParameters:
+              - name: "body"
+                type: "string"
+                value: "$"

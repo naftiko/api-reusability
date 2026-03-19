@@ -1,0 +1,69 @@
+# yaml-language-server: $schema=../../capabilities/naftiko-schema.json
+---
+naftiko: "0.5"
+
+info:
+  label: "Discover APIs from Kong API Gateway"
+  description: "Queries the Kong Admin API to inventory all services, routes, and plugins, extracting paths, methods, headers, and authentication schemes for reuse analysis."
+  tags:
+    - api-reusability
+    - discovery
+    - kong
+    - api-gateway
+  created: "2026-03-19"
+  modified: "2026-03-19"
+
+capability:
+  exposes:
+    - type: "mcp"
+      namespace: "api-reusability"
+      tools:
+        - name: "discover-kong-apis"
+          description: "Query Kong Admin API to inventory all services, routes, plugins, and produce a normalized API inventory for reuse analysis."
+          inputParameters:
+            - name: kong_instance
+              in: body
+              type: string
+              description: "Identifier for the Kong instance being scanned"
+          steps:
+            - name: list-services
+              type: call
+              call: "kong.list-services"
+
+            - name: list-routes
+              type: call
+              call: "kong.list-routes"
+
+            - name: list-plugins
+              type: call
+              call: "kong.list-plugins"
+
+            - name: enrich-services
+              type: call
+              call: "kong.list-service-routes"
+              forEach: "{{list-services.data}}"
+              with:
+                service_id: "{{item.id}}"
+
+            - name: build-inventory
+              type: transform
+              description: "Correlate services, routes, and plugins into a normalized API inventory with paths, methods, headers, and auth schemes."
+              outputParameters:
+                - name: "apis"
+                  type: "array"
+                  description: "Normalized list of API entries with service, route paths, methods, plugins, and auth type"
+
+    - type: "http"
+      path: "/discover/kong"
+      method: "POST"
+      description: "REST endpoint to trigger Kong API discovery"
+
+    - type: "agent-skill"
+      namespace: "api-reusability"
+      skill:
+        name: "discover-kong-apis"
+        description: "Discover and inventory APIs from Kong API Gateway"
+
+  consumes:
+    - import: "shared/consumes-kong.yml"
+      as: "kong"

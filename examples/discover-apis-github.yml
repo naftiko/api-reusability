@@ -1,0 +1,74 @@
+# yaml-language-server: $schema=../../capabilities/naftiko-schema.json
+---
+naftiko: "0.5"
+
+info:
+  label: "Discover APIs from GitHub Repositories"
+  description: "Scans GitHub repositories for OpenAPI/Swagger specifications, extracts API paths, operations, parameters, headers, and schema properties, and produces a normalized API inventory for reuse analysis."
+  tags:
+    - api-reusability
+    - discovery
+    - github
+    - openapi
+  created: "2026-03-19"
+  modified: "2026-03-19"
+
+capability:
+  exposes:
+    - type: "mcp"
+      namespace: "api-reusability"
+      tools:
+        - name: "discover-github-apis"
+          description: "Search GitHub repositories for OpenAPI specs and extract a normalized inventory of paths, operations, parameters, headers, and schemas."
+          inputParameters:
+            - name: org
+              in: body
+              type: string
+              description: "GitHub organization to scan"
+            - name: topic_filter
+              in: body
+              type: string
+              description: "Optional topic filter to narrow repo search (e.g. 'openapi', 'api')"
+            - name: file_pattern
+              in: body
+              type: string
+              description: "Glob pattern for spec files (default: 'openapi.yaml')"
+          steps:
+            - name: search-repos
+              type: call
+              call: "github.search-code"
+              with:
+                q: "org:{{org}} filename:openapi.yaml OR filename:swagger.json OR filename:openapi.json"
+                per_page: 100
+
+            - name: fetch-specs
+              type: call
+              call: "github.get-file-contents"
+              forEach: "{{search-repos.items}}"
+              with:
+                owner: "{{item.repository.owner.login}}"
+                repo: "{{item.repository.name}}"
+                file_path: "{{item.path}}"
+
+            - name: extract-inventory
+              type: transform
+              description: "Parse each spec and extract paths, operations, parameters, headers, and schema references into a normalized inventory."
+              outputParameters:
+                - name: "apis"
+                  type: "array"
+                  description: "Normalized list of API entries with repo, path, method, parameters, headers, and schema refs"
+
+    - type: "http"
+      path: "/discover/github"
+      method: "POST"
+      description: "REST endpoint to trigger GitHub API discovery"
+
+    - type: "agent-skill"
+      namespace: "api-reusability"
+      skill:
+        name: "discover-github-apis"
+        description: "Discover and inventory APIs from GitHub repositories"
+
+  consumes:
+    - import: "shared/consumes-github.yml"
+      as: "github"

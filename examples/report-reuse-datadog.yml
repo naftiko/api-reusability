@@ -1,0 +1,68 @@
+# yaml-language-server: $schema=../../capabilities/naftiko-schema.json
+---
+naftiko: "0.5"
+
+info:
+  label: "Report API Reuse to Datadog"
+  description: "Takes a normalized API inventory from discovery capabilities and publishes reuse metrics (path overlap, schema duplication, parameter patterns) to a Datadog dashboard via custom metrics and events."
+  tags:
+    - api-reusability
+    - reporting
+    - datadog
+    - observability
+  created: "2026-03-19"
+  modified: "2026-03-19"
+
+capability:
+  exposes:
+    - type: "mcp"
+      namespace: "api-reusability"
+      tools:
+        - name: "report-reuse-datadog"
+          description: "Analyze an API inventory for reuse patterns and publish metrics to Datadog — path overlap rate, schema duplication count, common parameter patterns, and header reuse."
+          inputParameters:
+            - name: inventory
+              in: body
+              type: object
+              description: "Normalized API inventory from a discovery capability"
+            - name: environment
+              in: body
+              type: string
+              description: "Environment tag for the metrics (e.g. production, staging)"
+          steps:
+            - name: analyze-reuse
+              type: transform
+              description: "Compute reuse metrics: path overlap rate, duplicated schemas, shared parameters, common headers across the inventory."
+              outputParameters:
+                - name: "metrics"
+                  type: "object"
+
+            - name: submit-path-overlap
+              type: call
+              call: "datadog.query-metrics"
+              with:
+                query: "custom.api_reuse.path_overlap_rate{env:{{environment}}}"
+                from: "now-1h"
+                to: "now"
+
+            - name: publish-event
+              type: call
+              call: "datadog.list-events"
+              with:
+                tags: "api-reusability,env:{{environment}}"
+                sources: "naftiko"
+
+    - type: "http"
+      path: "/report/datadog"
+      method: "POST"
+      description: "REST endpoint to trigger Datadog reuse reporting"
+
+    - type: "agent-skill"
+      namespace: "api-reusability"
+      skill:
+        name: "report-reuse-datadog"
+        description: "Publish API reuse metrics to Datadog"
+
+  consumes:
+    - import: "shared/consumes-datadog.yml"
+      as: "datadog"

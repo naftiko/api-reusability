@@ -1,0 +1,101 @@
+# yaml-language-server: $schema=../../capabilities/naftiko-schema.json
+---
+naftiko: "0.5"
+
+info:
+  label: "Generate Naftiko Adapters from API Inventory"
+  description: "Takes a normalized API inventory from discovery capabilities and generates Naftiko v0.5 consumes adapter YAML files (HTTP, MCP, and Agent Skills) that can be imported by other capabilities. Writes generated adapters to a GitHub repository."
+  tags:
+    - api-reusability
+    - adapters
+    - generation
+    - naftiko
+  created: "2026-03-19"
+  modified: "2026-03-19"
+
+capability:
+  exposes:
+    - type: "mcp"
+      namespace: "api-reusability"
+      tools:
+        - name: "generate-naftiko-adapters"
+          description: "Generate Naftiko v0.5 consumes adapter YAML files from an API inventory. Produces HTTP adapters with authentication, base URIs, resources, and operations. Optionally wraps each adapter in MCP tool and Agent Skill exposes blocks."
+          inputParameters:
+            - name: inventory
+              in: body
+              type: object
+              description: "Normalized API inventory from a discovery capability"
+            - name: output_repo
+              in: body
+              type: string
+              description: "GitHub repo (owner/repo) to write generated adapters to"
+            - name: output_branch
+              in: body
+              type: string
+              description: "Branch to push generated files to (default: main)"
+            - name: adapter_types
+              in: body
+              type: array
+              description: "Types of adapters to generate: http, mcp, agent-skill (default: all)"
+          steps:
+            - name: group-by-service
+              type: transform
+              description: "Group inventory entries by service/host to produce one consumes adapter per service."
+              outputParameters:
+                - name: "services"
+                  type: "array"
+
+            - name: generate-http-adapters
+              type: transform
+              forEach: "{{services}}"
+              description: "For each service, generate a Naftiko v0.5 consumes YAML with namespace, baseUri, authentication, and resources/operations derived from the inventory."
+              outputParameters:
+                - name: "adapters"
+                  type: "array"
+
+            - name: generate-capability-wrappers
+              type: transform
+              forEach: "{{adapters}}"
+              description: "For each HTTP adapter, generate an optional capability YAML that imports the consumes adapter and exposes it as MCP tools and/or Agent Skills."
+              outputParameters:
+                - name: "capabilities"
+                  type: "array"
+
+            - name: push-adapters
+              type: call
+              call: "github.push-file"
+              forEach: "{{adapters}}"
+              with:
+                owner: "{{output_repo_owner}}"
+                repo: "{{output_repo_name}}"
+                file_path: "shared/consumes-{{item.namespace}}.yml"
+                content: "{{item.yaml_base64}}"
+                commit_message: "feat: generate consumes adapter for {{item.namespace}} from API reuse scan"
+                branch: "{{output_branch}}"
+
+            - name: push-capabilities
+              type: call
+              call: "github.push-file"
+              forEach: "{{capabilities}}"
+              with:
+                owner: "{{output_repo_owner}}"
+                repo: "{{output_repo_name}}"
+                file_path: "examples/{{item.filename}}"
+                content: "{{item.yaml_base64}}"
+                commit_message: "feat: generate {{item.expose_type}} capability for {{item.namespace}} from API reuse scan"
+                branch: "{{output_branch}}"
+
+    - type: "http"
+      path: "/generate/adapters"
+      method: "POST"
+      description: "REST endpoint to trigger Naftiko adapter generation"
+
+    - type: "agent-skill"
+      namespace: "api-reusability"
+      skill:
+        name: "generate-naftiko-adapters"
+        description: "Generate Naftiko HTTP, MCP, and Agent Skill adapters from discovered API inventory"
+
+  consumes:
+    - import: "shared/consumes-github.yml"
+      as: "github"
