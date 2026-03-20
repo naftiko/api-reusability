@@ -1,0 +1,80 @@
+# yaml-language-server: $schema=../../capabilities/naftiko-schema.json
+---
+naftiko: "0.5"
+
+info:
+  label: "Postman API v10"
+  description: "Shared consumes adapter for the Postman API v10. Covers collection and environment discovery — the operations needed to inventory APIs documented in Postman collections."
+  tags:
+    - postman
+    - shared
+    - api-client
+  created: "2026-03-19"
+  modified: "2026-03-19"
+
+consumes:
+  - namespace: "postman"
+    type: "http"
+    baseUri: "https://api.getpostman.com"
+    authentication:
+      type: "apikey"
+      key: "X-Api-Key"
+      value: "{{postman_api_key}}"
+      placement: "header"
+    inputParameters:
+      - name: "postman_api_key"
+        in: "environment"
+      - name: "Content-Type"
+        in: "header"
+        value: "application/json"
+    resources:
+      - name: "collections"
+        label: "Collections"
+        description: "List and retrieve Postman collections (organized groups of API requests)"
+        path: "/collections"
+        operations:
+          - name: "list-collections"
+            method: "GET"
+            label: "List Collections"
+            description: "List all collections accessible to the API key, with optional workspace filter"
+            inputParameters:
+              - name: "workspace"
+                in: "query"
+            outputParameters:
+              - name: "collections"
+                type: "array"
+                value: "$.collections"
+
+      - name: "collection-by-id"
+        label: "Collection by ID"
+        description: "Retrieve a complete collection with all requests, folders, and auth"
+        path: "/collections/{{collection_id}}"
+        inputParameters:
+          - name: "collection_id"
+            in: "path"
+        operations:
+          - name: "get-collection"
+            method: "GET"
+            label: "Get Collection"
+            description: "Retrieve a full collection including items, requests, headers, body, auth, and variables"
+            outputParameters:
+              - name: "collection"
+                type: "object"
+                value: "$.collection"
+
+      - name: "environments"
+        label: "Environments"
+        description: "List and retrieve Postman environments (sets of variables)"
+        path: "/environments"
+        operations:
+          - name: "list-environments"
+            method: "GET"
+            label: "List Environments"
+            description: "List all environments accessible to the API key, with optional workspace filter"
+            inputParameters:
+              - name: "workspace"
+                in: "query"
+            outputParameters:
+              - name: "environments"
+                type: "array"
+                value: "$.environments"

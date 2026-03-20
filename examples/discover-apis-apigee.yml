@@ -1,0 +1,81 @@
+# yaml-language-server: $schema=../../capabilities/naftiko-schema.json
+---
+naftiko: "0.5"
+
+info:
+  label: "Discover APIs from Google Apigee"
+  description: "Queries the Apigee Management API to inventory all API proxies, products, environments, and deployed revisions, extracting paths, policies, and traffic configuration for reuse analysis."
+  tags:
+    - api-reusability
+    - discovery
+    - apigee
+    - api-gateway
+  created: "2026-03-19"
+  modified: "2026-03-19"
+
+capability:
+  exposes:
+    - type: "mcp"
+      namespace: "api-reusability"
+      tools:
+        - name: "discover-apigee-apis"
+          description: "Query Apigee Management API to inventory all API proxies, products, environments, and deployed revisions for reuse analysis."
+          inputParameters:
+            - name: organization
+              in: body
+              type: string
+              description: "Apigee organization name to scan"
+            - name: environment
+              in: body
+              type: string
+              description: "Optional environment filter (e.g. 'prod', 'test')"
+          steps:
+            - name: list-proxies
+              type: call
+              call: "apigee.list-api-proxies"
+              with:
+                organization: "{{organization}}"
+
+            - name: get-proxy-details
+              type: call
+              call: "apigee.get-api-proxy"
+              forEach: "{{list-proxies.proxies}}"
+              with:
+                organization: "{{organization}}"
+                api_name: "{{item.name}}"
+
+            - name: list-products
+              type: call
+              call: "apigee.list-api-products"
+              with:
+                organization: "{{organization}}"
+
+            - name: list-deployments
+              type: call
+              call: "apigee.list-deployments"
+              with:
+                organization: "{{organization}}"
+                environment: "{{environment}}"
+
+            - name: build-inventory
+              type: transform
+              description: "Correlate proxies, products, and deployments into a normalized API inventory with paths, policies, products, and deployment status."
+              outputParameters:
+                - name: "apis"
+                  type: "array"
+                  description: "Normalized list of API entries with proxy name, base path, policies, products, and deployment info"
+
+    - type: "http"
+      path: "/discover/apigee"
+      method: "POST"
+      description: "REST endpoint to trigger Apigee API discovery"
+
+    - type: "agent-skill"
+      namespace: "api-reusability"
+      skill:
+        name: "discover-apigee-apis"
+        description: "Discover and inventory APIs from Google Apigee"
+
+  consumes:
+    - import: "shared/consumes-apigee.yml"
+      as: "apigee"

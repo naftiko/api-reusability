@@ -1,0 +1,97 @@
+# yaml-language-server: $schema=../../capabilities/naftiko-schema.json
+---
+naftiko: "0.5"
+
+info:
+  label: "Google Apigee Management API"
+  description: "Shared consumes adapter for the Apigee Management API. Covers API proxy, product, and deployment discovery — the operations needed to inventory APIs managed by Apigee."
+  tags:
+    - apigee
+    - shared
+    - api-gateway
+  created: "2026-03-19"
+  modified: "2026-03-19"
+
+consumes:
+  - namespace: "apigee"
+    type: "http"
+    baseUri: "https://apigee.googleapis.com/v1/organizations/{{organization}}"
+    authentication:
+      type: "oauth2"
+      token: "{{apigee_access_token}}"
+    inputParameters:
+      - name: "organization"
+        in: "environment"
+      - name: "apigee_access_token"
+        in: "environment"
+      - name: "Content-Type"
+        in: "header"
+        value: "application/json"
+    resources:
+      - name: "api-proxies"
+        label: "API Proxies"
+        description: "List and retrieve API proxies (the deployable API bundles)"
+        path: "/apis"
+        operations:
+          - name: "list-api-proxies"
+            method: "GET"
+            label: "List API Proxies"
+            description: "List all API proxies in the organization"
+            outputParameters:
+              - name: "proxies"
+                type: "array"
+                value: "$.proxies"
+
+      - name: "api-proxy-by-name"
+        label: "API Proxy by Name"
+        description: "Retrieve a specific API proxy with revision history"
+        path: "/apis/{{api_name}}"
+        inputParameters:
+          - name: "api_name"
+            in: "path"
+        operations:
+          - name: "get-api-proxy"
+            method: "GET"
+            label: "Get API Proxy"
+            description: "Retrieve a specific API proxy including name, revisions, and metadata"
+            outputParameters:
+              - name: "name"
+                type: "string"
+                value: "$.name"
+              - name: "revision"
+                type: "array"
+                value: "$.revision"
+              - name: "metaData"
+                type: "object"
+                value: "$.metaData"
+
+      - name: "api-products"
+        label: "API Products"
+        description: "List API products (bundles of proxies with access controls)"
+        path: "/apiproducts"
+        operations:
+          - name: "list-api-products"
+            method: "GET"
+            label: "List API Products"
+            description: "List all API products with their proxy associations and quota settings"
+            outputParameters:
+              - name: "apiProduct"
+                type: "array"
+                value: "$.apiProduct"
+
+      - name: "deployments"
+        label: "Deployments"
+        description: "List deployments across environments"
+        path: "/environments/{{environment}}/deployments"
+        inputParameters:
+          - name: "environment"
+            in: "path"
+        operations:
+          - name: "list-deployments"
+            method: "GET"
+            label: "List Deployments"
+            description: "List all deployed API proxy revisions in the specified environment"
+            outputParameters:
+              - name: "deployments"
+                type: "array"
+                value: "$.deployments"

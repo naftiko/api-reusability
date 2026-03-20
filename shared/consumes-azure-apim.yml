@@ -1,0 +1,97 @@
+# yaml-language-server: $schema=../../capabilities/naftiko-schema.json
+---
+naftiko: "0.5"
+
+info:
+  label: "Azure API Management REST API"
+  description: "Shared consumes adapter for the Azure API Management REST API. Covers API, operation, and product discovery — the operations needed to inventory APIs managed by Azure APIM."
+  tags:
+    - azure
+    - shared
+    - api-gateway
+  created: "2026-03-19"
+  modified: "2026-03-19"
+
+consumes:
+  - namespace: "azure-apim"
+    type: "http"
+    baseUri: "https://management.azure.com/subscriptions/{{subscription_id}}/resourceGroups/{{resource_group}}/providers/Microsoft.ApiManagement/service/{{service_name}}"
+    authentication:
+      type: "bearer"
+      token: "{{azure_access_token}}"
+    inputParameters:
+      - name: "subscription_id"
+        in: "environment"
+      - name: "resource_group"
+        in: "environment"
+      - name: "service_name"
+        in: "environment"
+      - name: "azure_access_token"
+        in: "environment"
+      - name: "Content-Type"
+        in: "header"
+        value: "application/json"
+    resources:
+      - name: "apis"
+        label: "APIs"
+        description: "List and retrieve APIs registered in the APIM instance"
+        path: "/apis"
+        operations:
+          - name: "list-apis"
+            method: "GET"
+            label: "List APIs"
+            description: "List all APIs in the APIM service instance"
+            inputParameters:
+              - name: "api-version"
+                in: "query"
+                value: "2022-08-01"
+              - name: "$top"
+                in: "query"
+              - name: "$skip"
+                in: "query"
+            outputParameters:
+              - name: "value"
+                type: "array"
+                value: "$.value"
+              - name: "nextLink"
+                type: "string"
+                value: "$.nextLink"
+
+      - name: "api-operations"
+        label: "API Operations"
+        description: "List operations for a specific API"
+        path: "/apis/{{api_id}}/operations"
+        inputParameters:
+          - name: "api_id"
+            in: "path"
+        operations:
+          - name: "list-operations"
+            method: "GET"
+            label: "List Operations"
+            description: "List all operations for a specific API including methods, URL templates, and descriptions"
+            inputParameters:
+              - name: "api-version"
+                in: "query"
+                value: "2022-08-01"
+            outputParameters:
+              - name: "value"
+                type: "array"
+                value: "$.value"
+
+      - name: "products"
+        label: "Products"
+        description: "List products (API groupings with subscription and access control)"
+        path: "/products"
+        operations:
+          - name: "list-products"
+            method: "GET"
+            label: "List Products"
+            description: "List all products with their API associations, subscription requirements, and approval settings"
+            inputParameters:
+              - name: "api-version"
+                in: "query"
+                value: "2022-08-01"
+            outputParameters:
+              - name: "value"
+                type: "array"
+                value: "$.value"

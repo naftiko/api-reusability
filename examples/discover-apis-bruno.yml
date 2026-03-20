@@ -1,0 +1,70 @@
+# yaml-language-server: $schema=../../capabilities/naftiko-schema.json
+---
+naftiko: "0.5"
+
+info:
+  label: "Discover APIs from Bruno Collections"
+  description: "Scans GitHub repositories for Bruno collection files (.bru), extracting request definitions, environments, and variables for reuse analysis. Bruno collections are Git-native API client artifacts."
+  tags:
+    - api-reusability
+    - discovery
+    - bruno
+    - api-client
+  created: "2026-03-19"
+  modified: "2026-03-19"
+
+capability:
+  exposes:
+    - type: "mcp"
+      namespace: "api-reusability"
+      tools:
+        - name: "discover-bruno-apis"
+          description: "Search GitHub repositories for Bruno collection files and extract request definitions, environments, and variables for reuse analysis."
+          inputParameters:
+            - name: org
+              in: body
+              type: string
+              description: "GitHub organization to scan for Bruno collections"
+            - name: topic_filter
+              in: body
+              type: string
+              description: "Optional topic filter to narrow repo search (e.g. 'bruno', 'api-client')"
+          steps:
+            - name: search-collections
+              type: call
+              call: "github.search-code"
+              with:
+                q: "org:{{org}} filename:bruno.json OR extension:bru"
+                per_page: 100
+
+            - name: fetch-collection-files
+              type: call
+              call: "github.get-file-contents"
+              forEach: "{{search-collections.items}}"
+              with:
+                owner: "{{item.repository.owner.login}}"
+                repo: "{{item.repository.name}}"
+                file_path: "{{item.path}}"
+
+            - name: build-inventory
+              type: transform
+              description: "Parse Bruno collection files into a normalized API inventory with paths, methods, headers, variables, and environment configurations."
+              outputParameters:
+                - name: "apis"
+                  type: "array"
+                  description: "Normalized list of API entries with repo, request URL, method, headers, variables, and environment refs"
+
+    - type: "http"
+      path: "/discover/bruno"
+      method: "POST"
+      description: "REST endpoint to trigger Bruno collection discovery"
+
+    - type: "agent-skill"
+      namespace: "api-reusability"
+      skill:
+        name: "discover-bruno-apis"
+        description: "Discover and inventory APIs from Bruno Collections"
+
+  consumes:
+    - import: "shared/consumes-github.yml"
+      as: "github"

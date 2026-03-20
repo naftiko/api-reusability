@@ -1,0 +1,84 @@
+# yaml-language-server: $schema=../../capabilities/naftiko-schema.json
+---
+naftiko: "0.5"
+
+info:
+  label: "Discover APIs from Azure API Management"
+  description: "Queries the Azure API Management REST API to inventory all APIs, operations, products, and subscriptions, extracting paths, methods, policies, and schema definitions for reuse analysis."
+  tags:
+    - api-reusability
+    - discovery
+    - azure
+    - api-gateway
+  created: "2026-03-19"
+  modified: "2026-03-19"
+
+capability:
+  exposes:
+    - type: "mcp"
+      namespace: "api-reusability"
+      tools:
+        - name: "discover-azure-apim-apis"
+          description: "Query Azure API Management to inventory all APIs, operations, products, and subscriptions for reuse analysis."
+          inputParameters:
+            - name: service_name
+              in: body
+              type: string
+              description: "Azure APIM service instance name"
+            - name: resource_group
+              in: body
+              type: string
+              description: "Azure resource group containing the APIM instance"
+            - name: subscription_id
+              in: body
+              type: string
+              description: "Azure subscription ID"
+          steps:
+            - name: list-apis
+              type: call
+              call: "azure-apim.list-apis"
+              with:
+                service_name: "{{service_name}}"
+                resource_group: "{{resource_group}}"
+                subscription_id: "{{subscription_id}}"
+
+            - name: list-operations
+              type: call
+              call: "azure-apim.list-operations"
+              forEach: "{{list-apis.value}}"
+              with:
+                service_name: "{{service_name}}"
+                resource_group: "{{resource_group}}"
+                subscription_id: "{{subscription_id}}"
+                api_id: "{{item.name}}"
+
+            - name: list-products
+              type: call
+              call: "azure-apim.list-products"
+              with:
+                service_name: "{{service_name}}"
+                resource_group: "{{resource_group}}"
+                subscription_id: "{{subscription_id}}"
+
+            - name: build-inventory
+              type: transform
+              description: "Correlate APIs, operations, and products into a normalized API inventory with paths, methods, policies, and product groupings."
+              outputParameters:
+                - name: "apis"
+                  type: "array"
+                  description: "Normalized list of API entries with paths, methods, policies, products, and subscription requirements"
+
+    - type: "http"
+      path: "/discover/azure-apim"
+      method: "POST"
+      description: "REST endpoint to trigger Azure APIM API discovery"
+
+    - type: "agent-skill"
+      namespace: "api-reusability"
+      skill:
+        name: "discover-azure-apim-apis"
+        description: "Discover and inventory APIs from Azure API Management"
+
+  consumes:
+    - import: "shared/consumes-azure-apim.yml"
+      as: "azure-apim"

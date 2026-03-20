@@ -1,0 +1,78 @@
+# yaml-language-server: $schema=../../capabilities/naftiko-schema.json
+---
+naftiko: "0.5"
+
+info:
+  label: "Discover APIs from SwaggerHub"
+  description: "Queries the SwaggerHub Registry API to inventory all published API specifications, extracting versions, domains, paths, operations, and schemas for reuse analysis."
+  tags:
+    - api-reusability
+    - discovery
+    - swaggerhub
+    - openapi
+  created: "2026-03-19"
+  modified: "2026-03-19"
+
+capability:
+  exposes:
+    - type: "mcp"
+      namespace: "api-reusability"
+      tools:
+        - name: "discover-swaggerhub-apis"
+          description: "Query SwaggerHub Registry API to inventory all published API specifications with versions, domains, paths, and schemas for reuse analysis."
+          inputParameters:
+            - name: owner
+              in: body
+              type: string
+              description: "SwaggerHub organization or user owner to scan"
+            - name: spec_type
+              in: body
+              type: string
+              description: "Optional spec type filter ('API' or 'DOMAIN', default: 'API')"
+          steps:
+            - name: list-specs
+              type: call
+              call: "swaggerhub.list-owner-specs"
+              with:
+                owner: "{{owner}}"
+                specType: "{{spec_type}}"
+
+            - name: get-spec-versions
+              type: call
+              call: "swaggerhub.get-spec-versions"
+              forEach: "{{list-specs.apis}}"
+              with:
+                owner: "{{owner}}"
+                api_name: "{{item.name}}"
+
+            - name: get-spec-definition
+              type: call
+              call: "swaggerhub.get-spec-definition"
+              forEach: "{{list-specs.apis}}"
+              with:
+                owner: "{{owner}}"
+                api_name: "{{item.name}}"
+                version: "{{item.properties[0].value}}"
+
+            - name: build-inventory
+              type: transform
+              description: "Parse each spec definition and extract paths, operations, parameters, schemas, and version history into a normalized inventory."
+              outputParameters:
+                - name: "apis"
+                  type: "array"
+                  description: "Normalized list of API entries with spec name, version, paths, methods, parameters, schemas, and domains"
+
+    - type: "http"
+      path: "/discover/swaggerhub"
+      method: "POST"
+      description: "REST endpoint to trigger SwaggerHub API discovery"
+
+    - type: "agent-skill"
+      namespace: "api-reusability"
+      skill:
+        name: "discover-swaggerhub-apis"
+        description: "Discover and inventory APIs from SwaggerHub"
+
+  consumes:
+    - import: "shared/consumes-swaggerhub.yml"
+      as: "swaggerhub"

@@ -1,0 +1,106 @@
+# yaml-language-server: $schema=../../capabilities/naftiko-schema.json
+---
+naftiko: "0.5"
+
+info:
+  label: "Backstage Software Catalog API"
+  description: "Shared consumes adapter for the Backstage Software Catalog API. Covers entity listing, retrieval, and updates — the operations needed to inventory and annotate APIs managed in Backstage."
+  tags:
+    - backstage
+    - shared
+    - catalog
+  created: "2026-03-19"
+  modified: "2026-03-19"
+
+consumes:
+  - namespace: "backstage"
+    type: "http"
+    baseUri: "{{backstage_base_url}}/api/catalog"
+    authentication:
+      type: "bearer"
+      token: "{{backstage_token}}"
+    inputParameters:
+      - name: "backstage_base_url"
+        in: "environment"
+      - name: "backstage_token"
+        in: "environment"
+      - name: "Content-Type"
+        in: "header"
+        value: "application/json"
+    resources:
+      - name: "entities"
+        label: "Entities"
+        description: "List and retrieve catalog entities (APIs, components, systems, domains)"
+        path: "/entities"
+        operations:
+          - name: "list-entities"
+            method: "GET"
+            label: "List Entities"
+            description: "List all entities in the catalog with optional kind and filter parameters"
+            inputParameters:
+              - name: "filter"
+                in: "query"
+              - name: "fields"
+                in: "query"
+              - name: "offset"
+                in: "query"
+              - name: "limit"
+                in: "query"
+            outputParameters:
+              - name: "items"
+                type: "array"
+                value: "$"
+
+      - name: "entity-by-ref"
+        label: "Entity by Reference"
+        description: "Retrieve a specific entity by kind, namespace, and name"
+        path: "/entities/by-name/{{kind}}/{{namespace}}/{{name}}"
+        inputParameters:
+          - name: "kind"
+            in: "path"
+          - name: "namespace"
+            in: "path"
+          - name: "name"
+            in: "path"
+        operations:
+          - name: "get-entity"
+            method: "GET"
+            label: "Get Entity"
+            description: "Retrieve a specific entity including metadata, spec, relations, and status"
+            outputParameters:
+              - name: "metadata"
+                type: "object"
+                value: "$.metadata"
+              - name: "spec"
+                type: "object"
+                value: "$.spec"
+              - name: "relations"
+                type: "array"
+                value: "$.relations"
+              - name: "status"
+                type: "object"
+                value: "$.status"
+
+      - name: "entity-update"
+        label: "Entity Update"
+        description: "Update an existing catalog entity"
+        path: "/entities/by-name/{{kind}}/{{namespace}}/{{name}}"
+        inputParameters:
+          - name: "kind"
+            in: "path"
+          - name: "namespace"
+            in: "path"
+          - name: "name"
+            in: "path"
+        operations:
+          - name: "update-entity"
+            method: "PUT"
+            label: "Update Entity"
+            description: "Update entity metadata including annotations and labels"
+            inputParameters:
+              - name: "metadata"
+                in: "body"
+            outputParameters:
+              - name: "metadata"
+                type: "object"
+                value: "$.metadata"

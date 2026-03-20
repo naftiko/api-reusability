@@ -1,0 +1,85 @@
+# yaml-language-server: $schema=../../capabilities/naftiko-schema.json
+---
+naftiko: "0.5"
+
+info:
+  label: "Report API Reuse to Confluence"
+  description: "Takes a normalized API inventory from discovery capabilities and creates or updates a Confluence page with a structured reuse report — tables of path overlaps, schema duplication, parameter patterns, and consolidation recommendations."
+  tags:
+    - api-reusability
+    - reporting
+    - confluence
+    - documentation
+  created: "2026-03-19"
+  modified: "2026-03-19"
+
+capability:
+  exposes:
+    - type: "mcp"
+      namespace: "api-reusability"
+      tools:
+        - name: "report-reuse-confluence"
+          description: "Analyze an API inventory for reuse patterns and create a structured Confluence page with tables showing path overlaps, duplicated schemas, shared parameters, and consolidation recommendations."
+          inputParameters:
+            - name: inventory
+              in: body
+              type: object
+              description: "Normalized API inventory from a discovery capability"
+            - name: space_key
+              in: body
+              type: string
+              description: "Confluence space key where the report page will be created"
+            - name: parent_page_id
+              in: body
+              type: string
+              description: "Optional parent page ID to nest the report under"
+            - name: report_title
+              in: body
+              type: string
+              description: "Title for the Confluence report page"
+          steps:
+            - name: analyze-reuse
+              type: transform
+              description: "Compute reuse metrics and format as Confluence storage format (XHTML) with tables, status macros, and panel blocks."
+              outputParameters:
+                - name: "body"
+                  type: "string"
+                - name: "summary_metrics"
+                  type: "object"
+
+            - name: search-existing
+              type: call
+              call: "confluence.search-content"
+              with:
+                cql: "space={{space_key}} AND title=\"{{report_title}}\" AND type=page"
+                limit: 1
+
+            - name: create-or-update
+              type: call
+              call: "confluence.create-content"
+              with:
+                type: "page"
+                title: "{{report_title}}"
+                space:
+                  key: "{{space_key}}"
+                ancestors:
+                  - id: "{{parent_page_id}}"
+                body:
+                  storage:
+                    value: "{{analyze-reuse.body}}"
+                    representation: "storage"
+
+    - type: "http"
+      path: "/report/confluence"
+      method: "POST"
+      description: "REST endpoint to trigger Confluence reuse reporting"
+
+    - type: "agent-skill"
+      namespace: "api-reusability"
+      skill:
+        name: "report-reuse-confluence"
+        description: "Publish API reuse report to Confluence"
+
+  consumes:
+    - import: "shared/consumes-confluence.yml"
+      as: "confluence"

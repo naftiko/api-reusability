@@ -1,0 +1,69 @@
+# yaml-language-server: $schema=../../capabilities/naftiko-schema.json
+---
+naftiko: "0.5"
+
+info:
+  label: "Discover APIs from Backstage Catalog"
+  description: "Queries a Backstage Software Catalog to inventory all API entities, extracting component metadata, ownership, lifecycle status, specs, and relationships for reuse analysis."
+  tags:
+    - api-reusability
+    - discovery
+    - backstage
+    - catalog
+  created: "2026-03-19"
+  modified: "2026-03-19"
+
+capability:
+  exposes:
+    - type: "mcp"
+      namespace: "api-reusability"
+      tools:
+        - name: "discover-backstage-apis"
+          description: "Query a Backstage Software Catalog to inventory all API entities with ownership, lifecycle status, specs, and relationships for reuse analysis."
+          inputParameters:
+            - name: kind_filter
+              in: body
+              type: string
+              description: "Backstage entity kind to filter (default: 'API')"
+            - name: lifecycle_filter
+              in: body
+              type: string
+              description: "Optional lifecycle filter (e.g. 'production', 'experimental')"
+          steps:
+            - name: list-entities
+              type: call
+              call: "backstage.list-entities"
+              with:
+                filter: "kind={{kind_filter}}"
+
+            - name: get-entity-details
+              type: call
+              call: "backstage.get-entity"
+              forEach: "{{list-entities.items}}"
+              with:
+                kind: "{{item.kind}}"
+                namespace: "{{item.metadata.namespace}}"
+                name: "{{item.metadata.name}}"
+
+            - name: build-inventory
+              type: transform
+              description: "Extract API definitions, ownership, lifecycle, and relationships into a normalized API inventory with paths, operations, parameters, and schemas."
+              outputParameters:
+                - name: "apis"
+                  type: "array"
+                  description: "Normalized list of API entries with owner, lifecycle, spec type, paths, methods, and relationships"
+
+    - type: "http"
+      path: "/discover/backstage"
+      method: "POST"
+      description: "REST endpoint to trigger Backstage API discovery"
+
+    - type: "agent-skill"
+      namespace: "api-reusability"
+      skill:
+        name: "discover-backstage-apis"
+        description: "Discover and inventory APIs from Backstage Software Catalog"
+
+  consumes:
+    - import: "shared/consumes-backstage.yml"
+      as: "backstage"

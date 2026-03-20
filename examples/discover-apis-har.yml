@@ -1,0 +1,68 @@
+# yaml-language-server: $schema=../../capabilities/naftiko-schema.json
+---
+naftiko: "0.5"
+
+info:
+  label: "Discover APIs from HAR Files"
+  description: "Processes HTTP Archive (HAR) files to generate evidence-based API inventories from actual traffic captures, extracting paths, methods, headers, parameters, and response schemas."
+  tags:
+    - api-reusability
+    - discovery
+    - har
+    - traffic-analysis
+  created: "2026-03-19"
+  modified: "2026-03-19"
+
+capability:
+  exposes:
+    - type: "mcp"
+      namespace: "api-reusability"
+      tools:
+        - name: "discover-har-apis"
+          description: "Process HAR files to generate an evidence-based API inventory from actual HTTP traffic — extracting paths, methods, headers, parameters, request/response bodies, and inferred schemas."
+          inputParameters:
+            - name: har_source
+              in: body
+              type: string
+              description: "Path or URL to the HAR file to process"
+            - name: domain_filter
+              in: body
+              type: string
+              description: "Optional domain filter to narrow extraction (e.g. 'api.example.com')"
+            - name: exclude_static
+              in: body
+              type: boolean
+              description: "Exclude static assets (CSS, JS, images) from extraction (default: true)"
+          steps:
+            - name: parse-har
+              type: transform
+              description: "Parse HAR file entries and extract HTTP request/response pairs, filtering by domain and excluding static assets."
+              outputParameters:
+                - name: "entries"
+                  type: "array"
+
+            - name: normalize-paths
+              type: transform
+              description: "Normalize URL paths by detecting path parameters (IDs, UUIDs) and grouping similar paths into canonical API resource patterns."
+              outputParameters:
+                - name: "path_patterns"
+                  type: "array"
+
+            - name: build-inventory
+              type: transform
+              description: "Correlate path patterns with request/response data to produce a normalized API inventory with paths, methods, headers, parameters, and inferred schemas."
+              outputParameters:
+                - name: "apis"
+                  type: "array"
+                  description: "Normalized list of API entries with inferred paths, methods, parameters, headers, and response schemas"
+
+    - type: "http"
+      path: "/discover/har"
+      method: "POST"
+      description: "REST endpoint to trigger HAR-based API discovery"
+
+    - type: "agent-skill"
+      namespace: "api-reusability"
+      skill:
+        name: "discover-har-apis"
+        description: "Discover and inventory APIs from HAR traffic captures"

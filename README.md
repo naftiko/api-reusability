@@ -2,33 +2,34 @@
 
 Discover, measure, and increase reuse of existing APIs across your organization using the Naftiko v0.5 capability framework. This project breaks API reusability into three capability areas — **Discover**, **Report**, and **Generate** — each exposed as HTTP, MCP, and Agent Skill adapters.
 
+See [ROADMAP.md](ROADMAP.md) for planned capability expansions across Search, Enrich, Govern, Cost, Credentials, and Developer Experience.
+
 ---
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        DISCOVER                                 │
-│  ┌───────────────┐  ┌──────────────┐  ┌──────────────────────┐  │
-│  │ GitHub Repos   │  │ Kong Gateway │  │ AWS API Gateway      │  │
-│  │ (OpenAPI specs)│  │ (Admin API)  │  │ (REST APIs/resources)│  │
-│  └───────┬───────┘  └──────┬───────┘  └──────────┬───────────┘  │
-│          └─────────────────┼─────────────────────┘              │
-│                            ▼                                    │
-│                  Normalized API Inventory                       │
-│          (paths, operations, parameters, schemas)               │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-              ┌──────────────┼──────────────┐
-              ▼              ▼              ▼
-┌──────────────────┐ ┌──────────────┐ ┌──────────────────────────┐
-│      REPORT      │ │   GENERATE   │ │                          │
-│  ┌────────────┐  │ │  Naftiko v0.5│ │  Reuse across adapters:  │
-│  │ Datadog    │  │ │  consumes    │ │  • HTTP endpoints        │
-│  │ New Relic  │  │ │  adapters    │ │  • MCP tools             │
-│  │ Splunk     │  │ │  + capability│ │  • Agent Skills          │
-│  │ Notion     │  │ │  wrappers    │ │                          │
-│  └────────────┘  │ └──────────────┘ └──────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                          DISCOVER (10)                               │
+│  GitHub  Kong  AWS  Backstage  Apigee  Azure APIM  Postman  Bruno  │
+│  HAR  SwaggerHub                                                    │
+└────────────────────────────────┬────────────────────────────────────┘
+                                 ▼
+                    Normalized API Inventory
+              (paths, operations, parameters, schemas)
+                                 │
+              ┌──────────────────┼──────────────────┐
+              ▼                  ▼                  ▼
+┌──────────────────┐  ┌──────────────────┐  ┌──────────────────────────┐
+│   REPORT (8)     │  │   GENERATE (1)   │  │                          │
+│  Datadog         │  │  Naftiko v0.5    │  │  Reuse across adapters:  │
+│  New Relic       │  │  consumes        │  │  • HTTP endpoints        │
+│  Splunk          │  │  adapters        │  │  • MCP tools             │
+│  Notion          │  │  + capability    │  │  • Agent Skills          │
+│  Confluence      │  │  wrappers        │  │                          │
+│  Power BI        │  └──────────────────┘  └──────────────────────────┘
+│  Backstage       │
+│  Slack           │
 └──────────────────┘
 ```
 
@@ -36,15 +37,22 @@ Discover, measure, and increase reuse of existing APIs across your organization 
 
 ## Capabilities
 
-### Discovery (3 capabilities)
+### Discovery (10 capabilities)
 
 | Capability | Source | What It Extracts |
 |------------|--------|-----------------|
 | [discover-apis-github](examples/discover-apis-github.yml) | GitHub Repositories | OpenAPI/Swagger specs → paths, operations, parameters, schemas |
 | [discover-apis-kong](examples/discover-apis-kong.yml) | Kong API Gateway | Services, routes, plugins → paths, methods, auth schemes |
 | [discover-apis-aws](examples/discover-apis-aws.yml) | AWS API Gateway | REST APIs, resources, methods, models, stages |
+| [discover-apis-backstage](examples/discover-apis-backstage.yml) | Backstage Catalog | Catalog entities, component metadata, ownership, lifecycle status, specs |
+| [discover-apis-apigee](examples/discover-apis-apigee.yml) | Google Apigee | API proxies, products, environments, deployed revisions, traffic policies |
+| [discover-apis-azure-apim](examples/discover-apis-azure-apim.yml) | Azure API Management | APIs, operations, products, subscriptions, policy configurations |
+| [discover-apis-postman](examples/discover-apis-postman.yml) | Postman Collections | Collections, requests, environments, variables, authentication schemes |
+| [discover-apis-bruno](examples/discover-apis-bruno.yml) | Bruno Collections | Request definitions, environments, variables from Git-native collections |
+| [discover-apis-har](examples/discover-apis-har.yml) | HAR Files (Traffic) | Evidence-based API inventory from actual HTTP traffic captures |
+| [discover-apis-swaggerhub](examples/discover-apis-swaggerhub.yml) | SwaggerHub | Published API specs, versions, domains, paths, operations, schemas |
 
-### Reporting (4 capabilities)
+### Reporting (8 capabilities)
 
 | Capability | Target | What It Publishes |
 |------------|--------|------------------|
@@ -52,6 +60,10 @@ Discover, measure, and increase reuse of existing APIs across your organization 
 | [report-reuse-newrelic](examples/report-reuse-newrelic.yml) | New Relic Dashboard | Deployment markers + custom events for reuse scan results |
 | [report-reuse-splunk](examples/report-reuse-splunk.yml) | Splunk Dashboard | Indexed events with sourcetype=api_reuse_scan for SPL queries |
 | [report-reuse-notion](examples/report-reuse-notion.yml) | Notion Page | Structured report with tables, callouts, and recommendations |
+| [report-reuse-confluence](examples/report-reuse-confluence.yml) | Confluence Page | Structured reuse reports with tables, status macros, and recommendations |
+| [report-reuse-powerbi](examples/report-reuse-powerbi.yml) | Power BI Dashboard | Executive dashboards with reuse trends, cost savings, business outcomes |
+| [report-reuse-backstage](examples/report-reuse-backstage.yml) | Backstage Scorecard | Reusability scores and governance compliance as entity annotations |
+| [report-reuse-slack](examples/report-reuse-slack.yml) | Slack Channel | Reuse alerts, duplicate warnings, and consolidation recommendations |
 
 ### Generation (1 capability)
 
@@ -69,14 +81,22 @@ New adapters created for this project (complement the 31 adapters in the [capabi
 |---------|---------|
 | [consumes-kong.yml](shared/consumes-kong.yml) | Kong Admin API — services, routes, plugins |
 | [consumes-aws-apigateway.yml](shared/consumes-aws-apigateway.yml) | AWS API Gateway — REST APIs, resources, methods, models, stages, export |
+| [consumes-backstage.yml](shared/consumes-backstage.yml) | Backstage Software Catalog API — entities, metadata, annotations |
+| [consumes-apigee.yml](shared/consumes-apigee.yml) | Apigee Management API — proxies, products, deployments |
+| [consumes-azure-apim.yml](shared/consumes-azure-apim.yml) | Azure API Management REST API — APIs, operations, products |
+| [consumes-postman.yml](shared/consumes-postman.yml) | Postman API v10 — collections, requests, environments |
+| [consumes-swaggerhub.yml](shared/consumes-swaggerhub.yml) | SwaggerHub Registry API — specs, versions, definitions |
 
 Existing adapters consumed from the capabilities repo:
 
-- `consumes-github.yml` — GitHub REST API v3
+- `consumes-github.yml` — GitHub REST API v3 (also used by Bruno discovery)
 - `consumes-datadog.yml` — Datadog API v1/v2
 - `consumes-newrelic.yml` — New Relic REST API v2
 - `consumes-splunk.yml` — Splunk REST API
 - `consumes-notion.yml` — Notion REST API v1
+- `consumes-confluence.yml` — Confluence REST API
+- `consumes-powerbi.yml` — Power BI REST API
+- `consumes-slack.yml` — Slack Web API
 
 ---
 
@@ -90,26 +110,3 @@ Every capability is exposed three ways, aligned with the Naftiko framework:
 | **MCP** | Model Context Protocol tool under the `api-reusability` namespace |
 | **Agent Skill** | Agent skill adapter for agentic orchestration workflows |
 
----
-
-## Reuse Metrics
-
-The reporting capabilities measure and track:
-
-- **Path Overlap Rate** — % of API paths that appear across multiple services
-- **Schema Duplication** — count of identical or near-identical JSON Schema definitions
-- **Parameter Patterns** — commonly repeated query/header/path parameters
-- **Header Reuse** — shared authentication and content-type headers
-- **Consolidation Opportunities** — recommendations for shared adapter creation
-
----
-
-## Relationship to Capabilities Repo
-
-This project builds on the [capabilities](../capabilities/) repo:
-
-- Uses the same **Naftiko v0.5 schema** (`naftiko-schema.json`)
-- Follows the same **directory structure** (`examples/` for capabilities, `shared/` for consumes adapters)
-- **Imports shared adapters** from the capabilities repo (GitHub, Datadog, New Relic, Splunk, Notion)
-- **Adds new shared adapters** (Kong, AWS API Gateway) that could be contributed back
-- Each capability uses the same `exposes` / `consumes` / `steps` pattern

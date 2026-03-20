@@ -1,0 +1,73 @@
+# yaml-language-server: $schema=../../capabilities/naftiko-schema.json
+---
+naftiko: "0.5"
+
+info:
+  label: "Report API Reuse to Backstage Scorecard"
+  description: "Takes a normalized API inventory from discovery capabilities and publishes reusability scores and governance compliance as annotations on Backstage catalog entities, enabling developer portal visibility into reuse health."
+  tags:
+    - api-reusability
+    - reporting
+    - backstage
+    - developer-portal
+  created: "2026-03-19"
+  modified: "2026-03-19"
+
+capability:
+  exposes:
+    - type: "mcp"
+      namespace: "api-reusability"
+      tools:
+        - name: "report-reuse-backstage"
+          description: "Analyze an API inventory for reuse patterns and update Backstage catalog entities with reusability scores, governance compliance, and consolidation recommendations as entity annotations."
+          inputParameters:
+            - name: inventory
+              in: body
+              type: object
+              description: "Normalized API inventory from a discovery capability"
+            - name: score_threshold
+              in: body
+              type: number
+              description: "Minimum reusability score to flag as healthy (0-100, default: 70)"
+          steps:
+            - name: analyze-reuse
+              type: transform
+              description: "Compute per-entity reusability scores based on documentation completeness, schema consistency, example coverage, and cross-team usage. Format as Backstage entity annotations."
+              outputParameters:
+                - name: "entity_scores"
+                  type: "array"
+
+            - name: get-entities
+              type: call
+              call: "backstage.list-entities"
+              with:
+                filter: "kind=API"
+
+            - name: update-annotations
+              type: call
+              call: "backstage.update-entity"
+              forEach: "{{entity_scores}}"
+              with:
+                kind: "API"
+                namespace: "{{item.namespace}}"
+                name: "{{item.name}}"
+                metadata:
+                  annotations:
+                    naftiko.io/reuse-score: "{{item.score}}"
+                    naftiko.io/schema-duplication: "{{item.duplicate_schemas}}"
+                    naftiko.io/last-scan: "{{item.scan_date}}"
+
+    - type: "http"
+      path: "/report/backstage"
+      method: "POST"
+      description: "REST endpoint to trigger Backstage reuse scorecard update"
+
+    - type: "agent-skill"
+      namespace: "api-reusability"
+      skill:
+        name: "report-reuse-backstage"
+        description: "Publish API reuse scores to Backstage catalog"
+
+  consumes:
+    - import: "shared/consumes-backstage.yml"
+      as: "backstage"

@@ -1,0 +1,77 @@
+# yaml-language-server: $schema=../../capabilities/naftiko-schema.json
+---
+naftiko: "0.5"
+
+info:
+  label: "Report API Reuse to Power BI"
+  description: "Takes a normalized API inventory from discovery capabilities and publishes reuse metrics to Power BI via dataset push rows, enabling executive dashboards with reuse trends, cost savings, and business outcome correlation."
+  tags:
+    - api-reusability
+    - reporting
+    - powerbi
+    - executive-dashboard
+  created: "2026-03-19"
+  modified: "2026-03-19"
+
+capability:
+  exposes:
+    - type: "mcp"
+      namespace: "api-reusability"
+      tools:
+        - name: "report-reuse-powerbi"
+          description: "Analyze an API inventory for reuse patterns and push metrics to Power BI — reuse trends, path overlap rate, schema duplication, cost savings estimates, and consolidation opportunities for executive dashboards."
+          inputParameters:
+            - name: inventory
+              in: body
+              type: object
+              description: "Normalized API inventory from a discovery capability"
+            - name: group_id
+              in: body
+              type: string
+              description: "Power BI workspace (group) ID"
+            - name: dataset_id
+              in: body
+              type: string
+              description: "Power BI dataset ID configured for reuse metrics"
+            - name: table_name
+              in: body
+              type: string
+              description: "Table name within the dataset (default: 'ApiReuseMetrics')"
+          steps:
+            - name: analyze-reuse
+              type: transform
+              description: "Compute reuse metrics and format as Power BI push row objects with columns for scan date, domain, path overlap rate, schema duplication count, parameter patterns, and estimated cost savings."
+              outputParameters:
+                - name: "rows"
+                  type: "array"
+
+            - name: push-rows
+              type: call
+              call: "powerbi.push-dataset-rows"
+              with:
+                group_id: "{{group_id}}"
+                dataset_id: "{{dataset_id}}"
+                table_name: "{{table_name}}"
+                rows: "{{analyze-reuse.rows}}"
+
+            - name: refresh-dataset
+              type: call
+              call: "powerbi.refresh-dataset"
+              with:
+                group_id: "{{group_id}}"
+                dataset_id: "{{dataset_id}}"
+
+    - type: "http"
+      path: "/report/powerbi"
+      method: "POST"
+      description: "REST endpoint to trigger Power BI reuse reporting"
+
+    - type: "agent-skill"
+      namespace: "api-reusability"
+      skill:
+        name: "report-reuse-powerbi"
+        description: "Publish API reuse metrics to Power BI"
+
+  consumes:
+    - import: "shared/consumes-powerbi.yml"
+      as: "powerbi"

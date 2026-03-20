@@ -1,0 +1,69 @@
+# yaml-language-server: $schema=../../capabilities/naftiko-schema.json
+---
+naftiko: "0.5"
+
+info:
+  label: "Discover APIs from Postman Collections"
+  description: "Queries the Postman API to inventory all collections, extracting requests, environments, variables, and authentication schemes for reuse analysis."
+  tags:
+    - api-reusability
+    - discovery
+    - postman
+    - api-client
+  created: "2026-03-19"
+  modified: "2026-03-19"
+
+capability:
+  exposes:
+    - type: "mcp"
+      namespace: "api-reusability"
+      tools:
+        - name: "discover-postman-apis"
+          description: "Query Postman API to inventory all collections with requests, environments, variables, and authentication schemes for reuse analysis."
+          inputParameters:
+            - name: workspace_id
+              in: body
+              type: string
+              description: "Postman workspace ID to scan (default: all accessible workspaces)"
+          steps:
+            - name: list-collections
+              type: call
+              call: "postman.list-collections"
+              with:
+                workspace: "{{workspace_id}}"
+
+            - name: get-collection-details
+              type: call
+              call: "postman.get-collection"
+              forEach: "{{list-collections.collections}}"
+              with:
+                collection_id: "{{item.uid}}"
+
+            - name: list-environments
+              type: call
+              call: "postman.list-environments"
+              with:
+                workspace: "{{workspace_id}}"
+
+            - name: build-inventory
+              type: transform
+              description: "Parse collections into a normalized API inventory with paths, methods, headers, auth schemes, variables, and request/response examples."
+              outputParameters:
+                - name: "apis"
+                  type: "array"
+                  description: "Normalized list of API entries with collection, folder, request URL, method, headers, auth, and variables"
+
+    - type: "http"
+      path: "/discover/postman"
+      method: "POST"
+      description: "REST endpoint to trigger Postman collection discovery"
+
+    - type: "agent-skill"
+      namespace: "api-reusability"
+      skill:
+        name: "discover-postman-apis"
+        description: "Discover and inventory APIs from Postman Collections"
+
+  consumes:
+    - import: "shared/consumes-postman.yml"
+      as: "postman"

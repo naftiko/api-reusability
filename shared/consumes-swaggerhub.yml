@@ -1,0 +1,96 @@
+# yaml-language-server: $schema=../../capabilities/naftiko-schema.json
+---
+naftiko: "0.5"
+
+info:
+  label: "SwaggerHub Registry API"
+  description: "Shared consumes adapter for the SwaggerHub Registry API. Covers spec listing, version retrieval, and definition download — the operations needed to inventory APIs published in SwaggerHub."
+  tags:
+    - swaggerhub
+    - shared
+    - openapi
+  created: "2026-03-19"
+  modified: "2026-03-19"
+
+consumes:
+  - namespace: "swaggerhub"
+    type: "http"
+    baseUri: "https://api.swaggerhub.com"
+    authentication:
+      type: "apikey"
+      key: "Authorization"
+      value: "{{swaggerhub_api_key}}"
+      placement: "header"
+    inputParameters:
+      - name: "swaggerhub_api_key"
+        in: "environment"
+      - name: "Content-Type"
+        in: "header"
+        value: "application/json"
+    resources:
+      - name: "owner-specs"
+        label: "Owner Specifications"
+        description: "List all API and domain specifications for an owner"
+        path: "/apis/{{owner}}"
+        inputParameters:
+          - name: "owner"
+            in: "path"
+        operations:
+          - name: "list-owner-specs"
+            method: "GET"
+            label: "List Owner Specs"
+            description: "List all API and domain specifications owned by the specified user or organization"
+            inputParameters:
+              - name: "specType"
+                in: "query"
+              - name: "page"
+                in: "query"
+              - name: "limit"
+                in: "query"
+            outputParameters:
+              - name: "apis"
+                type: "array"
+                value: "$.apis"
+              - name: "totalCount"
+                type: "number"
+                value: "$.totalCount"
+
+      - name: "spec-versions"
+        label: "Specification Versions"
+        description: "List all versions for a specific API specification"
+        path: "/apis/{{owner}}/{{api_name}}"
+        inputParameters:
+          - name: "owner"
+            in: "path"
+          - name: "api_name"
+            in: "path"
+        operations:
+          - name: "get-spec-versions"
+            method: "GET"
+            label: "Get Spec Versions"
+            description: "Retrieve all published versions and metadata for a specific API"
+            outputParameters:
+              - name: "apis"
+                type: "array"
+                value: "$.apis"
+
+      - name: "spec-definition"
+        label: "Specification Definition"
+        description: "Download the full spec definition for a specific version"
+        path: "/apis/{{owner}}/{{api_name}}/{{version}}"
+        inputParameters:
+          - name: "owner"
+            in: "path"
+          - name: "api_name"
+            in: "path"
+          - name: "version"
+            in: "path"
+        operations:
+          - name: "get-spec-definition"
+            method: "GET"
+            label: "Get Spec Definition"
+            description: "Download the full OpenAPI/Swagger definition for a specific version"
+            outputParameters:
+              - name: "definition"
+                type: "object"
+                value: "$"

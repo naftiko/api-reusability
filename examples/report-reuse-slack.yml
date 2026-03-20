@@ -1,0 +1,76 @@
+# yaml-language-server: $schema=../../capabilities/naftiko-schema.json
+---
+naftiko: "0.5"
+
+info:
+  label: "Report API Reuse to Slack"
+  description: "Takes a normalized API inventory from discovery capabilities and sends reuse analysis summaries, duplicate alerts, and consolidation recommendations to Slack channels via Block Kit messages."
+  tags:
+    - api-reusability
+    - reporting
+    - slack
+    - notifications
+  created: "2026-03-19"
+  modified: "2026-03-19"
+
+capability:
+  exposes:
+    - type: "mcp"
+      namespace: "api-reusability"
+      tools:
+        - name: "report-reuse-slack"
+          description: "Analyze an API inventory for reuse patterns and send summaries to Slack — path overlap alerts, schema duplication warnings, and consolidation recommendations as Block Kit messages."
+          inputParameters:
+            - name: inventory
+              in: body
+              type: object
+              description: "Normalized API inventory from a discovery capability"
+            - name: channel
+              in: body
+              type: string
+              description: "Slack channel ID or name to post the report to"
+            - name: alert_threshold
+              in: body
+              type: number
+              description: "Path overlap percentage threshold that triggers an alert (default: 50)"
+          steps:
+            - name: analyze-reuse
+              type: transform
+              description: "Compute reuse metrics and format as Slack Block Kit blocks with summary section, path overlap table, duplicate schema list, and consolidation recommendations."
+              outputParameters:
+                - name: "blocks"
+                  type: "array"
+                - name: "has_alerts"
+                  type: "boolean"
+
+            - name: post-summary
+              type: call
+              call: "slack.post-message"
+              with:
+                channel: "{{channel}}"
+                text: "API Reuse Scan Complete"
+                blocks: "{{analyze-reuse.blocks}}"
+
+            - name: post-thread-details
+              type: call
+              call: "slack.post-message"
+              condition: "{{analyze-reuse.has_alerts}}"
+              with:
+                channel: "{{channel}}"
+                thread_ts: "{{post-summary.ts}}"
+                text: "Detailed findings and consolidation recommendations"
+
+    - type: "http"
+      path: "/report/slack"
+      method: "POST"
+      description: "REST endpoint to trigger Slack reuse reporting"
+
+    - type: "agent-skill"
+      namespace: "api-reusability"
+      skill:
+        name: "report-reuse-slack"
+        description: "Send API reuse alerts and reports to Slack"
+
+  consumes:
+    - import: "shared/consumes-slack.yml"
+      as: "slack"
